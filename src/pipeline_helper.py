@@ -48,6 +48,10 @@ class PipelineHelper:
         # E.g., genome mining results (antiSMASH vs GECCO vs deepBGC) vs QUAST results ve etc
         pass
 
+    def compute_stats(self):
+        # TODO
+        pass
+
     def write_results(self):
         self.log.info("RESULTS:")
         self.log.info("Text report is saved to " + str(self.config.output_config.report), indent=1)
