@@ -1,0 +1,5 @@
+default_output_dir_root: bgc_quast_results
+symlink_to_latest: latest
+
+report: report.tsv
+html_report: report.html
