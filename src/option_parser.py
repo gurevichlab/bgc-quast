@@ -3,32 +3,60 @@ import argparse
 from argparse import Namespace as CommandLineArgs
 from src.config import Config
 from io import StringIO
-import csv
-
-def add_advanced_arguments(parser: argparse.ArgumentParser):
-    advanced_input_group = parser.add_argument_group('Advanced input',
-                                                     'TBA')
-    advanced_input_group.add_argument("--quast-output-dir", help="QUAST output in the "
-                                      "reference-based evaluation mode; if specified, it is expected that the "
-                                      "genome mining results are provided for both the reference and the assembly",
-                                      metavar='DIR', action="store", type=Path)
 
 
 def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
-    configs_group = parser.add_argument_group('BGC-QUAST pipeline',
-                                              'TBA')
+    # These go directly into the main group (not a separate argument group)
+    parser.add_argument(
+        '--output-dir', '-o',
+        type=Path,
+        metavar='DIR',
+        help="Output directory "
+             f"[default: {default_cfg.output_config.output_dir.parent}/" "{CURRENT_TIME}]"
+    )
+    parser.add_argument(
+        '--threads', '-t',
+        default=1,
+        type=int,
+        metavar='INT',
+        help="Number of threads [default: %(default)s]",
+        action='store'
+    )
+    parser.add_argument(
+        '--debug',
+        action='store_true',
+        default=False,
+        help='Run in debug mode and keep all intermediate files'
+    )
 
-    configs_group.add_argument("--output-dir", "-o", type=Path, metavar='DIR',
-                               help="output directory "
-                                    f"[default: {default_cfg.output_config.output_dir.parent}/" "{CURRENT_TIME}]")
-    configs_group.add_argument("--threads", "-t", default=1, type=int, metavar='INT',
-                               help="number of threads [default: %(default)s]", action="store")
-    configs_group.add_argument("--debug", action="store_true", default=False,
-                               help="run in the debug mode and keep all intermediate files")
+    # Add positional arguments: genome mining results (at least one required)
+    parser.add_argument(
+        'mining_results',
+        type=Path,
+        nargs='+',
+        metavar='GENOME_MINING_RESULT',
+        help='Paths to genome mining results (antiSMASH, GECCO, or deepBGC); '
+             'at least one is required'
+    )
+
+
+def add_advanced_arguments(parser: argparse.ArgumentParser):
+    advanced_input_group = parser.add_argument_group('Advanced input', 'TBA')
+    advanced_input_group.add_argument(
+        '--quast-output-dir',
+        help="QUAST output in the reference-based evaluation mode; if specified, it is expected that the "
+             "genome mining results are provided for both the reference and the assembly",
+        metavar='DIR',
+        action='store',
+        type=Path
+    )
 
 
 def build_cmdline_args_parser(default_cfg: Config) -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description='BGC-QUAST: quality assessment tool for genome mining (BGC prediction) software'
+    )
     add_basic_arguments(parser, default_cfg)
     add_advanced_arguments(parser)
     return parser
@@ -57,5 +85,5 @@ def validate(expr, msg=''):
 
 
 def validate_arguments(args: CommandLineArgs):
-    if None:  # TODO
-        raise ValidationError('at least one genome mining tool output is required')
+    if None:  # TODO if applicable
+        raise ValidationError('something is wrong!')
