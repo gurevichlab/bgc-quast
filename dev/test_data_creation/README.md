@@ -8,7 +8,7 @@ We then used `make_test_data.py` to trim first 1 Mbp into an artificial referenc
 ### antiSMASH
 We applied [the antiSMASH web server](https://antismash.secondarymetabolites.org/#!/start) using all default settings (as of 10.04.2025) 
 plus "Enable antiSMASH v.8 beta" to the reference and both assemblies.
-The corresponding output JSON files are in the `<sequence_filename>_mining/antiSMASH` directories.
+The corresponding output JSON and GenBank files were compressed with GZIP and saved in the `<sequence_filename>_mining/antiSMASH` directories.
 
 ### GECCO
 TODO
