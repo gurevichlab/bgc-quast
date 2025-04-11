@@ -11,10 +11,10 @@ plus "Enable antiSMASH v.8 beta" to the reference and both assemblies.
 The corresponding output JSON and GenBank files were compressed with GZIP and saved in the `<sequence_filename>_mining/antiSMASH` directories.
 
 ### GECCO
-TODO
+We applied [GECCO](https://github.com/zellerlab/GECCO) v0.9.10 using default settings (`gecco run --genome input_sequence -o output_dir`) to the reference genome and both assemblies. The corresponding outputs were saved in the `<sequence_filename>_mining/GECCO` directories.
 
 ### DeepBGC
-TODO
+We applied [deepBGC](https://github.com/Merck/deepbgc) v0.1.31 using default settings (`deepbgc pipeline input_genome -o output_dir`) to the reference genome and both assemblies. The corresponding outputs were saved in the '<sequence_filename>_mining/deepBGC' directories.
 
 ## Assembly to reference alignment
 We ran `quast -r reference.fasta assembly_10.fasta assembly_20.fasta -o quast_out --fast` to produce QUAST alignments for both assemblies. The results are in the `quast_out` directory.
