@@ -1,0 +1,282 @@
+Loading model from: /home/akushnareva/.local/share/deepbgc/data/0.1.0/detector/deepbgc.pkl
+From /home/akushnareva/miniconda3/envs/deepbgc/lib/python3.7/site-packages/keras/backend/tensorflow_backend.py:74: The name tf.get_default_graph is deprecated. Please use tf.compat.v1.get_default_graph instead.
+
+From /home/akushnareva/miniconda3/envs/deepbgc/lib/python3.7/site-packages/keras/backend/tensorflow_backend.py:517: The name tf.placeholder is deprecated. Please use tf.compat.v1.placeholder instead.
+
+From /home/akushnareva/miniconda3/envs/deepbgc/lib/python3.7/site-packages/keras/backend/tensorflow_backend.py:4138: The name tf.random_uniform is deprecated. Please use tf.random.uniform instead.
+
+From /home/akushnareva/miniconda3/envs/deepbgc/lib/python3.7/site-packages/keras/backend/tensorflow_backend.py:133: The name tf.placeholder_with_default is deprecated. Please use tf.compat.v1.placeholder_with_default instead.
+
+From /home/akushnareva/miniconda3/envs/deepbgc/lib/python3.7/site-packages/keras/backend/tensorflow_backend.py:3445: calling dropout (from tensorflow.python.ops.nn_ops) with keep_prob is deprecated and will be removed in a future version.
+Instructions for updating:
+Please use `rate` instead of `keep_prob`. Rate should be set to `rate = 1 - keep_prob`.
+From /home/akushnareva/miniconda3/envs/deepbgc/lib/python3.7/site-packages/keras/backend/tensorflow_backend.py:174: The name tf.get_default_session is deprecated. Please use tf.compat.v1.get_default_session instead.
+
+From /home/akushnareva/miniconda3/envs/deepbgc/lib/python3.7/site-packages/keras/backend/tensorflow_backend.py:181: The name tf.ConfigProto is deprecated. Please use tf.compat.v1.ConfigProto instead.
+
+From /home/akushnareva/miniconda3/envs/deepbgc/lib/python3.7/site-packages/keras/backend/tensorflow_backend.py:186: The name tf.Session is deprecated. Please use tf.compat.v1.Session instead.
+
+From /home/akushnareva/miniconda3/envs/deepbgc/lib/python3.7/site-packages/keras/backend/tensorflow_backend.py:190: The name tf.global_variables is deprecated. Please use tf.compat.v1.global_variables instead.
+
+From /home/akushnareva/miniconda3/envs/deepbgc/lib/python3.7/site-packages/keras/backend/tensorflow_backend.py:199: The name tf.is_variable_initialized is deprecated. Please use tf.compat.v1.is_variable_initialized instead.
+
+From /home/akushnareva/miniconda3/envs/deepbgc/lib/python3.7/site-packages/keras/backend/tensorflow_backend.py:206: The name tf.variables_initializer is deprecated. Please use tf.compat.v1.variables_initializer instead.
+
+Loading model from: /home/akushnareva/.local/share/deepbgc/data/0.1.0/classifier/product_class.pkl
+Loading model from: /home/akushnareva/.local/share/deepbgc/data/0.1.0/classifier/product_activity.pkl
+Processing input file 1/1: input/assembly_20.fasta.gz
+================================================================================
+Processing record #1: CONTIG_1
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_1
+Detecting Pfam domains in "CONTIG_1" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m14s
+Added 66 Pfam domains (59 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_1
+Detected 3 BGCs using deepbgc model in CONTIG_1
+Classifying 3 BGCs using product_class model in CONTIG_1
+Classifying 3 BGCs using product_activity model in CONTIG_1
+Saving processed record CONTIG_1
+================================================================================
+Processing record #2: CONTIG_2
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_2
+Detecting Pfam domains in "CONTIG_2" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m12s
+Added 85 Pfam domains (61 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_2
+Detected 1 BGCs using deepbgc model in CONTIG_2
+Classifying 1 BGCs using product_class model in CONTIG_2
+Classifying 1 BGCs using product_activity model in CONTIG_2
+Saving processed record CONTIG_2
+================================================================================
+Processing record #3: CONTIG_3
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_3
+Detecting Pfam domains in "CONTIG_3" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m9s
+Added 98 Pfam domains (81 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_3
+Detected 1 BGCs using deepbgc model in CONTIG_3
+Classifying 1 BGCs using product_class model in CONTIG_3
+Classifying 1 BGCs using product_activity model in CONTIG_3
+Saving processed record CONTIG_3
+================================================================================
+Processing record #4: CONTIG_4
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_4
+Detecting Pfam domains in "CONTIG_4" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m10s
+Added 136 Pfam domains (90 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_4
+Detected 1 BGCs using deepbgc model in CONTIG_4
+Classifying 1 BGCs using product_class model in CONTIG_4
+Classifying 1 BGCs using product_activity model in CONTIG_4
+Saving processed record CONTIG_4
+================================================================================
+Processing record #5: CONTIG_5
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_5
+Detecting Pfam domains in "CONTIG_5" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m11s
+Added 106 Pfam domains (77 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_5
+Detected 3 BGCs using deepbgc model in CONTIG_5
+Classifying 3 BGCs using product_class model in CONTIG_5
+Classifying 3 BGCs using product_activity model in CONTIG_5
+Saving processed record CONTIG_5
+================================================================================
+Processing record #6: CONTIG_6
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_6
+Detecting Pfam domains in "CONTIG_6" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m9s
+Added 96 Pfam domains (78 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_6
+Detected 1 BGCs using deepbgc model in CONTIG_6
+Classifying 1 BGCs using product_class model in CONTIG_6
+Classifying 1 BGCs using product_activity model in CONTIG_6
+Saving processed record CONTIG_6
+================================================================================
+Processing record #7: CONTIG_7
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_7
+Detecting Pfam domains in "CONTIG_7" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m9s
+Added 92 Pfam domains (78 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_7
+Detected 1 BGCs using deepbgc model in CONTIG_7
+Classifying 1 BGCs using product_class model in CONTIG_7
+Classifying 1 BGCs using product_activity model in CONTIG_7
+Saving processed record CONTIG_7
+================================================================================
+Processing record #8: CONTIG_8
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_8
+Detecting Pfam domains in "CONTIG_8" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m10s
+Added 98 Pfam domains (86 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_8
+Detected 5 BGCs using deepbgc model in CONTIG_8
+Classifying 5 BGCs using product_class model in CONTIG_8
+Classifying 5 BGCs using product_activity model in CONTIG_8
+Saving processed record CONTIG_8
+================================================================================
+Processing record #9: CONTIG_9
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_9
+Detecting Pfam domains in "CONTIG_9" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m11s
+Added 99 Pfam domains (91 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_9
+Detected 1 BGCs using deepbgc model in CONTIG_9
+Classifying 1 BGCs using product_class model in CONTIG_9
+Classifying 1 BGCs using product_activity model in CONTIG_9
+Saving processed record CONTIG_9
+================================================================================
+Processing record #10: CONTIG_10
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_10
+Detecting Pfam domains in "CONTIG_10" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m11s
+Added 96 Pfam domains (80 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_10
+Detected 1 BGCs using deepbgc model in CONTIG_10
+Classifying 1 BGCs using product_class model in CONTIG_10
+Classifying 1 BGCs using product_activity model in CONTIG_10
+Saving processed record CONTIG_10
+================================================================================
+Processing record #11: CONTIG_11
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_11
+Detecting Pfam domains in "CONTIG_11" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m9s
+Added 82 Pfam domains (75 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_11
+Detected 4 BGCs using deepbgc model in CONTIG_11
+Classifying 4 BGCs using product_class model in CONTIG_11
+Classifying 4 BGCs using product_activity model in CONTIG_11
+Saving processed record CONTIG_11
+================================================================================
+Processing record #12: CONTIG_12
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_12
+Detecting Pfam domains in "CONTIG_12" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m9s
+Added 94 Pfam domains (81 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_12
+Detected 3 BGCs using deepbgc model in CONTIG_12
+Classifying 3 BGCs using product_class model in CONTIG_12
+Classifying 3 BGCs using product_activity model in CONTIG_12
+Saving processed record CONTIG_12
+================================================================================
+Processing record #13: CONTIG_13
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_13
+Detecting Pfam domains in "CONTIG_13" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m14s
+Added 108 Pfam domains (102 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_13
+Detected 4 BGCs using deepbgc model in CONTIG_13
+Classifying 4 BGCs using product_class model in CONTIG_13
+Classifying 4 BGCs using product_activity model in CONTIG_13
+Saving processed record CONTIG_13
+================================================================================
+Processing record #14: CONTIG_14
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_14
+Detecting Pfam domains in "CONTIG_14" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m13s
+Added 116 Pfam domains (107 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_14
+Detected 1 BGCs using deepbgc model in CONTIG_14
+Classifying 1 BGCs using product_class model in CONTIG_14
+Classifying 1 BGCs using product_activity model in CONTIG_14
+Saving processed record CONTIG_14
+================================================================================
+Processing record #15: CONTIG_15
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_15
+Detecting Pfam domains in "CONTIG_15" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m11s
+Added 90 Pfam domains (77 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_15
+Detected 2 BGCs using deepbgc model in CONTIG_15
+Classifying 2 BGCs using product_class model in CONTIG_15
+Classifying 2 BGCs using product_activity model in CONTIG_15
+Saving processed record CONTIG_15
+================================================================================
+Processing record #16: CONTIG_16
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_16
+Detecting Pfam domains in "CONTIG_16" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m10s
+Added 101 Pfam domains (82 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_16
+Detected 2 BGCs using deepbgc model in CONTIG_16
+Classifying 2 BGCs using product_class model in CONTIG_16
+Classifying 2 BGCs using product_activity model in CONTIG_16
+Saving processed record CONTIG_16
+================================================================================
+Processing record #17: CONTIG_17
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_17
+Detecting Pfam domains in "CONTIG_17" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m10s
+Added 119 Pfam domains (111 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_17
+Detected 3 BGCs using deepbgc model in CONTIG_17
+Classifying 3 BGCs using product_class model in CONTIG_17
+Classifying 3 BGCs using product_activity model in CONTIG_17
+Saving processed record CONTIG_17
+================================================================================
+Processing record #18: CONTIG_18
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_18
+Detecting Pfam domains in "CONTIG_18" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m11s
+Added 112 Pfam domains (93 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_18
+Detected 0 BGCs using deepbgc model in CONTIG_18
+Saving processed record CONTIG_18
+================================================================================
+Processing record #19: CONTIG_19
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_19
+Detecting Pfam domains in "CONTIG_19" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m12s
+Added 123 Pfam domains (108 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_19
+Detected 1 BGCs using deepbgc model in CONTIG_19
+Classifying 1 BGCs using product_class model in CONTIG_19
+Classifying 1 BGCs using product_activity model in CONTIG_19
+Saving processed record CONTIG_19
+================================================================================
+Processing record #20: CONTIG_20
+Updating record molecule type to DNA
+Finding genes in record: CONTIG_20
+Detecting Pfam domains in "CONTIG_20" using HMMER hmmscan, this might take a while...
+HMMER hmmscan Pfam detection done in 0h0m10s
+Added 97 Pfam domains (92 unique PFAM_IDs)
+Detecting BGCs using deepbgc model in CONTIG_20
+Detected 2 BGCs using deepbgc model in CONTIG_20
+Classifying 2 BGCs using product_class model in CONTIG_20
+Classifying 2 BGCs using product_activity model in CONTIG_20
+Saving processed record CONTIG_20
+================================================================================
+Detected 40 total BGCs using deepbgc model
+Number of BGCs with predicted product_class: 
+ no confident class: 25
+ Polyketide: 9
+ Terpene: 3
+ Saccharide: 2
+ RiPP: 1
+ NRP: 1
+Number of BGCs with predicted product_activity: 
+ antibacterial: 33
+ no confident class: 5
+ inhibitor: 1
+ cytotoxic: 1
+ antifungal: 1
+================================================================================
+Saved DeepBGC result to: assembly_20_mining/deepBGC/
