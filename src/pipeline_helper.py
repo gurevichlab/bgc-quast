@@ -1,3 +1,5 @@
+from typing import List, Optional
+from dataclasses import field
 from src.option_parser import (
     CommandLineArgs,
     get_command_line_args,
@@ -5,12 +7,14 @@ from src.option_parser import (
 )
 from src.logger import Logger
 from src.config import Config, load_config
-
+from src.genome_mining_parser import GenomeMiningResult, QuastResult, parse_input_files, parse_quast_output_dir
 
 class PipelineHelper:
     config: Config
     args: CommandLineArgs
     log: Logger
+    genome_mining_results: List[GenomeMiningResult] = field(default_factory=list)
+    quast_results: Optional[List[QuastResult]] = None
 
     def __init__(self, log: Logger):
         self.log = log
@@ -46,7 +50,17 @@ class PipelineHelper:
     def parse_input(self):
         # TODO: handle all kind of inputs:
         # E.g., genome mining results (antiSMASH vs GECCO vs deepBGC) vs QUAST results ve etc
-        pass
+        try:
+            self.genome_mining_results = parse_input_files(self.args.mining_results)
+        except Exception as e:
+            self.log.error(f"Failed to parse genome mining results: {str(e)}")
+            raise e
+        if self.args.quast_output_dir:
+            try:
+                self.quast_results = parse_quast_output_dir(self.args.quast_output_dir)
+            except Exception as e:
+                self.log.error(f"Failed to parse QUAST results: {str(e)}")
+                raise e
 
     def compute_stats(self):
         # TODO
