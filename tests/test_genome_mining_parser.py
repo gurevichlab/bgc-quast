@@ -14,7 +14,7 @@ from src.genome_mining_parser import (
 def test_parse_antismash_json_not_implemented():
     with pytest.raises(InvalidInputException) as exc_info:
         parse_antismash_json("dummy_path.json")
-    assert "Failed to parse Antismash format" in str(exc_info.value)
+    assert "Failed to parse antiSMASH format" in str(exc_info.value)
     assert "not implemented" in str(exc_info.value).lower()
 
 

@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from .genome_mining_result import GenomeMiningResult, Region, QuastResult
+from .genome_mining_result import GenomeMiningResult, Bgc, QuastResult
 
 
 class InvalidInputException(Exception):
@@ -9,16 +9,16 @@ class InvalidInputException(Exception):
     pass
 
 
-def parse_antismash_json(file_path: str) -> Dict[str, List[Region]]:
-    """Parse Antismash JSON format."""
+def parse_antismash_json(file_path: str) -> Dict[str, List[Bgc]]:
+    """Parse antiSMASH JSON format."""
     try:
-        # TODO: Implement Antismash JSON parsing
-        raise NotImplementedError("Antismash JSON parsing not implemented yet")
+        # TODO: Implement antiSMASH JSON parsing
+        raise NotImplementedError("antiSMASH JSON parsing not implemented yet")
     except Exception as e:
-        raise InvalidInputException(f"Failed to parse Antismash format: {str(e)}")
+        raise InvalidInputException(f"Failed to parse antiSMASH format: {str(e)}")
 
 
-def parse_gecco_tsv(file_path: str) -> Dict[str, List[Region]]:
+def parse_gecco_tsv(file_path: str) -> Dict[str, List[Bgc]]:
     """Parse GECCO TSV format."""
     try:
         # TODO: Implement GECCO TSV parsing
@@ -27,7 +27,7 @@ def parse_gecco_tsv(file_path: str) -> Dict[str, List[Region]]:
         raise InvalidInputException(f"Failed to parse GECCO TSV format: {str(e)}")
 
 
-def parse_deepbgc_tsv(file_path: str) -> Dict[str, List[Region]]:
+def parse_deepbgc_tsv(file_path: str) -> Dict[str, List[Bgc]]:
     """Parse deepBGC TSV format."""
     try:
         # TODO: Implement deepBGC TSV parsing
@@ -36,7 +36,7 @@ def parse_deepbgc_tsv(file_path: str) -> Dict[str, List[Region]]:
         raise InvalidInputException(f"Failed to parse deepBGC TSV format: {str(e)}")
 
 
-def parse_deepbgc_json(file_path: str) -> Dict[str, List[Region]]:
+def parse_deepbgc_json(file_path: str) -> Dict[str, List[Bgc]]:
     """Parse deepBGC JSON format."""
     try:
         # TODO: Implement deepBGC JSON parsing
@@ -67,8 +67,8 @@ def parse_input_files(file_paths: List[str]) -> List[GenomeMiningResult]:
     for file_path in file_paths:
         for parser in parsers:
             try:
-                regions = parser(file_path)
-                results.extend(GenomeMiningResult(file_path, parser.__name__, regions))
+                bgcs = parser(file_path)
+                results.extend(GenomeMiningResult(file_path, parser.__name__, bgcs))
                 break  # If parsing succeeded, move to next file
             except InvalidInputException:
                 continue  # Try next parser

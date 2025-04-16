@@ -4,20 +4,22 @@ from typing import Literal
 
 
 @dataclass
-class Region:
+class Bgc:
     """
-    Class for regions (BGCs).
+    Class for BGCs.
 
     Attributes:
-        contig_id (str): The region contig id.
-        start (int): The start position of the region.
-        end (int): The end position of the region.
-        is_complete (Literal["True", "False", "Unknown"]): Whether the region is complete (True, False, Unknown).
-        product_types (list): The product types of the region.
-        metadata (dict): The metadata of the region, e.g. tool-specific metadata.
+        bgc_id (str): The BGC id.
+        sequence_id (str): The BGC sequence id.
+        start (int): The start position of the BGC.
+        end (int): The end position of the BGC.
+        is_complete (Literal["True", "False", "Unknown"]): Whether the BGC is complete (True, False, Unknown).
+        product_types (list): The product types of the BGC.
+        metadata (dict): The metadata of the BGC, e.g. tool-specific metadata.
     """
 
-    contig_id: str
+    bgc_id: str
+    sequence_id: str
     start: int = 0
     end: int = 0
     is_complete: Literal["True", "False", "Unknown"] = "Unknown"
@@ -33,12 +35,12 @@ class GenomeMiningResult:
     Attributes:
         input_file (str): The input file name.
         mining_tool (str): The mining tool name.
-        regions (dict): The regions grouped by contig id.
+        bgcs (dict): The BGCs grouped by sequence id.
     """
 
     input_file: str
     mining_tool: str
-    regions: Dict[str, List[Region]] = field(default_factory=dict)
+    bgcs: Dict[str, List[Bgc]] = field(default_factory=dict)
 
 
 @dataclass
