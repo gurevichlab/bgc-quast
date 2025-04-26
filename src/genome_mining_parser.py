@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import List
 
 from .genome_mining_result import GenomeMiningResult, Bgc, QuastResult
 
@@ -9,7 +9,7 @@ class InvalidInputException(Exception):
     pass
 
 
-def parse_antismash_json(file_path: str) -> Dict[str, List[Bgc]]:
+def parse_antismash_json(file_path: str) -> List[Bgc]:
     """Parse antiSMASH JSON format."""
     try:
         # TODO: Implement antiSMASH JSON parsing
@@ -18,7 +18,7 @@ def parse_antismash_json(file_path: str) -> Dict[str, List[Bgc]]:
         raise InvalidInputException(f"Failed to parse antiSMASH format: {str(e)}")
 
 
-def parse_gecco_tsv(file_path: str) -> Dict[str, List[Bgc]]:
+def parse_gecco_tsv(file_path: str) -> List[Bgc]:
     """Parse GECCO TSV format."""
     try:
         # TODO: Implement GECCO TSV parsing
@@ -27,7 +27,7 @@ def parse_gecco_tsv(file_path: str) -> Dict[str, List[Bgc]]:
         raise InvalidInputException(f"Failed to parse GECCO TSV format: {str(e)}")
 
 
-def parse_deepbgc_tsv(file_path: str) -> Dict[str, List[Bgc]]:
+def parse_deepbgc_tsv(file_path: str) -> List[Bgc]:
     """Parse deepBGC TSV format."""
     try:
         # TODO: Implement deepBGC TSV parsing
@@ -36,7 +36,7 @@ def parse_deepbgc_tsv(file_path: str) -> Dict[str, List[Bgc]]:
         raise InvalidInputException(f"Failed to parse deepBGC TSV format: {str(e)}")
 
 
-def parse_deepbgc_json(file_path: str) -> Dict[str, List[Bgc]]:
+def parse_deepbgc_json(file_path: str) -> List[Bgc]:
     """Parse deepBGC JSON format."""
     try:
         # TODO: Implement deepBGC JSON parsing

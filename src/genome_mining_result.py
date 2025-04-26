@@ -35,12 +35,12 @@ class GenomeMiningResult:
     Attributes:
         input_file (str): The input file name.
         mining_tool (str): The mining tool name.
-        bgcs (dict): The BGCs grouped by sequence id.
+        bgcs (list): The BGCs.
     """
 
     input_file: str
     mining_tool: str
-    bgcs: Dict[str, List[Bgc]] = field(default_factory=dict)
+    bgcs: List[Bgc] = field(default_factory=list)
 
 
 @dataclass
