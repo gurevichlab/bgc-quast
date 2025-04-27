@@ -86,14 +86,17 @@ def test_parse_input_files_invalid_file():
         exc_info.value
     )
 
+
 def test_parse_input_files_valid_file():
     """Test parsing a valid input file."""
     # Assuming the test data directory contains a valid antiSMASH JSON file
-    valid_file = os.path.join(TEST_DATA_DIR, "assembly_10_mining", "antiSMASH", "assembly_10.json.gz")
-    
+    valid_file = os.path.join(
+        TEST_DATA_DIR, "assembly_10_mining", "antiSMASH", "assembly_10.json.gz"
+    )
+
     # Parse the input files
     results = parse_input_files([valid_file])
-    
+
     # Verify we got some results
     assert len(results) == 1
     assert results[0].input_file == valid_file
