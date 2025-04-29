@@ -33,7 +33,7 @@ def test_parse_antismash_json_gzipped():
     assert bgc.start == 0
     assert bgc.end == 39844
     assert bgc.product_types == ["hglE-KS"]
-    assert bgc.is_complete == "False"
+    assert bgc.is_complete == "Unknown"
 
 
 def test_parse_antismash_json_invalid_format():

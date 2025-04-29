@@ -36,13 +36,9 @@ def parse_antismash_json(file_path: str) -> List[Bgc]:
                     bgc_id = (
                         sequence_id + "." + qualifiers.get("region_number", ["1"])[0]
                     )
-                    contig_edge = qualifiers.get("contig_edge", ["Unknown"])[0]
-                    if contig_edge == "False":
-                        is_complete = "True"
-                    elif contig_edge == "True":
-                        is_complete = "False"
-                    else:
-                        is_complete = "Unknown"
+                    # TODO: https://github.com/gurevichlab/bgc-quast/issues/9 - 
+                    # Implement a way to determine if the BGC is complete using contig length.
+                    is_complete = "Unknown"
                     bgc = Bgc(
                         bgc_id=bgc_id,
                         sequence_id=sequence_id,
