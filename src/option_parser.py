@@ -43,10 +43,19 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
 def add_advanced_arguments(parser: argparse.ArgumentParser):
     advanced_input_group = parser.add_argument_group('Advanced input', 'TBA')
     advanced_input_group.add_argument(
-        '--quast-output-dir',
+        '--quast-output-dir', '-q',
         help="QUAST output in the reference-based evaluation mode; if specified, it is expected that the "
              "genome mining results are provided for both the reference and the assembly",
         metavar='DIR',
+        action='store',
+        type=Path
+    )
+
+    advanced_input_group.add_argument(
+        '--reference-mining-result', '-r',
+        help="Path to the reference genome mining result (antiSMASH, GECCO, or deepBGC); "
+             "required if --quast-output-dir is specified",
+        metavar='REFERENCE_GENOME_MINING_RESULT',
         action='store',
         type=Path
     )
