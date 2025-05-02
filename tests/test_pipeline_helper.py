@@ -30,7 +30,7 @@ def pipeline_helper(logger, tmp_path):
             mining_results=[ANTISMASH_FILE],
             quast_output_dir=None,
             reference_mining_result=None,
-            output_dir=str(tmp_path),
+            output_dir=tmp_path,
         )
         with patch("src.pipeline_helper.load_config") as mock_config:
             mock_config.return_value = MagicMock(
@@ -97,7 +97,7 @@ def test_parse_input_invalid(pipeline_helper):
 def test_parse_input_missing_reference(pipeline_helper):
     """Test error when QUAST results are provided without a reference genome."""
     pipeline_helper.args.reference_mining_result = None
-    pipeline_helper.args.quast_output_dir = str(QUAST_OUTPUT_DIR)
+    pipeline_helper.args.quast_output_dir = QUAST_OUTPUT_DIR
 
     with patch("src.pipeline_helper.parse_quast_output_dir") as mock_parse:
         mock_parse.return_value = MagicMock(spec=QuastResult)
@@ -106,8 +106,22 @@ def test_parse_input_missing_reference(pipeline_helper):
         ):
             pipeline_helper.parse_input()
         pipeline_helper.log.error.assert_called_with(
-            "Reference genome mining result is required when QUAST output directory is specified."
+            "Reference genome mining result is required when QUAST "
+            "output directory is specified."
         )
+
+
+def test_parse_input_missing_quast(pipeline_helper):
+    """Test error when reference genome is provided without QUAST results."""
+    pipeline_helper.args.reference_mining_result = ANTISMASH_FILE
+    pipeline_helper.args.quast_output_dir = None
+
+    with pytest.raises(ValidationError, match="QUAST output directory is required"):
+        pipeline_helper.parse_input()
+    pipeline_helper.log.error.assert_called_with(
+        "QUAST output directory is required when Reference genome mining "
+        "result is specified."
+    )
 
 
 def test_compute_stats_placeholder(pipeline_helper):

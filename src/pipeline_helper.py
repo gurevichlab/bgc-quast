@@ -39,7 +39,9 @@ class PipelineHelper:
         try:
             self.args = get_command_line_args(default_cfg)
         except ValidationError as e:
-            self.log.error(f"Command-line argument validation failed: {str(e)}", to_stderr=True)
+            self.log.error(
+                f"Command-line argument validation failed: {str(e)}", to_stderr=True
+            )
             raise e
 
         try:
@@ -92,7 +94,7 @@ class PipelineHelper:
         if self.args.reference_mining_result:
             try:
                 self.reference_mining_result = parse_input_files(
-                    self.args.reference_mining_result
+                    [self.args.reference_mining_result]
                 )
             except Exception as e:
                 self.log.error(
@@ -101,9 +103,11 @@ class PipelineHelper:
                 raise e
 
         if self.args.quast_output_dir and not self.reference_mining_result:
-            error_message = (
-                "Reference genome mining result is required when QUAST output directory is specified."
-            )
+            error_message = "Reference genome mining result is required when QUAST output directory is specified."
+            self.log.error(error_message)
+            raise ValidationError(error_message)
+        if not self.args.quast_output_dir and self.reference_mining_result:
+            error_message = "QUAST output directory is required when Reference genome mining result is specified."
             self.log.error(error_message)
             raise ValidationError(error_message)
 
