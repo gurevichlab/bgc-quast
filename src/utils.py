@@ -1,9 +1,10 @@
 import gzip
 import json
+from pathlib import Path
 from typing import Dict, TextIO, Union
 
 
-def open_file(file_path: str) -> Union[TextIO, gzip.GzipFile]:
+def open_file(file_path: Path) -> Union[TextIO, gzip.GzipFile]:
     """
     Open a file, automatically handling gzip compression if needed.
 
@@ -13,18 +14,18 @@ def open_file(file_path: str) -> Union[TextIO, gzip.GzipFile]:
     Returns:
         File object that can be read
     """
-    if file_path.endswith(".gz"):
+    if file_path.suffix == ".gz":
         return gzip.open(file_path, "rt")
     return open(file_path, "r")
 
 
-def get_json_from_file(filename: str) -> Dict:
+def get_json_from_file(filename: Path) -> Dict:
     """
     Read a JSON file and return the data as a dictionary.
     Supports gzip-compressed files.
 
     Args:
-        filename (str): The path to the JSON file.
+        filename (Path): The path to the JSON file.
 
     Returns:
         Dict: The data from the JSON file.

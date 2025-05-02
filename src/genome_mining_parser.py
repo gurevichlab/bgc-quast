@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 from typing import List
 
 from . import utils
@@ -11,7 +12,7 @@ class InvalidInputException(Exception):
     pass
 
 
-def parse_antismash_json(file_path: str) -> List[Bgc]:
+def parse_antismash_json(file_path: Path) -> List[Bgc]:
     """Parse antiSMASH JSON format."""
     try:
         json_data = utils.get_json_from_file(file_path)
@@ -54,7 +55,7 @@ def parse_antismash_json(file_path: str) -> List[Bgc]:
         raise InvalidInputException(f"Failed to parse antiSMASH format: {str(e)}")
 
 
-def parse_gecco_tsv(file_path: str) -> List[Bgc]:
+def parse_gecco_tsv(file_path: Path) -> List[Bgc]:
     """Parse GECCO TSV format."""
     try:
         # TODO: Implement GECCO TSV parsing
@@ -63,7 +64,7 @@ def parse_gecco_tsv(file_path: str) -> List[Bgc]:
         raise InvalidInputException(f"Failed to parse GECCO TSV format: {str(e)}")
 
 
-def parse_deepbgc_tsv(file_path: str) -> List[Bgc]:
+def parse_deepbgc_tsv(file_path: Path) -> List[Bgc]:
     """Parse deepBGC TSV format."""
     try:
         # TODO: Implement deepBGC TSV parsing
@@ -72,7 +73,7 @@ def parse_deepbgc_tsv(file_path: str) -> List[Bgc]:
         raise InvalidInputException(f"Failed to parse deepBGC TSV format: {str(e)}")
 
 
-def parse_deepbgc_json(file_path: str) -> List[Bgc]:
+def parse_deepbgc_json(file_path: Path) -> List[Bgc]:
     """Parse deepBGC JSON format."""
     try:
         # TODO: Implement deepBGC JSON parsing
@@ -118,7 +119,7 @@ def parse_input_files(file_paths: List[str]) -> List[GenomeMiningResult]:
     return results
 
 
-def parse_quast_output_dir(quast_output_dir: str) -> List[QuastResult]:
+def parse_quast_output_dir(quast_output_dir: Path) -> List[QuastResult]:
     """Parse QUAST output directory."""
     try:
         # TODO: Implement QUAST output directory parsing
