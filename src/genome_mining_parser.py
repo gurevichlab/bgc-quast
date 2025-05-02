@@ -82,7 +82,7 @@ def parse_deepbgc_json(file_path: Path) -> List[Bgc]:
         raise InvalidInputException(f"Failed to parse deepBGC JSON format: {str(e)}")
 
 
-def parse_input_files(file_paths: List[str]) -> List[GenomeMiningResult]:
+def parse_input_files(file_paths: List[Path]) -> List[GenomeMiningResult]:
     """
     Parse input files by trying different parsers.
 
