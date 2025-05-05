@@ -78,8 +78,18 @@ class PipelineHelper:
         Raises:
             ValidationError: If required inputs are missing or invalid.
         """
+        # TODO: move this part into the option_parser? There is a so-far-empty function for validating input correctness
+        if self.args.quast_output_dir and not self.args.reference_mining_result:
+            error_message = "Reference genome mining result is required when QUAST output directory is specified."
+            self.log.error(error_message)
+            raise ValidationError(error_message)
+        if not self.args.quast_output_dir and self.args.reference_mining_result:
+            error_message = "QUAST output directory is required when Reference genome mining result is specified."
+            self.log.error(error_message)
+            raise ValidationError(error_message)
+
         try:
-            self.genome_mining_results = parse_input_files(self.args.mining_results)
+            self.genome_mining_results = parse_input_files(self.config, self.args.mining_results)
         except Exception as e:
             self.log.error(f"Failed to parse genome mining results: {str(e)}")
             raise e
@@ -93,7 +103,7 @@ class PipelineHelper:
 
         if self.args.reference_mining_result:
             try:
-                self.reference_mining_result = parse_input_files(
+                self.reference_mining_result = parse_input_files(self.config,
                     [self.args.reference_mining_result]
                 )
             except Exception as e:
@@ -102,14 +112,6 @@ class PipelineHelper:
                 )
                 raise e
 
-        if self.args.quast_output_dir and not self.reference_mining_result:
-            error_message = "Reference genome mining result is required when QUAST output directory is specified."
-            self.log.error(error_message)
-            raise ValidationError(error_message)
-        if not self.args.quast_output_dir and self.reference_mining_result:
-            error_message = "QUAST output directory is required when Reference genome mining result is specified."
-            self.log.error(error_message)
-            raise ValidationError(error_message)
 
     def compute_stats(self) -> None:
         """
