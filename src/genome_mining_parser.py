@@ -221,12 +221,8 @@ def parse_deepbgc_json(config: Config, file_path: Path) -> List[Bgc]:
             # Each subregion is a BGC
             subregions = record.get('subregions', [])
             for idx, subregion in enumerate(subregions, start=1):
-                try:
-                    start = subregion.get('start')
-                    end = subregion.get('end')
-                except Exception:
-                    print(f"Warning: Invalid location in sequence {sequence_id}. Skipping.")
-                    continue
+                start = subregion.get('start')
+                end = subregion.get('end')
 
                 # Get a list of products and classes
                 product_class_raw = subregion.get('details', {}).get('product_class', 'Unknown')
