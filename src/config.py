@@ -3,8 +3,8 @@ import yaml
 from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
-from typing import Optional
-from src.option_parser import CommandLineArgs
+from typing import Optional, Dict
+from argparse import Namespace as CommandLineArgs
 
 
 @dataclass
@@ -23,10 +23,16 @@ class OutputConfig:
 
 
 @dataclass
+class ProductMappingConfig:
+    product_yamls: Dict[str, Path]
+
+
+@dataclass
 class Config:
     magic_number: int  # just a placeholder for future expansion of the config
     magic_str: str     # just a placeholder for future expansion of the config
     output_config: OutputConfig
+    product_mapping_config: ProductMappingConfig
 
 
 def get_default_output_dir(cfg: dict) -> Path:
@@ -43,5 +49,10 @@ def load_config(args: Optional[CommandLineArgs] = None) -> Config:
     cfg = yaml.safe_load((configs_dir / 'config.yaml').open('r'))
     out_dir = args.output_dir.resolve() \
         if args is not None and args.output_dir is not None else get_default_output_dir(cfg)
+    product_mapping_config = ProductMappingConfig(
+        product_yamls={k: configs_dir / Path(v) for k, v in cfg['product_yamls'].items()}
+    )
 
-    return Config(magic_number=42, magic_str='', output_config=OutputConfig(out_dir))
+    return Config(magic_number=42, magic_str='',
+                  output_config=OutputConfig(out_dir),
+                  product_mapping_config=product_mapping_config)

@@ -1,19 +1,13 @@
 import re
-
 from pathlib import Path
+import pandas as pd
+from collections import defaultdict
 from typing import List
 
 from . import utils
 from .genome_mining_result import Bgc, GenomeMiningResult, QuastResult
-import pandas as pd
-from collections import defaultdict
-
-from typing import Dict, List, Literal
-
-from genome_mining_result import GenomeMiningResult, Bgc, QuastResult
-
-from utils import *
-#load_reverse_mapping, map_products, load_config, get_contig_lengths
+from .utils import load_reverse_mapping, map_products
+from .config import Config
 
 
 class InvalidInputException(Exception):
@@ -22,12 +16,9 @@ class InvalidInputException(Exception):
     pass
 
 
-def parse_antismash_json(file_path: Path) -> List[Bgc]:
+def parse_antismash_json(config: Config, file_path: Path) -> List[Bgc]:
     """Parse antiSMASH JSON format."""
-    # stuff for proper product name mapping (TODO: fixme!)
-    config = load_config("config/config.yaml")
-    yaml_antismash = config["product_yamls"]["antismash_product_mapping"]
-    product_to_class = load_reverse_mapping(yaml_antismash)
+    product_to_class = load_reverse_mapping(config.product_mapping_config.product_yamls["antismash_product_mapping"])
 
     try:
         json_data = utils.get_json_from_file(file_path)
@@ -77,12 +68,9 @@ def parse_antismash_json(file_path: Path) -> List[Bgc]:
         raise InvalidInputException(f"Failed to parse antiSMASH format: {str(e)}")
 
 
-def parse_gecco_tsv(file_path: Path) -> List[Bgc]:
+def parse_gecco_tsv(config: Config, file_path: Path) -> List[Bgc]:
     """Parse GECCO TSV format."""
-    # stuff for proper product name mapping (TODO: fixme!)
-    config = load_config("config/config.yaml")
-    yaml_gecco = config["product_yamls"]["gecco_product_mapping"]
-    product_to_class = load_reverse_mapping(yaml_gecco)
+    product_to_class = load_reverse_mapping(config.product_mapping_config.product_yamls["gecco_product_mapping"])
 
     try:
         df = pd.read_csv(file_path, sep='\t')
@@ -146,12 +134,9 @@ def parse_gecco_tsv(file_path: Path) -> List[Bgc]:
         raise InvalidInputException(f"Failed to parse GECCO TSV format: {str(e)}")
 
 
-def parse_deepbgc_tsv(file_path: Path) -> List[Bgc]:
+def parse_deepbgc_tsv(config: Config, file_path: Path) -> List[Bgc]:
     """Parse deepBGC TSV format."""
-    # stuff for proper product name mapping (TODO: fixme!)
-    config = load_config("config/config.yaml")
-    yaml_deepbgc = config["product_yamls"]["deepbgc_product_mapping"]
-    product_to_class = load_reverse_mapping(yaml_deepbgc)
+    product_to_class = load_reverse_mapping(config.product_mapping_config.product_yamls["deepbgc_product_mapping"])
     try:
         df = pd.read_csv(file_path, sep='\t')
         # Check if this is a deepBGC TSV output
@@ -220,12 +205,9 @@ def parse_deepbgc_tsv(file_path: Path) -> List[Bgc]:
         raise InvalidInputException(f"Failed to parse deepBGC TSV format: {str(e)}")
 
 
-def parse_deepbgc_json(file_path: Path) -> List[Bgc]:
-    """Parse deepBGC JSON format."""
-    # stuff for proper product name mapping (TODO: fixme!)
-    config = load_config("config/config.yaml")
-    yaml_deepbgc = config["product_yamls"]["deepbgc_product_mapping"]
-    product_to_class = load_reverse_mapping(yaml_deepbgc)
+def parse_deepbgc_json(config: Config, file_path: Path) -> List[Bgc]:
+    """Parse deepBGC TSV format."""
+    product_to_class = load_reverse_mapping(config.product_mapping_config.product_yamls["deepbgc_product_mapping"])
 
     try:
         data = utils.get_json_from_file(file_path)
@@ -275,11 +257,13 @@ def parse_deepbgc_json(file_path: Path) -> List[Bgc]:
     except Exception as e:
         raise InvalidInputException(f"Failed to parse deepBGC format: {str(e)}")
 
-def parse_input_files(file_paths: List[Path]) -> List[GenomeMiningResult]:
+
+def parse_input_files(config: Config, file_paths: List[Path]) -> List[GenomeMiningResult]:
     """
     Parse input files by trying different parsers.
 
     Args:
+        config: Config
         file_paths: List of input file paths
 
     Returns:
@@ -297,7 +281,7 @@ def parse_input_files(file_paths: List[Path]) -> List[GenomeMiningResult]:
     for file_path in file_paths:
         for parser, tool_name in parsers.items():
             try:
-                bgcs = parser(file_path)
+                bgcs = parser(config, file_path)
                 results.append(GenomeMiningResult(file_path, tool_name, bgcs))
                 break  # If parsing succeeded, move to next file
             except InvalidInputException:

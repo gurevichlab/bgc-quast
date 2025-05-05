@@ -11,17 +11,27 @@ from src.genome_mining_parser import (
     parse_input_files,
     parse_quast_output_dir,
 )
+from src.config import load_config
 
 # Get the test data directory path - one level up from tests directory
 TEST_DATA_DIR = Path(__file__).resolve().parent.parent / "test_data"
 ANTISMASH_FILE = (
     TEST_DATA_DIR / "assembly_10_mining" / "antiSMASH" / "assembly_10.json.gz"
 )
+GECCO_FILE = (
+    TEST_DATA_DIR / "assembly_10_mining" / "GECCO" / "assembly_10.fasta.clusters.tsv"
+)
+DEEPBGC_TSV_FILE = (
+    TEST_DATA_DIR / "assembly_10_mining" / "deepBGC" / "deepBGC.bgc.tsv"
+)
+DEEPBGC_JSON_FILE = (
+    TEST_DATA_DIR / "assembly_10_mining" / "deepBGC" / "deepBGC.antismash.json"
+)
 
 
 def test_parse_antismash_json_gzipped():
     """Test parsing a gzipped antiSMASH JSON file."""
-    bgcs = parse_antismash_json(ANTISMASH_FILE)
+    bgcs = parse_antismash_json(load_config(), ANTISMASH_FILE)
 
     # Verify we got some BGCs
     assert len(bgcs) == 6
@@ -33,7 +43,7 @@ def test_parse_antismash_json_gzipped():
     assert bgc.sequence_id == "CONTIG_2"
     assert bgc.start == 0
     assert bgc.end == 39844
-    assert bgc.product_types == ["hglE-KS"]
+    assert bgc.product_types == ["PKS"]
     assert bgc.is_complete == "Unknown"
 
 
@@ -44,7 +54,7 @@ def test_parse_antismash_json_invalid_format():
         f.write("invalid json content")
 
     with pytest.raises(InvalidInputException) as exc_info:
-        parse_antismash_json(invalid_file)
+        parse_antismash_json(load_config(), invalid_file)
     assert "Failed to parse antiSMASH format" in str(exc_info.value)
 
     # Clean up
@@ -52,25 +62,58 @@ def test_parse_antismash_json_invalid_format():
         os.remove(invalid_file)
 
 
-def test_parse_gecco_tsv_not_implemented():
-    with pytest.raises(InvalidInputException) as exc_info:
-        parse_gecco_tsv("dummy_path.tsv")
-    assert "Failed to parse GECCO TSV format" in str(exc_info.value)
-    assert "not implemented" in str(exc_info.value).lower()
+def test_parse_gecco_tsv():
+    """Test parsing a GECCO TSV file."""
+    bgcs = parse_gecco_tsv(load_config(), GECCO_FILE)
+
+    # Verify we got some BGCs
+    assert len(bgcs) == 6
+
+    # Test the first BGC
+    bgc = bgcs[0]
+
+    assert bgc.bgc_id == "CONTIG_1_1"
+    assert bgc.sequence_id == "CONTIG_1"
+    assert bgc.start == 1144
+    assert bgc.end == 42174
+    assert bgc.product_types == ["Unknown"]
+    assert bgc.is_complete == "Unknown"
 
 
-def test_parse_deepbgc_tsv_not_implemented():
-    with pytest.raises(InvalidInputException) as exc_info:
-        parse_deepbgc_tsv("dummy_path.tsv")
-    assert "Failed to parse deepBGC TSV format" in str(exc_info.value)
-    assert "not implemented" in str(exc_info.value).lower()
+def test_parse_deepbgc_tsv():
+    """Test parsing a deepBGC TSV file."""
+    bgcs = parse_deepbgc_tsv(load_config(), DEEPBGC_TSV_FILE)
+
+    # Verify we got some BGCs
+    assert len(bgcs) == 40
+
+    # Test the first BGC
+    bgc = bgcs[0]
+
+    assert bgc.bgc_id == "CONTIG_1_1"
+    assert bgc.sequence_id == "CONTIG_1"
+    assert bgc.start == 1143
+    assert bgc.end == 9307
+    assert bgc.product_types == ["Unknown"]
+    assert bgc.is_complete == "Unknown"
 
 
-def test_parse_deepbgc_json_not_implemented():
-    with pytest.raises(InvalidInputException) as exc_info:
-        parse_deepbgc_json("dummy_path.json")
-    assert "Failed to parse deepBGC JSON format" in str(exc_info.value)
-    assert "not implemented" in str(exc_info.value).lower()
+def test_parse_deepbgc_json():
+    """Test parsing a deepBGC JSON file."""
+    bgcs = parse_deepbgc_json(load_config(), DEEPBGC_JSON_FILE)
+
+    # Verify we got some BGCs
+    assert len(bgcs) == 40
+
+    # Test the first BGC
+    bgc = bgcs[0]
+
+    assert bgc.bgc_id == "CONTIG_1_1"
+    assert bgc.sequence_id == "CONTIG_1"
+    assert bgc.start == 1143
+    assert bgc.end == 9307
+    assert bgc.product_types == ["Unknown"]
+    assert bgc.is_complete == "Unknown"
 
 
 def test_parse_quast_output_dir_not_implemented():
@@ -82,7 +125,7 @@ def test_parse_quast_output_dir_not_implemented():
 
 def test_parse_input_files_invalid_file():
     with pytest.raises(InvalidInputException) as exc_info:
-        parse_input_files(["dummy_path.json"])
+        parse_input_files(load_config(), ["dummy_path.json"])
     assert "Could not parse file dummy_path.json with any available parser" in str(
         exc_info.value
     )
@@ -93,7 +136,7 @@ def test_parse_input_files_valid_file():
     # Assuming the test data directory contains a valid antiSMASH JSON file
 
     # Parse the input files
-    results = parse_input_files([ANTISMASH_FILE])
+    results = parse_input_files(load_config(), [ANTISMASH_FILE])
 
     # Verify we got some results
     assert len(results) == 1

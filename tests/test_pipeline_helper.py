@@ -6,6 +6,7 @@ from src.genome_mining_parser import GenomeMiningResult, QuastResult
 from src.logger import Logger
 from src.option_parser import ValidationError
 from src.pipeline_helper import PipelineHelper
+from src.config import load_config
 
 # Test data paths
 TEST_DATA_DIR = Path(__file__).resolve().parent.parent / "test_data"
@@ -79,7 +80,7 @@ def test_parse_input_valid(pipeline_helper):
         pipeline_helper.parse_input()
 
         assert len(pipeline_helper.genome_mining_results) == 1
-        mock_parse.assert_called_with([ANTISMASH_FILE])
+        mock_parse.assert_called_with(pipeline_helper.config, [ANTISMASH_FILE])
 
 
 def test_parse_input_invalid(pipeline_helper):

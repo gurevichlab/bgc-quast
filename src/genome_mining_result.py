@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 from typing import Literal
+from pathlib import Path
 
 
 @dataclass
@@ -33,12 +34,12 @@ class GenomeMiningResult:
     Class for genome mining results. Contains information about the input file, mining tool, and regions.
 
     Attributes:
-        input_file (str): The input file name.
+        input_file (Path): The input file name.
         mining_tool (str): The mining tool name.
         bgcs (list): The BGCs.
     """
 
-    input_file: str
+    input_file: Path
     mining_tool: str
     bgcs: List[Bgc] = field(default_factory=list)
 

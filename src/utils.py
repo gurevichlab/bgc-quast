@@ -37,10 +37,13 @@ def get_json_from_file(filename: Path) -> Dict:
 
 
 # ---- Functions to map BGC product to BGC class ----
-def load_reverse_mapping(yaml_path: str) -> Dict[str, str]:
+def load_reverse_mapping(yaml_path: Path) -> Dict[str, str]:
     """Load mapping YAML and return product-to-class dictionary."""
     with open(yaml_path, "r") as f:
         mapping = yaml.safe_load(f)
+
+    if mapping is None:
+        return {}
 
     # Reverse mapping
     product_to_class = {}
