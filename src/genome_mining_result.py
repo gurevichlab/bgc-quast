@@ -1,7 +1,7 @@
+from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
-from typing import Literal
 from pathlib import Path
+from typing import Dict, List, Literal, Optional
 
 
 @dataclass
@@ -45,9 +45,45 @@ class GenomeMiningResult:
 
 
 @dataclass
+class AlignmentInfo:
+    """
+    Class for alignment information between assembly and reference sequences.
+
+    Attributes:
+        assembly_seq_id (str): Assembly sequence ID
+        ref_seq_id (str): Reference sequence ID
+        ref_start (int): Start position in reference
+        ref_end (int): End position in reference
+        assembly_start (int): Start position in assembly
+        assembly_end (int): End position in assembly
+        len_diff (int): Length difference between aligned regions
+    """
+
+    assembly_seq_id: str
+    ref_seq_id: str
+    ref_start: int
+    ref_end: int
+    assembly_start: int
+    assembly_end: int
+    len_diff: int
+
+
+@dataclass
 class QuastResult:
     """
     Class for QUAST results.
+    Attributes:
+        input_dir (Path): The input directory.
+        input_file_name (str): The input file name.
+        assembly_sequences (dict): A dictionary of alignment info for each assembly sequence.
+        reference_sequences (dict): A dictionary of alignment info for each reference sequence.
     """
 
-    input_file: str
+    input_dir: Path
+    input_file_name: str
+    assembly_sequences: Dict[str, List[AlignmentInfo]] = field(
+        default_factory=lambda: defaultdict(list)
+    )
+    reference_sequences: Dict[str, List[AlignmentInfo]] = field(
+        default_factory=lambda: defaultdict(list)
+    )

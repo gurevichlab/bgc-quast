@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 import pytest
+from src.config import load_config
 from src.genome_mining_parser import (
     InvalidInputException,
     parse_antismash_json,
@@ -11,7 +12,7 @@ from src.genome_mining_parser import (
     parse_input_files,
     parse_quast_output_dir,
 )
-from src.config import load_config
+from src.genome_mining_result import AlignmentInfo
 
 # Get the test data directory path - one level up from tests directory
 TEST_DATA_DIR = Path(__file__).resolve().parent.parent / "test_data"
@@ -21,12 +22,11 @@ ANTISMASH_FILE = (
 GECCO_FILE = (
     TEST_DATA_DIR / "assembly_10_mining" / "GECCO" / "assembly_10.fasta.clusters.tsv"
 )
-DEEPBGC_TSV_FILE = (
-    TEST_DATA_DIR / "assembly_10_mining" / "deepBGC" / "deepBGC.bgc.tsv"
-)
+DEEPBGC_TSV_FILE = TEST_DATA_DIR / "assembly_10_mining" / "deepBGC" / "deepBGC.bgc.tsv"
 DEEPBGC_JSON_FILE = (
     TEST_DATA_DIR / "assembly_10_mining" / "deepBGC" / "deepBGC.antismash.json"
 )
+QUAST_DIR = TEST_DATA_DIR / "quast_out"
 
 
 def test_parse_antismash_json_gzipped():
@@ -116,11 +116,40 @@ def test_parse_deepbgc_json():
     assert bgc.is_complete == "Unknown"
 
 
-def test_parse_quast_output_dir_not_implemented():
+def test_parse_quast_output_dir_valid_file():
+    """Test parsing a valid QUAST output directory."""
+    quast_results = parse_quast_output_dir(QUAST_DIR)
+
+    # Verify we got some results
+    assert len(quast_results) == 2
+
+    # Test the first result
+    quast_result = quast_results[0]
+    if quast_result.input_file_name != "assembly_10.coords":
+        quast_result = quast_results[1]
+
+    assert quast_result.input_dir == QUAST_DIR
+    assert quast_result.input_file_name == "assembly_10.coords"
+    assert len(quast_result.assembly_sequences) == 10
+    assert len(quast_result.reference_sequences) == 1
+    assert quast_result.assembly_sequences["CONTIG_2"] == [
+        AlignmentInfo(
+            assembly_seq_id="CONTIG_2",
+            ref_seq_id="NC_003888.3",
+            ref_start=99811,
+            ref_end=199986,
+            assembly_start=1,
+            assembly_end=100176,
+            len_diff=0,
+        )
+    ]
+
+
+def test_parse_quast_output_dir_invalid_file():
     with pytest.raises(InvalidInputException) as exc_info:
-        parse_quast_output_dir("dummy_dir")
+        parse_quast_output_dir(Path("dummy_dir"))
     assert "Failed to parse QUAST output directory" in str(exc_info.value)
-    assert "not implemented" in str(exc_info.value).lower()
+    assert "QUAST output directory does not exist" in str(exc_info.value)
 
 
 def test_parse_input_files_invalid_file():
