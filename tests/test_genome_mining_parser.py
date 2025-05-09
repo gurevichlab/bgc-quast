@@ -125,11 +125,11 @@ def test_parse_quast_output_dir_valid_file():
 
     # Test the first result
     quast_result = quast_results[0]
-    if quast_result.input_file_name != "assembly_10.coords":
+    if quast_result.input_file_label != "assembly_10":
         quast_result = quast_results[1]
 
     assert quast_result.input_dir == QUAST_DIR
-    assert quast_result.input_file_name == "assembly_10.coords"
+    assert quast_result.input_file_label == "assembly_10"
     assert len(quast_result.assembly_sequences) == 10
     assert len(quast_result.reference_sequences) == 1
     assert quast_result.assembly_sequences["CONTIG_2"] == [
@@ -170,5 +170,6 @@ def test_parse_input_files_valid_file():
     # Verify we got some results
     assert len(results) == 1
     assert results[0].input_file == ANTISMASH_FILE
+    assert results[0].input_file_label == "assembly_10"
     assert results[0].mining_tool == "antiSMASH"
     assert len(results[0].bgcs) == 6

@@ -35,11 +35,13 @@ class GenomeMiningResult:
 
     Attributes:
         input_file (Path): The input file name.
+        input_file_label (str): The input file label.
         mining_tool (str): The mining tool name.
         bgcs (list): The BGCs.
     """
 
     input_file: Path
+    input_file_label: str
     mining_tool: str
     bgcs: List[Bgc] = field(default_factory=list)
 
@@ -74,13 +76,13 @@ class QuastResult:
     Class for QUAST results.
     Attributes:
         input_dir (Path): The input directory.
-        input_file_name (str): The input file name.
+        input_file_label (str): The input file label.
         assembly_sequences (dict): A dictionary of alignment info for each assembly sequence.
         reference_sequences (dict): A dictionary of alignment info for each reference sequence.
     """
 
     input_dir: Path
-    input_file_name: str
+    input_file_label: str
     assembly_sequences: Dict[str, List[AlignmentInfo]] = field(
         default_factory=lambda: defaultdict(list)
     )
