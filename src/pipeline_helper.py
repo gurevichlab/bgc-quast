@@ -1,6 +1,6 @@
 from typing import List, Optional
-from src.option_parser import get_command_line_args, ValidationError
-from src.logger import Logger
+
+import src.utils as utils
 from src.config import load_config
 from src.genome_mining_parser import (
     GenomeMiningResult,
@@ -8,6 +8,9 @@ from src.genome_mining_parser import (
     parse_input_files,
     parse_quast_output_dir,
 )
+from src.logger import Logger
+from src.option_parser import ValidationError, get_command_line_args
+from src.report import RunningMode
 
 
 class PipelineHelper:
@@ -19,8 +22,12 @@ class PipelineHelper:
         args: Command-line arguments parsed into an object.
         log: Logger instance for logging operations.
         genome_mining_results: List of parsed genome mining results.
-        reference_genome_mining_result: Parsed reference genome mining result.
+        reference_mining_result: Parsed reference genome mining result.
         quast_results: List of parsed QUAST results.
+
+        running_mode: Running mode of the pipeline (e.g., COMPARE_TO_REFERENCE,
+        COMPARE_TOOLS, COMPARE_SAMPLES).
+        analysis_report: Report with analysis results.
     """
 
     def __init__(self, log: Logger):
@@ -40,7 +47,8 @@ class PipelineHelper:
             self.args = get_command_line_args(default_cfg)
         except ValidationError as e:
             self.log.error(
-                f"Command-line argument validation failed: {str(e)}", to_stderr=True
+                f"Command-line argument validation failed: {str(e)}",
+                to_stderr=True,
             )
             raise e
 
@@ -89,7 +97,9 @@ class PipelineHelper:
             raise ValidationError(error_message)
 
         try:
-            self.genome_mining_results = parse_input_files(self.config, self.args.mining_results)
+            self.genome_mining_results = parse_input_files(
+                self.config, self.args.mining_results
+            )
         except Exception as e:
             self.log.error(f"Failed to parse genome mining results: {str(e)}")
             raise e
@@ -103,8 +113,8 @@ class PipelineHelper:
 
         if self.args.reference_mining_result:
             try:
-                self.reference_mining_result = parse_input_files(self.config,
-                    [self.args.reference_mining_result]
+                self.reference_mining_result = parse_input_files(
+                    self.config, [self.args.reference_mining_result]
                 )
             except Exception as e:
                 self.log.error(
@@ -112,6 +122,19 @@ class PipelineHelper:
                 )
                 raise e
 
+        # Set running mode based on the provided arguments.
+        self.running_mode = utils.determine_running_mode(
+            self.reference_mining_result, self.genome_mining_results
+        )
+        if self.running_mode == RunningMode.UNKNOWN:
+            error_message = (
+                "Running mode could not be determined. "
+                "Please provide a valid combination of genome mining results."
+            )
+            self.log.error(error_message)
+            raise ValidationError(error_message)
+
+        self.log.info(f"Running mode set to: {self.running_mode}")
 
     def compute_stats(self) -> None:
         """
@@ -129,10 +152,12 @@ class PipelineHelper:
         """
         self.log.info("RESULTS:")
         self.log.info(
-            f"Text report is saved to {self.config.output_config.report}", indent=1
+            f"Text report is saved to {self.config.output_config.report}",
+            indent=1,
         )
         self.log.info(
-            f"HTML report is saved to {self.config.output_config.html_report}", indent=1
+            f"HTML report is saved to {self.config.output_config.html_report}",
+            indent=1,
         )
         # TODO: Actually write something to the specified reports
 

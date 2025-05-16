@@ -6,7 +6,7 @@ from src.genome_mining_parser import GenomeMiningResult, QuastResult
 from src.logger import Logger
 from src.option_parser import ValidationError
 from src.pipeline_helper import PipelineHelper
-from src.config import load_config
+from src.report import RunningMode
 
 # Test data paths
 TEST_DATA_DIR = Path(__file__).resolve().parent.parent / "test_data"
@@ -73,17 +73,21 @@ def test_set_up_output_dir_warns_if_exists(pipeline_helper, tmp_path):
     )
 
 
-def test_parse_input_valid(pipeline_helper):
+def test_parse_input_valid_input(pipeline_helper):
     """Test parsing valid input files."""
-    with patch("src.pipeline_helper.parse_input_files") as mock_parse:
+    with (
+        patch("src.pipeline_helper.parse_input_files") as mock_parse,
+        patch("src.pipeline_helper.utils.determine_running_mode") as mock_mode,
+    ):
         mock_parse.return_value = [MagicMock(spec=GenomeMiningResult)]
+        mock_mode.return_value = RunningMode.COMPARE_TOOLS
         pipeline_helper.parse_input()
 
         assert len(pipeline_helper.genome_mining_results) == 1
         mock_parse.assert_called_with(pipeline_helper.config, [ANTISMASH_FILE])
 
 
-def test_parse_input_invalid(pipeline_helper):
+def test_parse_input_invalid_input(pipeline_helper):
     """Test parsing invalid input files."""
     with patch(
         "src.pipeline_helper.parse_input_files", side_effect=Exception("Invalid input")
@@ -123,6 +127,44 @@ def test_parse_input_missing_quast(pipeline_helper):
         "QUAST output directory is required when Reference genome mining "
         "result is specified."
     )
+
+
+def test_parse_input_sets_running_mode(pipeline_helper):
+    """Test that parse_input sets the running_mode correctly."""
+    with (
+        patch("src.pipeline_helper.parse_input_files") as mock_parse,
+        patch("src.pipeline_helper.utils.determine_running_mode") as mock_mode,
+    ):
+        mock_parse.return_value = [MagicMock(spec=GenomeMiningResult)]
+        mock_mode.return_value = RunningMode.COMPARE_TOOLS
+
+        pipeline_helper.parse_input()
+
+        assert pipeline_helper.running_mode == RunningMode.COMPARE_TOOLS
+        mock_mode.assert_called_once()
+        pipeline_helper.log.info.assert_called_with(
+            "Running mode set to: RunningMode.COMPARE_TOOLS"
+        )
+
+
+def test_parse_input_unknown_mode_raises_error(pipeline_helper):
+    """Test that parse_input raises error when running mode is unknown."""
+    with (
+        patch("src.pipeline_helper.parse_input_files") as mock_parse,
+        patch("src.pipeline_helper.utils.determine_running_mode") as mock_mode,
+    ):
+        mock_parse.return_value = [MagicMock(spec=GenomeMiningResult)]
+        mock_mode.return_value = RunningMode.UNKNOWN
+
+        with pytest.raises(
+            ValidationError, match="Running mode could not be determined"
+        ):
+            pipeline_helper.parse_input()
+
+        pipeline_helper.log.error.assert_called_with(
+            "Running mode could not be determined. "
+            "Please provide a valid combination of genome mining results."
+        )
 
 
 def test_compute_stats_placeholder(pipeline_helper):
