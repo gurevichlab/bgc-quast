@@ -1,10 +1,11 @@
 from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
 from typing import Dict
 
 
 @dataclass
-class BasicReport:
+class BasicStats:
     """
     Class for storing basic report statistics.
 
@@ -25,10 +26,22 @@ class BasicReport:
 
 
 @dataclass
+class BasicReport:
+    """
+    Class for storing computed data for the BGC-QUAST report.
+
+    Attributes:
+        basic_stats (Dict[Path, BasicStats]): Basic statistics of genome mining results.
+    """
+
+    basic_stats: Dict[Path, BasicStats] = field(default_factory=dict)
+
+
+@dataclass
 class CompareToRefReport(BasicReport):
     """
     Class for storing computed data for the COMPARE_TO_REFERENCE mode.
-    
+
     Attributes:
         TODO
     """
@@ -40,7 +53,7 @@ class CompareToRefReport(BasicReport):
 class CompareToolsReport(BasicReport):
     """
     Class for storing computed data for the COMPARE_TOOLS mode.
-    
+
     Attributes:
         TODO
     """
@@ -52,7 +65,7 @@ class CompareToolsReport(BasicReport):
 class CompareSamplesReport(BasicReport):
     """
     Class for storing computed data for the COMPARE_SAMPLES mode.
-    
+
     Attributes:
         TODO
     """
