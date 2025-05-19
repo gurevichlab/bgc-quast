@@ -290,7 +290,14 @@ def parse_input_files(
         for parser, tool_name in parsers.items():
             try:
                 bgcs = parser(config, file_path)
-                results.append(GenomeMiningResult(file_path, file_path.name.split('.')[0], tool_name, bgcs))
+                results.append(
+                    GenomeMiningResult(
+                        file_path.resolve(),
+                        file_path.name.split(".")[0],
+                        tool_name,
+                        bgcs,
+                    )
+                )
                 break  # If parsing succeeded, move to next file
             except InvalidInputException:
                 continue  # Try next parser
@@ -322,7 +329,8 @@ def parse_quast_output_dir(quast_output_dir: Path) -> List[QuastResult]:
             with open(coords_file, "r") as f:
                 lines = f.readlines()
             quast_result = QuastResult(
-                input_dir=quast_output_dir, input_file_label=coords_file.name.split(".")[0]
+                input_dir=quast_output_dir,
+                input_file_label=coords_file.name.split(".")[0],
             )
             for line in lines:
                 line = line.split(" | ")
