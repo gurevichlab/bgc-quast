@@ -47,8 +47,8 @@ def pipeline_helper(logger, tmp_path):
 def test_initialization(pipeline_helper):
     """Test that the PipelineHelper initializes correctly."""
     assert pipeline_helper.log is not None
-    assert pipeline_helper.genome_mining_results == []
-    assert pipeline_helper.reference_mining_result is None
+    assert pipeline_helper.assembly_genome_mining_results == []
+    assert pipeline_helper.reference_genome_mining_result is None
     assert pipeline_helper.quast_results is None
 
 
@@ -83,7 +83,7 @@ def test_parse_input_valid_input(pipeline_helper):
         mock_mode.return_value = RunningMode.COMPARE_TOOLS
         pipeline_helper.parse_input()
 
-        assert len(pipeline_helper.genome_mining_results) == 1
+        assert len(pipeline_helper.assembly_genome_mining_results) == 1
         mock_parse.assert_called_with(pipeline_helper.config, [ANTISMASH_FILE])
 
 

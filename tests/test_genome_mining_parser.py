@@ -54,7 +54,7 @@ def test_parse_antismash_json_invalid_format():
         f.write("invalid json content")
 
     with pytest.raises(InvalidInputException) as exc_info:
-        parse_antismash_json(load_config(), invalid_file)
+        parse_antismash_json(load_config(), Path(invalid_file))
     assert "Failed to parse antiSMASH format" in str(exc_info.value)
 
     # Clean up
@@ -154,7 +154,7 @@ def test_parse_quast_output_dir_invalid_file():
 
 def test_parse_input_files_invalid_file():
     with pytest.raises(InvalidInputException) as exc_info:
-        parse_input_files(load_config(), ["dummy_path.json"])
+        parse_input_files(load_config(), [Path("dummy_path.json")])
     assert "Could not parse file dummy_path.json with any available parser" in str(
         exc_info.value
     )

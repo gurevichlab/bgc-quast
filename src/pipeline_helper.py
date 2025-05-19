@@ -21,8 +21,8 @@ class PipelineHelper:
         config: Configuration object for the pipeline.
         args: Command-line arguments parsed into an object.
         log: Logger instance for logging operations.
-        genome_mining_results: List of parsed genome mining results.
-        reference_mining_result: Parsed reference genome mining result.
+        assembly_genome_mining_results: List of parsed genome mining results.
+        reference_genome_mining_result: Parsed reference genome mining result.
         quast_results: List of parsed QUAST results.
 
         running_mode: Running mode of the pipeline (e.g., COMPARE_TO_REFERENCE,
@@ -38,8 +38,8 @@ class PipelineHelper:
             log: Logger instance for logging operations.
         """
         self.log = log
-        self.genome_mining_results: List[GenomeMiningResult] = []
-        self.reference_mining_result: Optional[GenomeMiningResult] = None
+        self.assembly_genome_mining_results: List[GenomeMiningResult] = []
+        self.reference_genome_mining_result: Optional[GenomeMiningResult] = None
         self.quast_results: Optional[List[QuastResult]] = None
 
         default_cfg = load_config()
@@ -97,7 +97,7 @@ class PipelineHelper:
             raise ValidationError(error_message)
 
         try:
-            self.genome_mining_results = parse_input_files(
+            self.assembly_genome_mining_results = parse_input_files(
                 self.config, self.args.mining_results
             )
         except Exception as e:
@@ -113,7 +113,7 @@ class PipelineHelper:
 
         if self.args.reference_mining_result:
             try:
-                self.reference_mining_result = parse_input_files(
+                self.reference_genome_mining_result = parse_input_files(
                     self.config, [self.args.reference_mining_result]
                 )
             except Exception as e:
@@ -124,7 +124,7 @@ class PipelineHelper:
 
         # Set running mode based on the provided arguments.
         self.running_mode = utils.determine_running_mode(
-            self.reference_mining_result, self.genome_mining_results
+            self.reference_genome_mining_result, self.assembly_genome_mining_results
         )
         if self.running_mode == RunningMode.UNKNOWN:
             error_message = (

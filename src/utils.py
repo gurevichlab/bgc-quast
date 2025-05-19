@@ -1,7 +1,7 @@
 import gzip
 import json
 from pathlib import Path
-from typing import Dict, List, TextIO, Union
+from typing import Dict, List, Optional, TextIO, Union
 
 import yaml
 
@@ -46,7 +46,7 @@ def load_reverse_mapping(yaml_path: Path) -> Dict[str, str]:
 
     Args:
         yaml_path (Path): Path to the YAML file containing the mapping.
-    
+
     Returns:
         Dict[str, str]: A dictionary mapping product names to their main classes.
     """
@@ -65,7 +65,9 @@ def load_reverse_mapping(yaml_path: Path) -> Dict[str, str]:
     return product_to_class
 
 
-def map_products(product_list: List[str], product_to_class: Dict[str, str]) -> List[str]:
+def map_products(
+    product_list: List[str], product_to_class: Dict[str, str]
+) -> List[str]:
     """Map a list of products to their main classes.
 
     Args:
@@ -77,13 +79,16 @@ def map_products(product_list: List[str], product_to_class: Dict[str, str]) -> L
     """
     mapped_class = set()
     for product in product_list:
-        bgc_class = product_to_class.get(product, product)  # Fall back to itself if unmapped
+        bgc_class = product_to_class.get(
+            product, product
+        )  # Fall back to itself if unmapped
         mapped_class.add(bgc_class)
     return list(mapped_class)
 
 
 def determine_running_mode(
-    reference_mining_result: GenomeMiningResult, genome_mining_results: List[GenomeMiningResult]
+    reference_genome_mining_result: Optional[GenomeMiningResult],
+    assembly_genome_mining_results: List[GenomeMiningResult],
 ) -> RunningMode:
     """
     Determine the running mode based on the genome mining results and reference mining result.
@@ -92,25 +97,32 @@ def determine_running_mode(
     - COMPARE_TOOLS: If the input file labels are the same with same or different mining tools.
     - COMPARE_SAMPLES: If the input file labels are different but the same mining tool is used.
     - UNKNOWN: If the input file labels are different and different mining tools are used.
-    
+
     Args:
-        reference_mining_result (GenomeMiningResult): The reference genome mining result.
-        genome_mining_results (List[GenomeMiningResult]): List of genome mining results.
-    
+        reference_genome_mining_result (GenomeMiningResult): The reference genome mining result.
+        assembly_genome_mining_results (List[GenomeMiningResult]): List of genome mining results.
+
     Returns:
         RunningMode: The determined running mode.
     """
     different_mining_tools = not all(
-        tool == genome_mining_results[0].mining_tool
-        for tool in (result.mining_tool for result in genome_mining_results)
+        tool == assembly_genome_mining_results[0].mining_tool
+        for tool in (result.mining_tool for result in assembly_genome_mining_results)
     )
     different_file_labels = not all(
-        label == genome_mining_results[0].input_file_label
-        for label in (result.input_file_label for result in genome_mining_results)
+        label == assembly_genome_mining_results[0].input_file_label
+        for label in (
+            result.input_file_label for result in assembly_genome_mining_results
+        )
     )
-    if reference_mining_result is not None:
+    if reference_genome_mining_result is not None:
+        if different_file_labels:
+            # Different file labels are not allowed for the COMPARE_TO_REFERENCE mode.
+            return RunningMode.UNKNOWN
         return RunningMode.COMPARE_TO_REFERENCE
-    elif len(genome_mining_results) <= 1 or different_file_labels and different_mining_tools:
+    elif len(assembly_genome_mining_results) == 1:
+        return RunningMode.BASIC
+    elif different_file_labels and different_mining_tools:
         return RunningMode.UNKNOWN
     elif different_file_labels:
         return RunningMode.COMPARE_SAMPLES
