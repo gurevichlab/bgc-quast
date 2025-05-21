@@ -5,10 +5,10 @@ from typing import List
 
 import pandas as pd
 
-from . import utils
+from . import input_utils
 from .config import Config
 from .genome_mining_result import AlignmentInfo, Bgc, GenomeMiningResult, QuastResult
-from .utils import load_reverse_mapping, map_products
+from .input_utils import load_reverse_mapping, map_products
 
 
 class InvalidInputException(Exception):
@@ -24,7 +24,7 @@ def parse_antismash_json(config: Config, file_path: Path) -> List[Bgc]:
     )
 
     try:
-        json_data = utils.get_json_from_file(file_path)
+        json_data = input_utils.get_json_from_file(file_path)
         records = json_data["records"]
         bgcs = list()
         for record in records:
@@ -218,7 +218,7 @@ def parse_deepbgc_json(config: Config, file_path: Path) -> List[Bgc]:
     )
 
     try:
-        data = utils.get_json_from_file(file_path)
+        data = input_utils.get_json_from_file(file_path)
 
         bgcs = list()
 

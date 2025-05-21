@@ -77,7 +77,7 @@ def test_parse_input_valid_input(pipeline_helper):
     """Test parsing valid input files."""
     with (
         patch("src.pipeline_helper.parse_input_files") as mock_parse,
-        patch("src.pipeline_helper.utils.determine_running_mode") as mock_mode,
+        patch("src.pipeline_helper.input_utils.determine_running_mode") as mock_mode,
     ):
         mock_parse.return_value = [MagicMock(spec=GenomeMiningResult)]
         mock_mode.return_value = RunningMode.COMPARE_TOOLS
@@ -133,7 +133,7 @@ def test_parse_input_sets_running_mode(pipeline_helper):
     """Test that parse_input sets the running_mode correctly."""
     with (
         patch("src.pipeline_helper.parse_input_files") as mock_parse,
-        patch("src.pipeline_helper.utils.determine_running_mode") as mock_mode,
+        patch("src.pipeline_helper.input_utils.determine_running_mode") as mock_mode,
     ):
         mock_parse.return_value = [MagicMock(spec=GenomeMiningResult)]
         mock_mode.return_value = RunningMode.COMPARE_TOOLS
@@ -151,7 +151,7 @@ def test_parse_input_unknown_mode_raises_error(pipeline_helper):
     """Test that parse_input raises error when running mode is unknown."""
     with (
         patch("src.pipeline_helper.parse_input_files") as mock_parse,
-        patch("src.pipeline_helper.utils.determine_running_mode") as mock_mode,
+        patch("src.pipeline_helper.input_utils.determine_running_mode") as mock_mode,
     ):
         mock_parse.return_value = [MagicMock(spec=GenomeMiningResult)]
         mock_mode.return_value = RunningMode.UNKNOWN
@@ -167,9 +167,21 @@ def test_parse_input_unknown_mode_raises_error(pipeline_helper):
         )
 
 
-def test_compute_stats_placeholder(pipeline_helper):
-    """Test that compute_stats is a placeholder."""
-    assert pipeline_helper.compute_stats() is None
+def test_compute_stats_creates_basic_report(pipeline_helper):
+    """Test that compute_stats creates a BasicReport."""
+    mock_genome_mining_result = MagicMock()
+    pipeline_helper.assembly_genome_mining_results = [mock_genome_mining_result]
+
+    with patch(
+        "src.pipeline_helper.basic_analyzer.generate_basic_report"
+    ) as mock_generate_report:
+        mock_report = MagicMock()
+        mock_generate_report.return_value = mock_report
+
+        pipeline_helper.compute_stats()
+
+        mock_generate_report.assert_called_once_with([mock_genome_mining_result])
+        assert pipeline_helper.analysis_report == mock_report
 
 
 def test_write_results_logs_results(pipeline_helper):

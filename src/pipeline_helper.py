@@ -1,6 +1,7 @@
 from typing import List, Optional
 
-import src.utils as utils
+import src.basic_analyzer as basic_analyzer
+import src.input_utils as input_utils
 from src.config import load_config
 from src.genome_mining_parser import (
     GenomeMiningResult,
@@ -10,7 +11,7 @@ from src.genome_mining_parser import (
 )
 from src.logger import Logger
 from src.option_parser import ValidationError, get_command_line_args
-from src.report import RunningMode
+from src.report import BasicReport, RunningMode
 
 
 class PipelineHelper:
@@ -41,6 +42,8 @@ class PipelineHelper:
         self.assembly_genome_mining_results: List[GenomeMiningResult] = []
         self.reference_genome_mining_result: Optional[GenomeMiningResult] = None
         self.quast_results: Optional[List[QuastResult]] = None
+        self.running_mode: Optional[RunningMode] = None
+        self.analysis_report: Optional[BasicReport] = None
 
         default_cfg = load_config()
         try:
@@ -115,7 +118,7 @@ class PipelineHelper:
             try:
                 self.reference_genome_mining_result = parse_input_files(
                     self.config, [self.args.reference_mining_result]
-                )
+                )[0]
             except Exception as e:
                 self.log.error(
                     f"Failed to parse reference genome mining results: {str(e)}"
@@ -123,7 +126,7 @@ class PipelineHelper:
                 raise e
 
         # Set running mode based on the provided arguments.
-        self.running_mode = utils.determine_running_mode(
+        self.running_mode = input_utils.determine_running_mode(
             self.reference_genome_mining_result, self.assembly_genome_mining_results
         )
         if self.running_mode == RunningMode.UNKNOWN:
@@ -142,7 +145,22 @@ class PipelineHelper:
 
         TODO: Implement this method.
         """
-        pass
+
+        analysis_report = basic_analyzer.generate_basic_report(
+            self.assembly_genome_mining_results
+        )
+
+        if self.running_mode == RunningMode.COMPARE_TO_REFERENCE:
+            # TODO: Implement analysis for COMPARE_TO_REFERENCE mode
+            pass
+        elif self.running_mode == RunningMode.COMPARE_TOOLS:
+            # TODO: Implement analysis for COMPARE_TOOLS mode
+            pass
+        elif self.running_mode == RunningMode.COMPARE_SAMPLES:
+            # TODO: Implement analysis for COMPARE_SAMPLES mode
+            pass
+
+        self.analysis_report = analysis_report
 
     def write_results(self) -> None:
         """
