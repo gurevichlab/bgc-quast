@@ -44,7 +44,7 @@ def test_parse_antismash_json_gzipped():
     assert bgc.start == 0
     assert bgc.end == 39844
     assert bgc.product_types == ["PKS"]
-    assert bgc.is_complete == "Unknown"
+    assert bgc.completeness == "Unknown"
 
 
 def test_parse_antismash_json_invalid_format():
@@ -77,7 +77,7 @@ def test_parse_gecco_tsv():
     assert bgc.start == 1144
     assert bgc.end == 42174
     assert bgc.product_types == ["Unknown"]
-    assert bgc.is_complete == "Unknown"
+    assert bgc.completeness == "Unknown"
 
 
 def test_parse_deepbgc_tsv():
@@ -95,7 +95,7 @@ def test_parse_deepbgc_tsv():
     assert bgc.start == 1143
     assert bgc.end == 9307
     assert bgc.product_types == ["Unknown"]
-    assert bgc.is_complete == "Unknown"
+    assert bgc.completeness == "Unknown"
 
 
 def test_parse_deepbgc_json():
@@ -113,7 +113,7 @@ def test_parse_deepbgc_json():
     assert bgc.start == 1143
     assert bgc.end == 9307
     assert bgc.product_types == ["Unknown"]
-    assert bgc.is_complete == "Unknown"
+    assert bgc.completeness == "Unknown"
 
 
 def test_parse_quast_output_dir_valid_file():

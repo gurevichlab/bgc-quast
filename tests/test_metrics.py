@@ -11,7 +11,7 @@ def test_compute_group_by_completeness():
         Bgc(
             bgc_id="id",
             sequence_id="_",
-            is_complete="True",
+            completeness="Complete",
             product_types=["PKS"],
             start=0,
             end=100,
@@ -19,7 +19,7 @@ def test_compute_group_by_completeness():
         Bgc(
             bgc_id="id",
             sequence_id="_",
-            is_complete="False",
+            completeness="Incomplete",
             product_types=["NRPS"],
             start=50,
             end=150,
@@ -27,7 +27,7 @@ def test_compute_group_by_completeness():
         Bgc(
             bgc_id="id",
             sequence_id="_",
-            is_complete="True",
+            completeness="Complete",
             product_types=["PKS"],
             start=200,
             end=300,
@@ -37,10 +37,10 @@ def test_compute_group_by_completeness():
     result = engine.compute(group_by=["completeness"])
 
     assert len(result) == 2
-    assert result[("True",)]["total_bgc_count"] == 2
-    assert result[("False",)]["total_bgc_count"] == 1
-    assert result[("True",)]["mean_bgc_length"] == 100
-    assert result[("False",)]["mean_bgc_length"] == 100
+    assert result[("Complete",)]["total_bgc_count"] == 2
+    assert result[("Incomplete",)]["total_bgc_count"] == 1
+    assert result[("Complete",)]["mean_bgc_length"] == 100
+    assert result[("Incomplete",)]["mean_bgc_length"] == 100
 
 
 def test_compute_group_by_product_type():
@@ -49,7 +49,7 @@ def test_compute_group_by_product_type():
         Bgc(
             bgc_id="id",
             sequence_id="_",
-            is_complete="True",
+            completeness="Complete",
             product_types=["PKS"],
             start=0,
             end=100,
@@ -57,7 +57,7 @@ def test_compute_group_by_product_type():
         Bgc(
             bgc_id="id",
             sequence_id="_",
-            is_complete="False",
+            completeness="Incomplete",
             product_types=["NRPS"],
             start=50,
             end=150,
@@ -65,7 +65,7 @@ def test_compute_group_by_product_type():
         Bgc(
             bgc_id="id",
             sequence_id="_",
-            is_complete="True",
+            completeness="Complete",
             product_types=["PKS", "NRPS"],
             start=200,
             end=300,
@@ -86,7 +86,7 @@ def test_compute_group_by_multiple_keys():
         Bgc(
             bgc_id="id",
             sequence_id="_",
-            is_complete="True",
+            completeness="Complete",
             product_types=["PKS"],
             start=0,
             end=100,
@@ -94,7 +94,7 @@ def test_compute_group_by_multiple_keys():
         Bgc(
             bgc_id="id",
             sequence_id="_",
-            is_complete="False",
+            completeness="Incomplete",
             product_types=["NRPS"],
             start=50,
             end=150,
@@ -102,7 +102,7 @@ def test_compute_group_by_multiple_keys():
         Bgc(
             bgc_id="id",
             sequence_id="_",
-            is_complete="True",
+            completeness="Complete",
             product_types=["PKS", "NRPS"],
             start=200,
             end=300,
@@ -112,9 +112,9 @@ def test_compute_group_by_multiple_keys():
     result = engine.compute(group_by=["completeness", "product_type"])
 
     assert len(result) == 3
-    assert result[("True", "PKS")]["total_bgc_count"] == 1
-    assert result[("False", "NRPS")]["total_bgc_count"] == 1
-    assert result[("True", "NRPS,PKS")]["total_bgc_count"] == 1
+    assert result[("Complete", "PKS")]["total_bgc_count"] == 1
+    assert result[("Incomplete", "NRPS")]["total_bgc_count"] == 1
+    assert result[("Complete", "NRPS,PKS")]["total_bgc_count"] == 1
 
 
 def test_compute_empty_bgcs():
@@ -131,7 +131,7 @@ def test_compute_invalid_grouping_key():
         Bgc(
             bgc_id="id",
             sequence_id="_",
-            is_complete="True",
+            completeness="Complete",
             product_types=["PKS"],
             start=0,
             end=100,

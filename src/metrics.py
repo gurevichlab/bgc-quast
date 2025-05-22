@@ -41,7 +41,7 @@ def metric(
 
 @grouping_key("completeness")
 def by_completeness(bgc: Bgc) -> str:
-    return bgc.is_complete
+    return bgc.completeness
 
 
 @grouping_key("product_type")

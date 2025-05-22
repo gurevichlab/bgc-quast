@@ -55,13 +55,13 @@ def parse_antismash_json(config: Config, file_path: Path) -> List[Bgc]:
                     )
                     # TODO: https://github.com/gurevichlab/bgc-quast/issues/9 -
                     # Implement a way to determine if the BGC is complete using contig length.
-                    is_complete = "Unknown"
+                    completeness = "Unknown"
                     bgc = Bgc(
                         bgc_id=bgc_id,
                         sequence_id=sequence_id,
                         start=start,
                         end=end,
-                        is_complete=is_complete,
+                        completeness=completeness,
                         product_types=mapped_products,
                         metadata=metadata,
                     )
@@ -127,7 +127,7 @@ def parse_gecco_tsv(config: Config, file_path: Path) -> List[Bgc]:
                 sequence_id=sequence_id,
                 start=start,
                 end=end,
-                is_complete="Unknown",  # No completeness information for now
+                completeness="Unknown",  # No completeness information for now
                 product_types=mapped_product,
                 metadata=metadata,
             )
@@ -200,7 +200,7 @@ def parse_deepbgc_tsv(config: Config, file_path: Path) -> List[Bgc]:
                 sequence_id=sequence_id,
                 start=start,
                 end=end,
-                is_complete="Unknown",  # No completeness information for now
+                completeness="Unknown",  # No completeness information for now
                 product_types=mapped_product,
                 metadata=metadata,
             )
@@ -253,7 +253,7 @@ def parse_deepbgc_json(config: Config, file_path: Path) -> List[Bgc]:
                     sequence_id=sequence_id,
                     start=start,
                     end=end,
-                    is_complete="Unknown",  # No completeness information for now
+                    completeness="Unknown",  # No completeness information for now
                     product_types=mapped_product,
                     metadata=metadata,
                 )
