@@ -1,6 +1,6 @@
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Union
 
 import matplotlib.pyplot as plt
 

@@ -109,7 +109,7 @@ def parse_gecco_tsv(config: Config, file_path: Path) -> List[Bgc]:
             metadata = {}
             if "Unknown" in mapped_product:
                 # Find the class with max probability
-                max_col = row[product_probability_cols].idxmax()
+                max_col = str(row[product_probability_cols].idxmax())
                 max_val = row[max_col]
 
                 clean_col = max_col.replace("_probability", "")
@@ -184,7 +184,7 @@ def parse_deepbgc_tsv(config: Config, file_path: Path) -> List[Bgc]:
             metadata = {}
             if "Unknown" in mapped_product:
                 # Find the class with max probability
-                max_col = row[product_probability_cols].idxmax()
+                max_col = str(row[product_probability_cols].idxmax())
                 max_val = row[max_col]
 
                 mapped_column = map_products([max_col], product_to_class)
