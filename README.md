@@ -1,34 +1,156 @@
-# About
-BGC-QUAST: quality assessment tool for genome mining software
+# BGC-QUAST Manual
+
+1. [About BGC-QUAST](#sec_about) </br>
+2. [Running Modes](#sec_run_modes)</br> 
+3. [Feedback and bug reports](#sec_feedback)</br>
+
+<a name="sec_about"></a>
+# About BGC-QUAST
+
+**BGC-QUAST** is a quality assessment tool for genome mining (GM) software — 
+tools used for the prediction of biosynthetic gene clusters (BGCs). 
+It provides summary statistics, comparative analyses, and interactive visualization 
+of BGC prediction results from multiple tools and datasets.
+
+---
 
 ## Requirements
-* Python 3
-* pyyaml
+
+- Python 3
+- `pyyaml` Python package
+
+---
 
 ## Installation
-Not needed
 
-## Running
-BGC-QUAST supports three working modes intended for different groups of users and requiring different sets of input files.
+No installation needed — just clone the repository and run the script.
 
-### 1. Reference vs assembly-based genome mining evaluation
-**Use case**: The same genome mining method was applied to a high-quality reference genome and draft assemblies of the same organism. 
+---
 
-**BGC-QUAST reports**: **BGC-QUAST applicability**: Our tool assesses how well the genome mining method performs on real-life sequence
+## Supported Genome Mining Tools
+Currently supported genome mining tools and their output formats:
+- antiSMASH: `.json`
+- GECCO: `.tsv`
+- deepBGC: `.json`, `.tsv`
 
-**Applicability**: Users might see how different sequencing technologies (e.g., short-read vs long-read) or computational processing steps (e.g., different assembly methods or software parameters) affect
- 
-### 2. Genome mining tools comparison 
+Compressed files (`.gz`) are supported. See [test_data](test_data) for example files. 
 
-### 3. Multiple genomes summary creation  
+## Command-line Options
+```bash
+usage: bgc-quast.py [-h] [--output-dir DIR] [--threads INT] [--debug]
+                    [--quast-output-dir DIR] [--reference-mining-result FILE]
+                    [--genome FILE ...] [--reference-genome FILE]
+                    [--names "NAME1,NAME2,..."]
+                    [--naming-style {file,dir,sequence,...}]
+                    GENOME_MINING_RESULT [GENOME_MINING_RESULT ...]
+```
+### Positional Arguments
+
+- `GENOME_MINING_RESULT`: Paths to genome mining outputs (antiSMASH `.json`, GECCO `.tsv`, or deepBGC `.json`/`.tsv`)
+
+---
+
+### General Options
+
+| Option                        | Description                                               |
+|-------------------------------|-----------------------------------------------------------|
+| `-h, --help`                  | Show help message and exit                                |
+| `--output-dir DIR, -o DIR`   | Output directory [default: timestamped folder]            |
+| `--threads INT, -t INT`      | Number of threads [default: 1]                            |
+| `--debug`                    | Keep intermediate files                                   |
+
+---
+
+### Advanced Input
+
+| Option                                     | Description                                           |
+|--------------------------------------------|-------------------------------------------------------|
+| `--quast-output-dir DIR, -q DIR`          | QUAST output (required for reference-based mode)      |
+| `--reference-mining-result FILE, -r FILE` | GM result on the reference genome                     |
+| `--genome FILE` (multiple allowed)        | FASTA/GenBank genome input (can be gzipped)           |
+| `--reference-genome FILE`                | Reference genome input (FASTA/GenBank)                |
+
+---
+
+### Naming Options
+
+| Option                                | Description                                             |
+|---------------------------------------|---------------------------------------------------------|
+| `--names "N1,N2,..."`                | Custom labels for GM inputs (comma-separated)          |
+| `--naming-style STYLE`               | Strategy to auto-generate input names                  |
+
+**Naming strategies**:
+- `file`, `dir`, `sequence`, `tool`
+- `file-tool`, `dir-tool`, `sequence-tool`
+- `first-file`, `first-dir`, `first-sequence`
+- `auto` *(default)* – uses `dir-tool` for deepBGC, `file-tool` otherwise
 
 
-Sample analysis of the antiSMASH genome mining results
-```commandline
-./bgc-quast.py test_data/antiSMASH_out/sample_genome.json
+<a name="sec_run_modes"></a>
+## Running Modes
+
+BGC-QUAST supports three running modes depending on your use case. Each mode has its own expected inputs and output structure.
+However, basic BGC quality metrics are computed in either of them.
+
+### Basic quality metrics
+- BGC count: total, per product type
+- Completeness: number of complete vs. fragmented BGCs, per type
+- Length statistics: mean, median, N50 of BGC lengths (overall and per type/completeness)
+- Gene content: average and median number of genes per BGC (overall and per type/completeness)
+
+### 1. Compare-to-Reference
+
+**Use case**: Assess how well BGCs predicted on draft assemblies match the predictions from a high-quality reference genome.
+
+**Command**:
+```bash
+./bgc-quast.py assembly_run1.json assembly_run2.json \
+  --reference-mining-result reference_run.json \
+  --quast-output-dir quast_output \
+  --output-dir results/compare_to_reference
 ```
 
-Reading the BGC-QUAST report 
-```commandline
-less bgc_quast_results/report.txt
+**Output:**
+- Matching metrics (e.g., full/partial/missed BGCs)
+- Side-by-side interactive browser comparing BGCs across assemblies and reference
+
+### 2. Compare-Tools
+***Use case***: Compare different GM tools run on the same genome sequence.
+
+**Command**:
+
+```bash
+./bgc-quast.py antiSMASH_run.json GECCO_run.tsv deepBGC_run.json \
+  --output-dir results/compare_tools
 ```
+
+**Output**:
+- Overlap plots (Venn diagrams)
+- Interactive browser showing tool-specific and shared BGCs
+
+### 3. Compare-Samples
+
+**Use case**: Summarize BGC predictions from a single GM tool across multiple genomes or metagenomic samples.
+
+**Command**:
+
+```bash
+./bgc-quast.py sample1.json sample2.json sample3.json \
+  --output-dir results/compare_samples
+```
+
+**Output**:
+- Per-sample summary stats (BGC count, types, lengths)
+- One interactive BGC browser per sample
+- Aggregate statistics and plots across the cohort
+
+
+<a name="sec_feedback"></a>
+## Feedback and bug reports
+You can leave your comments and bug reports at [https://github.com/gurevichlab/bgc-quast/issues](https://github.com/gurevichlab/bgc-quast/issues) (*recommended way*) 
+or sent it via e-mail to [alexey.gurevich@helmholtz-hips.de](alexey.gurevich@helmholtz-hips.de).
+
+Your comments, bug reports, and suggestions are **very welcomed**.
+They will help us to improve BGC-QUAST further.
+
+If you have any troubles running BGC-QUAST, please attach `bgc-quast.log` from the output directory.
