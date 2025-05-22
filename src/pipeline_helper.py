@@ -2,6 +2,7 @@ from typing import List, Optional
 
 import src.basic_analyzer as basic_analyzer
 import src.input_utils as input_utils
+import src.report_writer as report_writer
 from src.config import load_config
 from src.genome_mining_parser import (
     GenomeMiningResult,
@@ -168,6 +169,17 @@ class PipelineHelper:
 
         Logs the locations of the text and HTML reports.
         """
+
+        if not self.analysis_report:
+            self.log.error("No analysis report available to write results.")
+            return
+
+        report_writer.write_report(
+            self.analysis_report,
+            self.config.output_config.report,
+            self.config.output_config.html_report,
+        )
+
         self.log.info("RESULTS:")
         self.log.info(
             f"Text report is saved to {self.config.output_config.report}",

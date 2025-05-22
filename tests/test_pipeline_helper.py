@@ -186,13 +186,17 @@ def test_compute_stats_creates_basic_report(pipeline_helper):
 
 def test_write_results_logs_results(pipeline_helper):
     """Test that write_results logs the locations of the reports."""
-    pipeline_helper.write_results()
-    pipeline_helper.log.info.assert_any_call("RESULTS:")
-    pipeline_helper.log.info.assert_any_call(
-        f"Text report is saved to {pipeline_helper.config.output_config.report}",
-        indent=1,
-    )
-    pipeline_helper.log.info.assert_any_call(
-        f"HTML report is saved to {pipeline_helper.config.output_config.html_report}",
-        indent=1,
-    )
+    with patch("src.pipeline_helper.report_writer.write_report") as mock_write_report:
+        mock_write_report.return_value = None
+        pipeline_helper.analysis_report = MagicMock()
+
+        pipeline_helper.write_results()
+        pipeline_helper.log.info.assert_any_call("RESULTS:")
+        pipeline_helper.log.info.assert_any_call(
+            f"Text report is saved to {pipeline_helper.config.output_config.report}",
+            indent=1,
+        )
+        pipeline_helper.log.info.assert_any_call(
+            f"HTML report is saved to {pipeline_helper.config.output_config.html_report}",
+            indent=1,
+        )
