@@ -60,5 +60,4 @@ class RunningMode(Enum):
     COMPARE_TO_REFERENCE = 1
     COMPARE_TOOLS = 2
     COMPARE_SAMPLES = 3
-    BASIC = 4
-    UNKNOWN = 5
+    UNKNOWN = 4

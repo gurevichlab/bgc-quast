@@ -120,11 +120,9 @@ def determine_running_mode(
             # Different file labels are not allowed for the COMPARE_TO_REFERENCE mode.
             return RunningMode.UNKNOWN
         return RunningMode.COMPARE_TO_REFERENCE
-    elif len(assembly_genome_mining_results) == 1:
-        return RunningMode.BASIC
     elif different_file_labels and different_mining_tools:
         return RunningMode.UNKNOWN
-    elif different_file_labels:
+    elif len(assembly_genome_mining_results) == 1 or different_file_labels:
         return RunningMode.COMPARE_SAMPLES
     else:
         # If all mining results have the same file label regardless of the mining tools.

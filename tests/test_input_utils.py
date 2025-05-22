@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 from src.genome_mining_result import GenomeMiningResult
-from src.report import RunningMode
 from src.input_utils import determine_running_mode
+from src.report import RunningMode
 
 SAMPLE_PATH_1 = Path("sample1.json")
 SAMPLE_PATH_2 = Path("sample2.json")
@@ -46,8 +46,8 @@ def test_determine_running_mode_different_labels_with_reference_unknown():
     assert mode == RunningMode.UNKNOWN
 
 
-def test_determine_running_mode_basic():
-    """Test running mode when only one genome mining result is provided."""
+def test_determine_running_mode_one_genome_result_compare_samples():
+    """Test running mode compare samples with one genome result."""
     genome_results = [
         GenomeMiningResult(
             input_file=SAMPLE_PATH_1, input_file_label="label1", mining_tool="tool1"
@@ -55,7 +55,7 @@ def test_determine_running_mode_basic():
     ]
 
     mode = determine_running_mode(None, genome_results)
-    assert mode == RunningMode.BASIC
+    assert mode == RunningMode.COMPARE_SAMPLES
 
 
 def test_determine_running_mode_compare_tools():
