@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from src.genome_mining_result import GenomeMiningResult
 from src.report import RunningMode
-from src.utils import determine_running_mode
+from src.input_utils import determine_running_mode
 
 SAMPLE_PATH_1 = Path("sample1.json")
 SAMPLE_PATH_2 = Path("sample2.json")
