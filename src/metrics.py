@@ -46,7 +46,12 @@ def by_completeness(bgc: Bgc) -> str:
 
 @grouping_key("product_type")
 def by_product_type(bgc: Bgc) -> str:
-    return ",".join(sorted(bgc.product_types)) if bgc.product_types else "Unknown"
+    if len(bgc.product_types) == 1:
+        return bgc.product_types[0]
+    # If there are multiple product types, return "Hybrid"
+    if len(bgc.product_types) > 1:
+        return "Hybrid"
+    return "Unknown"
 
 
 # Metric functions:

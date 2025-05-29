@@ -77,7 +77,7 @@ def test_compute_group_by_product_type():
     assert len(result) == 3
     assert result[("PKS",)]["total_bgc_count"] == 1
     assert result[("NRPS",)]["total_bgc_count"] == 1
-    assert result[("NRPS,PKS",)]["total_bgc_count"] == 1
+    assert result[("Hybrid",)]["total_bgc_count"] == 1
 
 
 def test_compute_group_by_multiple_keys():
@@ -114,7 +114,7 @@ def test_compute_group_by_multiple_keys():
     assert len(result) == 3
     assert result[("Complete", "PKS")]["total_bgc_count"] == 1
     assert result[("Incomplete", "NRPS")]["total_bgc_count"] == 1
-    assert result[("Complete", "NRPS,PKS")]["total_bgc_count"] == 1
+    assert result[("Complete", "Hybrid")]["total_bgc_count"] == 1
 
 
 def test_compute_empty_bgcs():
