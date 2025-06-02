@@ -3,6 +3,7 @@ from typing import List, Optional
 import src.basic_analyzer as basic_analyzer
 import src.input_utils as input_utils
 import src.report_writer as report_writer
+from src import compare_to_ref_analyzer
 from src.config import load_config
 from src.genome_mining_parser import (
     GenomeMiningResult,
@@ -143,8 +144,6 @@ class PipelineHelper:
     def compute_stats(self) -> None:
         """
         Compute statistics for the parsed results.
-
-        TODO: Implement this method.
         """
 
         analysis_report = basic_analyzer.generate_basic_report(
@@ -152,8 +151,12 @@ class PipelineHelper:
         )
 
         if self.running_mode == RunningMode.COMPARE_TO_REFERENCE:
-            # TODO: Implement analysis for COMPARE_TO_REFERENCE mode
-            pass
+            analysis_report = compare_to_ref_analyzer.compute_stats(
+                analysis_report,
+                self.assembly_genome_mining_results,
+                self.reference_genome_mining_result,
+                self.quast_results,
+            )
         elif self.running_mode == RunningMode.COMPARE_TOOLS:
             # TODO: Implement analysis for COMPARE_TOOLS mode
             pass
