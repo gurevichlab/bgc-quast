@@ -1,20 +1,18 @@
 from pathlib import Path
-from typing import cast
 
 import pytest
 
 # Relative imports from the file under test.
 from src.compare_to_ref_analyzer import (
-    CompareToRefReport,
-    Intersection,
     ReferenceBgc,
     Status,
     compute_reference_coverage,
     compute_stats,
-    determine_status,
+    determine_ref_bgc_status,
     get_intersecting_bgcs_from_alignment,
-    map_coordinates,
+    get_asm_bgc_coords_on_ref,
 )
+from src.compare_to_ref_data import Intersection
 from src.genome_mining_result import AlignmentInfo, Bgc, GenomeMiningResult, QuastResult
 from src.report import BasicReport
 
@@ -130,7 +128,7 @@ def test_determine_status_missed():
     # Create a reference BGC with no intersections.
     ref_bgc = create_reference_bgc(start=100, end=200)
     # Assuming intersecting_assembly_bgcs defaults empty.
-    status = determine_status(ref_bgc)
+    status = determine_ref_bgc_status(ref_bgc)
     assert status == Status.MISSED
 
 
@@ -144,11 +142,11 @@ def test_determine_status_covered():
     ref_bgc = create_reference_bgc(
         start=100, end=200, intersecting_assembly_bgcs=[intersection]
     )
-    status = determine_status(ref_bgc)
+    status = determine_ref_bgc_status(ref_bgc)
     assert status == Status.COVERED
 
 
-def test_determine_status_fragmented():
+def test_determine_status_partly_covered():
     # Create a reference BGC with an intersection that does not cover completely.
     intersection = Intersection(
         start_in_ref=120,
@@ -158,11 +156,11 @@ def test_determine_status_fragmented():
     ref_bgc = create_reference_bgc(
         start=100, end=200, intersecting_assembly_bgcs=[intersection]
     )
-    status = determine_status(ref_bgc)
-    assert status == Status.FRAGMENTED
+    status = determine_ref_bgc_status(ref_bgc)
+    assert status == Status.PARTIALLY_COVERED
 
 
-def test_determine_status_fragmented_non_contiguous_intersections():
+def test_determine_status_partly_covered_non_contiguous_intersections():
     # Create a reference BGC with non contiguous intersections that do not cover
     # completely.
     intersection1 = Intersection(
@@ -178,8 +176,8 @@ def test_determine_status_fragmented_non_contiguous_intersections():
     ref_bgc = create_reference_bgc(
         start=100, end=200, intersecting_assembly_bgcs=[intersection1, intersection2]
     )
-    status = determine_status(ref_bgc)
-    assert status == Status.FRAGMENTED
+    status = determine_ref_bgc_status(ref_bgc)
+    assert status == Status.PARTIALLY_COVERED
 
 
 def test_determine_status_covered_by_fragments():
@@ -197,7 +195,7 @@ def test_determine_status_covered_by_fragments():
     ref_bgc = create_reference_bgc(
         start=100, end=200, intersecting_assembly_bgcs=[intersection1, intersection2]
     )
-    status = determine_status(ref_bgc)
+    status = determine_ref_bgc_status(ref_bgc)
     assert status == Status.COVERED_BY_FRAGMENTS
 
 
@@ -224,7 +222,7 @@ def test_determine_status_covered_by_fragments_extra_intersections():
         end=200,
         intersecting_assembly_bgcs=[intersection1, intersection2, intersection3],
     )
-    status = determine_status(ref_bgc)
+    status = determine_ref_bgc_status(ref_bgc)
     assert status == Status.COVERED_BY_FRAGMENTS
 
 
@@ -242,7 +240,7 @@ def test_map_coordinates_forward():
     )
     # Assembly BGC fully inside alignment.
     asm_start, asm_end = 120, 180
-    new_start, new_end, reversed = map_coordinates(asm_start, asm_end, alignment)
+    new_start, new_end, reversed = get_asm_bgc_coords_on_ref(asm_start, asm_end, alignment)
     # Expected: new_start = 1000 + (120-100) = 1020, new_end = 1100 + (180-200) = 1080.
     assert new_start == 1020
     assert new_end == 1080
@@ -259,7 +257,7 @@ def test_map_coordinates_reverse():
         len_diff=5,
     )
     asm_start, asm_end = 150, 180
-    new_start, new_end, reversed = map_coordinates(asm_start, asm_end, alignment)
+    new_start, new_end, reversed = get_asm_bgc_coords_on_ref(asm_start, asm_end, alignment)
     # In reverse branch:
     # assembly_start = min(150, 200) = 150, assembly_end = max(180, 100) = 180.
     # new_start = 900 + 200 - 180 = 920, new_end = 1005 + 100 - 150 = 955.
@@ -313,7 +311,7 @@ def test_compute_reference_coverage_no_intersections():
     assert len(reference_bgcs) == 1
     result_ref_bgc = reference_bgcs[0]
     assert result_ref_bgc.intersecting_assembly_bgcs == []
-    status = determine_status(result_ref_bgc)
+    status = determine_ref_bgc_status(result_ref_bgc)
     assert status == Status.MISSED
 
 

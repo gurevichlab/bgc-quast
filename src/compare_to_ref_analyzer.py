@@ -1,10 +1,12 @@
+from src.compare_to_ref_data import (
+    Intersection,
+    ReferenceBgc,
+    Status,
+)
 from src.genome_mining_result import AlignmentInfo, Bgc, GenomeMiningResult, QuastResult
 from src.report import (
     BasicReport,
     CompareToRefReport,
-    Intersection,
-    ReferenceBgc,
-    Status,
 )
 
 
@@ -116,12 +118,12 @@ def compute_reference_coverage(
             intersections, key=lambda x: x.start_in_ref
         )
         # Determine the status of the reference BGC based on intersections.
-        ref_bgc.status = determine_status(ref_bgc)
+        ref_bgc.status = determine_ref_bgc_status(ref_bgc)
         ref_bgcs.append(ref_bgc)
     return ref_bgcs
 
 
-def determine_status(ref_bgc: ReferenceBgc) -> Status:
+def determine_ref_bgc_status(ref_bgc: ReferenceBgc) -> Status:
     """
     Determine the status of the reference BGC based on its intersecting assembly BGCs.
 
@@ -131,7 +133,7 @@ def determine_status(ref_bgc: ReferenceBgc) -> Status:
     If multiple intersecting assembly BGCs fully cover the reference BGC,
     the status is COVERED_BY_FRAGMENTS.
     If there are intersecting assembly BGCs but none fully cover the reference BGC,
-    the status is FRAGMENTED.
+    the status is PARTIALLY_COVERED.
 
     Args:
         ref_bgc (ReferenceBgc): Reference BGC to determine status for.
@@ -165,7 +167,7 @@ def determine_status(ref_bgc: ReferenceBgc) -> Status:
 
     if min_start <= ref_bgc.start and max_end >= ref_bgc.end:
         return Status.COVERED_BY_FRAGMENTS
-    return Status.FRAGMENTED
+    return Status.PARTIALLY_COVERED
 
 
 def get_intersecting_bgcs_from_alignment(
@@ -173,12 +175,12 @@ def get_intersecting_bgcs_from_alignment(
 ) -> list[Intersection]:
     """
     Get assembly BGCs from the alignment that intersect with the reference BGC.
-    
+
     Args:
         ref_bgc (ReferenceBgc): Reference BGC to check intersections against.
         alignment (AlignmentInfo): Alignment information between assembly and reference.
         bgcs_on_aligned_sequence (list[Bgc]): List of assembly BGCs on the aligned sequence.
-    
+
     Returns:
         list[Intersection]: List of Intersection objects representing intersections
         between assembly BGCs and the reference BGC.
@@ -193,7 +195,9 @@ def get_intersecting_bgcs_from_alignment(
         ) and assembly_bgc.end >= min(alignment.assembly_start, alignment.assembly_end):
             # Calculate intersection coordinates.
             assembly_bgc_start_in_ref, assembly_bgc_end_in_ref, reversed = (
-                map_coordinates(assembly_bgc.start, assembly_bgc.end, alignment)
+                get_asm_bgc_coords_on_ref(
+                    assembly_bgc.start, assembly_bgc.end, alignment
+                )
             )
             if (
                 assembly_bgc_start_in_ref <= ref_bgc.end
@@ -210,15 +214,18 @@ def get_intersecting_bgcs_from_alignment(
     return intersections
 
 
-def map_coordinates(
-    assembly_start, assembly_end, alignment: AlignmentInfo
+def get_asm_bgc_coords_on_ref(
+    assembly_bgc_start, assembly_bgc_end, alignment: AlignmentInfo
 ) -> tuple[int, int, bool]:
     """
-    Map assembly coordinates to reference coordinates based on alignment info.
+    Map BGC coordinates in assembly to coordinates on reference based on 
+    assembly-to-reference alignment info.
+
     Args:
-        assembly_start (int): Start position in assembly.
-        assembly_end (int): End position in assembly.
+        assembly_bgc_start (int): BGC start position in assembly.
+        assembly_bgc_end (int): BGC end position in assembly.
         alignment (AlignmentInfo): Alignment information.
+
     Returns:
         Tuple[int, int, bool]: Mapped start and end positions in reference, whether
         the coordinates are reversed.
@@ -227,16 +234,24 @@ def map_coordinates(
     reversed = alignment.assembly_start > alignment.assembly_end
     if not reversed:
         # Cut assembly bgc if it is bigger than the aligned part.
-        assembly_start = max(assembly_start, alignment.assembly_start)
-        assembly_end = min(assembly_end, alignment.assembly_end)
+        assembly_bgc_start = max(assembly_bgc_start, alignment.assembly_start)
+        assembly_bgc_end = min(assembly_bgc_end, alignment.assembly_end)
 
-        new_start = alignment.ref_start + assembly_start - alignment.assembly_start
-        new_end = alignment.ref_end + assembly_end - alignment.assembly_end
+        mapped_assembly_bgc_start = (
+            alignment.ref_start + assembly_bgc_start - alignment.assembly_start
+        )
+        mapped_assembly_bgc_end = (
+            alignment.ref_end + assembly_bgc_end - alignment.assembly_end
+        )
     else:
         # Cut assembly bgc if it is bigger than the aligned part.
-        assembly_start = min(assembly_start, alignment.assembly_start)
-        assembly_end = max(assembly_end, alignment.assembly_end)
+        assembly_bgc_start = min(assembly_bgc_start, alignment.assembly_start)
+        assembly_bgc_end = max(assembly_bgc_end, alignment.assembly_end)
 
-        new_start = alignment.ref_start + alignment.assembly_start - assembly_end
-        new_end = alignment.ref_end + alignment.assembly_end - assembly_start
-    return new_start - diff, new_end + diff, reversed
+        mapped_assembly_bgc_start = (
+            alignment.ref_start + alignment.assembly_start - assembly_bgc_end
+        )
+        mapped_assembly_bgc_end = (
+            alignment.ref_end + alignment.assembly_end - assembly_bgc_start
+        )
+    return mapped_assembly_bgc_start - diff, mapped_assembly_bgc_end + diff, reversed
