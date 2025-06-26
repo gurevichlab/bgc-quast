@@ -239,8 +239,10 @@ def test_map_coordinates_forward():
         len_diff=0,
     )
     # Assembly BGC fully inside alignment.
-    asm_start, asm_end = 120, 180
-    new_start, new_end, reversed = get_asm_bgc_coords_on_ref(asm_start, asm_end, alignment)
+    bgc_start, bgc_end = 120, 180
+    new_start, new_end, reversed = get_asm_bgc_coords_on_ref(
+        bgc_start, bgc_end, alignment
+    )
     # Expected: new_start = 1000 + (120-100) = 1020, new_end = 1100 + (180-200) = 1080.
     assert new_start == 1020
     assert new_end == 1080
@@ -256,14 +258,17 @@ def test_map_coordinates_reverse():
         ref_end=1005,
         len_diff=5,
     )
-    asm_start, asm_end = 150, 180
-    new_start, new_end, reversed = get_asm_bgc_coords_on_ref(asm_start, asm_end, alignment)
+    bgc_start, bgc_end = 150, 180
+    new_start, new_end, reversed = get_asm_bgc_coords_on_ref(
+        bgc_start, bgc_end, alignment
+    )
     # In reverse branch:
-    # assembly_start = min(150, 200) = 150, assembly_end = max(180, 100) = 180.
-    # new_start = 900 + 200 - 180 = 920, new_end = 1005 + 100 - 150 = 955.
-    # Adjust for len_diff: final = (920-5, 955+5) = (915, 960)
-    assert new_start == 915
-    assert new_end == 960
+    # assembly_start = max(150, 100) = 150, assembly_end = min(180, 200) = 180.
+    # diff_factor = (1005 - 900 + 1) / (200 - 100 +  1) = 106 / 101.
+    # new_start = 900 + (200 - 180) * 106 / 101 = 900 + 20 * 1.0495 = 900 + 20.99 = 920.99.
+    # new_end = 1005 - (150 - 100) * 106 / 101 = 1005 - 50 * 1.0495 = 1005 - 52.475 = 952.525.
+    assert new_start == 920
+    assert new_end == 952
     assert reversed is True
 
 
@@ -276,7 +281,7 @@ def test_get_intersecting_bgcs_from_alignment():
         assembly_start=10,
         assembly_end=100,
         ref_start=90,
-        ref_end=190,
+        ref_end=180,
         len_diff=0,
         assembly_seq_id="chr1",
     )
@@ -287,11 +292,11 @@ def test_get_intersecting_bgcs_from_alignment():
     )
     # Expected mapped coordinates:
     # new_start = 90 + (max(20, 10) - 10) = 90 + (20 - 10) = 100,
-    # new_end = 190 + (min(90, 100) - 100) = 190 + (90 - 100) = 180.
+    # new_end = 180 - (100 - min(90, 100)) = 180 - (100 - 90) = 170.
     assert len(intersections) == 1
     intr = intersections[0]
     assert intr.start_in_ref == 100
-    assert intr.end_in_ref == 180
+    assert intr.end_in_ref == 170
 
 
 # ====================== Tests for compute_reference_coverage ======================

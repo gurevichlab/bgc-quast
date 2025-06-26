@@ -218,8 +218,15 @@ def get_asm_bgc_coords_on_ref(
     assembly_bgc_start, assembly_bgc_end, alignment: AlignmentInfo
 ) -> tuple[int, int, bool]:
     """
-    Map BGC coordinates in assembly to coordinates on reference based on 
+    Map BGC coordinates in assembly to coordinates on reference based on
     assembly-to-reference alignment info.
+
+    Example:
+        If assembly BGC starts at 61 and ends at 80 (length 20), and the alignment
+        maps assembly coordinates 51-110 (length 60) to reference coordinates 11-76
+        (length 66), the mapped coordinates will be: 22-43 (length 22). Note that
+        the length of the mapped BGC grew 10% due to the 10% alignment length
+        difference.
 
     Args:
         assembly_bgc_start (int): BGC start position in assembly.
@@ -230,7 +237,9 @@ def get_asm_bgc_coords_on_ref(
         Tuple[int, int, bool]: Mapped start and end positions in reference, whether
         the coordinates are reversed.
     """
-    diff = alignment.len_diff
+    diff_factor = (alignment.ref_end - alignment.ref_start + 1) / (
+        abs(alignment.assembly_end - alignment.assembly_start) + 1
+    )
     reversed = alignment.assembly_start > alignment.assembly_end
     if not reversed:
         # Cut assembly bgc if it is bigger than the aligned part.
@@ -238,20 +247,24 @@ def get_asm_bgc_coords_on_ref(
         assembly_bgc_end = min(assembly_bgc_end, alignment.assembly_end)
 
         mapped_assembly_bgc_start = (
-            alignment.ref_start + assembly_bgc_start - alignment.assembly_start
+            alignment.ref_start
+            + (assembly_bgc_start - alignment.assembly_start) * diff_factor
         )
         mapped_assembly_bgc_end = (
-            alignment.ref_end + assembly_bgc_end - alignment.assembly_end
+            alignment.ref_end
+            - (alignment.assembly_end - assembly_bgc_end) * diff_factor
         )
     else:
         # Cut assembly bgc if it is bigger than the aligned part.
-        assembly_bgc_start = min(assembly_bgc_start, alignment.assembly_start)
-        assembly_bgc_end = max(assembly_bgc_end, alignment.assembly_end)
+        assembly_bgc_start = max(assembly_bgc_start, alignment.assembly_end)
+        assembly_bgc_end = min(assembly_bgc_end, alignment.assembly_start)
 
         mapped_assembly_bgc_start = (
-            alignment.ref_start + alignment.assembly_start - assembly_bgc_end
+            alignment.ref_start
+            + (alignment.assembly_start - assembly_bgc_end) * diff_factor
         )
         mapped_assembly_bgc_end = (
-            alignment.ref_end + alignment.assembly_end - assembly_bgc_start
+            alignment.ref_end
+            - (assembly_bgc_start - alignment.assembly_end) * diff_factor
         )
-    return mapped_assembly_bgc_start - diff, mapped_assembly_bgc_end + diff, reversed
+    return int(mapped_assembly_bgc_start), int(mapped_assembly_bgc_end), reversed
