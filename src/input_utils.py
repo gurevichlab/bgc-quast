@@ -1,10 +1,11 @@
 import gzip
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, TextIO, Union
+from typing import Dict, List, Literal, Optional, TextIO, Union
 
 import yaml
 
+from src.config import Config
 from src.genome_mining_result import GenomeMiningResult
 from src.report import RunningMode
 
@@ -127,3 +128,60 @@ def determine_running_mode(
     else:
         # If all mining results have the same file label regardless of the mining tools.
         return RunningMode.COMPARE_TOOLS
+
+
+def get_file_label_from_path(file_path: Path) -> str:
+    """
+    Extract the file label from the file path.
+    The file label is considered to be the name of the file without its extensions.
+    Example: "example.txt.gz" -> "example", "kittens.fastq" -> "kittens",
+    "best.sample.json" -> "best.sample".
+
+    Args:
+        file_path (Path): The path to the file.
+
+    Returns:
+        str: The file label.
+    """
+    if not file_path.is_file():
+        raise ValueError(f"Provided path {file_path} is not a valid file.")
+
+    compression_suffixes = [".gz", ".bz2", ".bgz", ".zst", ".xz", ".zip", ".bgzf"]
+
+    if file_path.suffix in compression_suffixes:
+        file_path = file_path.with_suffix(
+            ""
+        )  # Remove compression suffix for label extraction
+    return file_path.with_suffix("").name  # Remove an extension
+
+
+def get_completeness(
+    config: Config,
+    seq_length_map: Union[dict[str, int], None],
+    sequence_id: str,
+    start: int,
+    end: int,
+) -> Literal["Complete", "Incomplete", "Unknown"]:
+    """
+    Get the completeness status of a BGC based on the corresponding sequence length.
+
+    Args:
+        config (Config): The configuration object containing completeness margin.
+        seq_length_map (dict): A dictionary mapping sequence IDs to their lengths.
+        sequence_id (str): The ID of the sequence to check.
+        start (int): The start position of the BGC in the sequence.
+        end (int): The end position of the BGC in the sequence.
+
+    Returns:
+        str: "Complete", "Incomplete", or "Unknown" based on the BGC's completeness.
+    """
+    if seq_length_map and sequence_id in seq_length_map:
+        completeness = (
+            "Complete"
+            if end + config.bgc_completeness_margin <= seq_length_map[sequence_id]
+            and start >= config.bgc_completeness_margin
+            else "Incomplete"
+        )
+    else:
+        completeness = "Unknown"
+    return completeness

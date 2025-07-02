@@ -8,8 +8,10 @@ from src.config import load_config
 from src.genome_mining_parser import (
     GenomeMiningResult,
     QuastResult,
-    parse_input_files,
+    parse_genome_data,
+    parse_input_mining_result_files,
     parse_quast_output_dir,
+    parse_reference_genome_mining_result,
 )
 from src.logger import Logger
 from src.option_parser import ValidationError, get_command_line_args
@@ -91,24 +93,33 @@ class PipelineHelper:
         Raises:
             ValidationError: If required inputs are missing or invalid.
         """
-        # TODO: move this part into the option_parser? There is a so-far-empty function for validating input correctness
+        # TODO: move this part into the option_parser? There is a so-far-empty function
+        # for validating input correctness
         if self.args.quast_output_dir and not self.args.reference_mining_result:
-            error_message = "Reference genome mining result is required when QUAST output directory is specified."
+            error_message = (
+                "Reference genome mining result is required when QUAST"
+                " output directory is specified."
+            )
             self.log.error(error_message)
             raise ValidationError(error_message)
         if not self.args.quast_output_dir and self.args.reference_mining_result:
-            error_message = "QUAST output directory is required when Reference genome mining result is specified."
+            error_message = (
+                "QUAST output directory is required when Reference genome"
+                " mining result is specified."
+            )
             self.log.error(error_message)
             raise ValidationError(error_message)
 
+        # Parse genome mining results.
         try:
-            self.assembly_genome_mining_results = parse_input_files(
-                self.config, self.args.mining_results
+            self.assembly_genome_mining_results = parse_input_mining_result_files(
+                self.log, self.config, self.args.mining_results, self.args.genome_data
             )
         except Exception as e:
             self.log.error(f"Failed to parse genome mining results: {str(e)}")
             raise e
 
+        # Parse QUAST results if provided.
         if self.args.quast_output_dir:
             try:
                 self.quast_results = parse_quast_output_dir(self.args.quast_output_dir)
@@ -116,11 +127,17 @@ class PipelineHelper:
                 self.log.error(f"Failed to parse QUAST results: {str(e)}")
                 raise e
 
+        # Parse reference genome mining result if provided.
         if self.args.reference_mining_result:
             try:
-                self.reference_genome_mining_result = parse_input_files(
-                    self.config, [self.args.reference_mining_result]
-                )[0]
+                self.reference_genome_mining_result = (
+                    parse_reference_genome_mining_result(
+                        self.log,
+                        self.config,
+                        self.args.reference_mining_result,
+                        self.args.reference_genome_data,
+                    )
+                )
             except Exception as e:
                 self.log.error(
                     f"Failed to parse reference genome mining results: {str(e)}"

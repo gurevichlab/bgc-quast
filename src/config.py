@@ -33,6 +33,7 @@ class Config:
     magic_str: str     # just a placeholder for future expansion of the config
     output_config: OutputConfig
     product_mapping_config: ProductMappingConfig
+    bgc_completeness_margin: int
 
 
 def get_default_output_dir(cfg: dict) -> Path:
@@ -55,4 +56,5 @@ def load_config(args: Optional[CommandLineArgs] = None) -> Config:
 
     return Config(magic_number=42, magic_str='',
                   output_config=OutputConfig(out_dir),
-                  product_mapping_config=product_mapping_config)
+                  product_mapping_config=product_mapping_config,
+                  bgc_completeness_margin=cfg['bgc_completeness_margin'])

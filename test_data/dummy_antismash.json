@@ -1,0 +1,18 @@
+{
+  "records": [
+    {
+      "id": "dummy_contig",
+      "seq": { "data": "ATGCATGCATGCATGC" },
+      "features": [
+        {
+          "type": "region",
+          "location": "[0:15](+)",
+          "qualifiers": {
+            "region_number": ["1"],
+            "product": ["NRPS"]
+          }
+        }
+      ]
+    }
+  ]
+}

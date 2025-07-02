@@ -10,9 +10,7 @@ from src.report import RunningMode
 
 # Test data paths
 TEST_DATA_DIR = Path(__file__).resolve().parent.parent / "test_data"
-ANTISMASH_FILE = (
-    TEST_DATA_DIR / "assembly_10_mining" / "antiSMASH" / "assembly_10.json.gz"
-)
+DUMMY_ANTISMASH_FILE = TEST_DATA_DIR / "dummy_antismash.json"
 QUAST_OUTPUT_DIR = TEST_DATA_DIR / "quast_out"
 
 
@@ -28,9 +26,11 @@ def pipeline_helper(logger, tmp_path):
     """Create a PipelineHelper instance with test configuration."""
     with patch("src.pipeline_helper.get_command_line_args") as mock_args:
         mock_args.return_value = MagicMock(
-            mining_results=[ANTISMASH_FILE],
+            mining_results=[DUMMY_ANTISMASH_FILE],
             quast_output_dir=None,
             reference_mining_result=None,
+            genome_data=None,
+            reference_genome_data=None,
             output_dir=tmp_path,
         )
         with patch("src.pipeline_helper.load_config") as mock_config:
@@ -39,6 +39,7 @@ def pipeline_helper(logger, tmp_path):
                     output_dir=tmp_path,
                     report=tmp_path / "report.txt",
                     html_report=tmp_path / "report.html",
+                    bgc_completeness_margin=100,
                 )
             )
             yield PipelineHelper(logger)
@@ -76,7 +77,7 @@ def test_set_up_output_dir_warns_if_exists(pipeline_helper, tmp_path):
 def test_parse_input_valid_input(pipeline_helper):
     """Test parsing valid input files."""
     with (
-        patch("src.pipeline_helper.parse_input_files") as mock_parse,
+        patch("src.pipeline_helper.parse_input_mining_result_files") as mock_parse,
         patch("src.pipeline_helper.input_utils.determine_running_mode") as mock_mode,
     ):
         mock_parse.return_value = [MagicMock(spec=GenomeMiningResult)]
@@ -84,13 +85,16 @@ def test_parse_input_valid_input(pipeline_helper):
         pipeline_helper.parse_input()
 
         assert len(pipeline_helper.assembly_genome_mining_results) == 1
-        mock_parse.assert_called_with(pipeline_helper.config, [ANTISMASH_FILE])
+        mock_parse.assert_called_with(
+            pipeline_helper.log, pipeline_helper.config, [DUMMY_ANTISMASH_FILE], None
+        )
 
 
 def test_parse_input_invalid_input(pipeline_helper):
     """Test parsing invalid input files."""
     with patch(
-        "src.pipeline_helper.parse_input_files", side_effect=Exception("Invalid input")
+        "src.pipeline_helper.parse_input_mining_result_files",
+        side_effect=Exception("Invalid input"),
     ):
         with pytest.raises(Exception, match="Invalid input"):
             pipeline_helper.parse_input()
@@ -118,7 +122,7 @@ def test_parse_input_missing_reference(pipeline_helper):
 
 def test_parse_input_missing_quast(pipeline_helper):
     """Test error when reference genome is provided without QUAST results."""
-    pipeline_helper.args.reference_mining_result = ANTISMASH_FILE
+    pipeline_helper.args.reference_mining_result = DUMMY_ANTISMASH_FILE
     pipeline_helper.args.quast_output_dir = None
 
     with pytest.raises(ValidationError, match="QUAST output directory is required"):
@@ -132,7 +136,7 @@ def test_parse_input_missing_quast(pipeline_helper):
 def test_parse_input_sets_running_mode(pipeline_helper):
     """Test that parse_input sets the running_mode correctly."""
     with (
-        patch("src.pipeline_helper.parse_input_files") as mock_parse,
+        patch("src.pipeline_helper.parse_input_mining_result_files") as mock_parse,
         patch("src.pipeline_helper.input_utils.determine_running_mode") as mock_mode,
     ):
         mock_parse.return_value = [MagicMock(spec=GenomeMiningResult)]
@@ -150,7 +154,7 @@ def test_parse_input_sets_running_mode(pipeline_helper):
 def test_parse_input_unknown_mode_raises_error(pipeline_helper):
     """Test that parse_input raises error when running mode is unknown."""
     with (
-        patch("src.pipeline_helper.parse_input_files") as mock_parse,
+        patch("src.pipeline_helper.parse_input_mining_result_files") as mock_parse,
         patch("src.pipeline_helper.input_utils.determine_running_mode") as mock_mode,
     ):
         mock_parse.return_value = [MagicMock(spec=GenomeMiningResult)]
@@ -199,4 +203,48 @@ def test_write_results_logs_results(pipeline_helper):
         pipeline_helper.log.info.assert_any_call(
             f"HTML report is saved to {pipeline_helper.config.output_config.html_report}",
             indent=1,
+        )
+
+
+def test_parse_input_with_genome_data(pipeline_helper):
+    """Test parsing input when genome data is provided."""
+    with (
+        patch("src.pipeline_helper.parse_input_mining_result_files") as mock_parse,
+        patch("src.pipeline_helper.input_utils.determine_running_mode") as mock_mode,
+    ):
+        pipeline_helper.args.genome_data = [Path("dummy.fasta")]
+        pipeline_helper.args.mining_results = [DUMMY_ANTISMASH_FILE]
+        mock_parse.return_value = [MagicMock(spec=GenomeMiningResult)]
+        mock_mode.return_value = RunningMode.COMPARE_TOOLS
+
+        pipeline_helper.parse_input()
+        mock_parse.assert_called_with(
+            pipeline_helper.log,
+            pipeline_helper.config,
+            [DUMMY_ANTISMASH_FILE],
+            pipeline_helper.args.genome_data,
+        )
+
+
+def test_parse_input_with_reference_genome_data(pipeline_helper):
+    """Test parsing input with reference genome data."""
+    with (
+        patch("src.pipeline_helper.parse_input_mining_result_files") as mock_parse,
+        patch("src.pipeline_helper.parse_reference_genome_mining_result") as mock_ref_parse,
+        patch("src.pipeline_helper.input_utils.determine_running_mode") as mock_mode,
+    ):
+        pipeline_helper.args.reference_genome_data = Path("ref_genome.fasta")
+        pipeline_helper.args.reference_mining_result = DUMMY_ANTISMASH_FILE
+        pipeline_helper.args.quast_output_dir = QUAST_OUTPUT_DIR
+        pipeline_helper.args.mining_results = [Path("dummy.fasta")]
+        mock_parse.return_value = [MagicMock(spec=GenomeMiningResult)]
+        mock_ref_parse.return_value = MagicMock(spec=GenomeMiningResult)
+        mock_mode.return_value = RunningMode.COMPARE_TOOLS
+
+        pipeline_helper.parse_input()
+        mock_ref_parse.assert_called_with(
+            pipeline_helper.log,
+            pipeline_helper.config,
+            DUMMY_ANTISMASH_FILE,
+            pipeline_helper.args.reference_genome_data,
         )

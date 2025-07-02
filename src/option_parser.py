@@ -66,6 +66,25 @@ def add_advanced_arguments(parser: argparse.ArgumentParser):
         type=Path,
     )
 
+    advanced_input_group.add_argument(
+        "--genome",
+        "-g",
+        help="Path to the genome FASTA or GenBank file; "
+        "if genome mining results are provided for multiple genomes, "
+        "this argument can accept multiple paths.",
+        metavar="GENOME_DATA",
+        nargs="*",
+        type=Path,
+    )
+
+    advanced_input_group.add_argument(
+        "--reference-genome",
+        "-rg",
+        help="Path to the reference genome FASTA or GenBank file.",
+        metavar="REFERENCE_GENOME_DATA",
+        nargs="?",
+        type=Path,
+    )
 
 def build_cmdline_args_parser(default_cfg: Config) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
