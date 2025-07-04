@@ -72,8 +72,9 @@ def add_advanced_arguments(parser: argparse.ArgumentParser):
         help="Path to the genome FASTA or GenBank file; "
         "if genome mining results are provided for multiple genomes, "
         "this argument can accept multiple paths.",
-        metavar="GENOME_DATA",
+        metavar="GENOME",
         nargs="*",
+        dest="genome_data",
         type=Path,
     )
 
@@ -81,7 +82,8 @@ def add_advanced_arguments(parser: argparse.ArgumentParser):
         "--reference-genome",
         "-rg",
         help="Path to the reference genome FASTA or GenBank file.",
-        metavar="REFERENCE_GENOME_DATA",
+        metavar="REFERENCE_GENOME",
+        dest="reference_genome_data",
         nargs="?",
         type=Path,
     )
