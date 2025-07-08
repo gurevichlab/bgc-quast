@@ -2,7 +2,7 @@ import json
 import re
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Literal, Optional, Union
 
 import pandas as pd
 from Bio import SeqIO
@@ -11,7 +11,6 @@ from . import input_utils
 from .config import Config
 from .genome_mining_result import AlignmentInfo, Bgc, GenomeMiningResult, QuastResult
 from .input_utils import (
-    get_completeness,
     get_file_label_from_path,
     load_reverse_mapping,
     map_products,
@@ -337,7 +336,11 @@ def parse_input_mining_result_files(
         try:
             seq_length_map = get_seq_length_map(genome_seq_data_maps, file_path)
         except Exception as e:
-            log.warning(f"Failed to get sequence length map for {file_path}: {str(e)}")
+            log.warning(
+                f"Failed to get sequence length map for {file_path}  -- BGC"
+                f" completeness will not be calculated for this input. "
+                f"Problem occurred: {str(e)}"
+            )
             seq_length_map = None
 
         for parser, tool_name in parsers.items():
@@ -405,7 +408,7 @@ def parse_reference_genome_mining_result(
     Args:
         config: Config
         file_path: Path to the reference genome mining result file
-        genome_data: Optional genome data for sequence completeness estimation
+        genome_data: Optional genome data for BGC completeness estimation
 
     Returns:
         GenomeMiningResult object for the reference genome
@@ -493,25 +496,21 @@ def parse_genome_data(file_paths: List[Path]) -> Dict[str, Dict[str, int]]:
         label = get_file_label_from_path(file_path)
         contigs: Dict[str, int] = {}
 
-        inner_suffix = (
-            file_path.suffix.lower()
-            if file_path.suffix != ".gz"
-            else file_path.with_suffix("").suffix.lower()
-        )
-        if inner_suffix in [".fa", ".fasta", ".fna"]:
+        base_extension = input_utils.get_base_extension(file_path)
+        if base_extension in [".fa", ".fasta", ".fna"]:
             try:
                 with open_file(file_path) as handle:
                     for record in SeqIO.parse(handle, "fasta"):
                         contigs[record.id] = len(record.seq)
             except Exception as e:
                 raise Exception(f"Error parsing FASTA file {file_path}: {str(e)}")
-        elif inner_suffix in [".gb", ".gbff", ".gbk"]:
+        elif base_extension in [".gb", ".gbff", ".gbk"]:
             try:
                 with open_file(file_path) as handle:
                     for record in SeqIO.parse(handle, "genbank"):
                         contigs[record.id] = len(record.seq)
             except Exception as e:
-                raise Exception(f"Error parsing GBFF file {file_path}: {str(e)}")
+                raise Exception(f"Error parsing GenBank file {file_path}: {str(e)}")
         else:
             raise ValueError(f"Unsupported file extension for genome data: {file_path}")
 
@@ -534,11 +533,7 @@ def get_genome_data_from_mining_result(
         Dictionary mapping sequence name to computed sequence length, or None if not
         a valid antiSMASH JSON.
     """
-    if (
-        file_path.suffix.lower() != ".json"
-        and file_path.with_suffix("").suffix.lower()
-        != ".json"  # For gzipped JSON files
-    ):
+    if input_utils.get_base_extension(file_path) != ".json":
         return None
 
     try:
@@ -552,3 +547,35 @@ def get_genome_data_from_mining_result(
         return contigs if contigs else None
     except (json.JSONDecodeError, TypeError, AttributeError, KeyError):
         return None
+
+
+def get_completeness(
+    config: Config,
+    seq_length_map: Union[dict[str, int], None],
+    sequence_id: str,
+    start: int,
+    end: int,
+) -> Literal["Complete", "Incomplete", "Unknown"]:
+    """
+    Get the completeness status of a BGC based on the corresponding sequence length.
+
+    Args:
+        config (Config): The configuration object containing completeness margin.
+        seq_length_map (dict): A dictionary mapping sequence IDs to their lengths.
+        sequence_id (str): The ID of the sequence to check.
+        start (int): The start position of the BGC in the sequence.
+        end (int): The end position of the BGC in the sequence.
+
+    Returns:
+        str: "Complete", "Incomplete", or "Unknown" based on the BGC's completeness.
+    """
+    if seq_length_map and sequence_id in seq_length_map:
+        completeness = (
+            "Complete"
+            if end + config.bgc_completeness_margin <= seq_length_map[sequence_id]
+            and start >= config.bgc_completeness_margin
+            else "Incomplete"
+        )
+    else:
+        completeness = "Unknown"
+    return completeness

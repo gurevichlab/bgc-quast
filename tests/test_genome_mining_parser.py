@@ -3,9 +3,10 @@ import os
 from pathlib import Path
 
 import pytest
-from src.config import load_config
+from src.config import Config, load_config
 from src.genome_mining_parser import (
     InvalidInputException,
+    get_completeness,
     get_seq_length_map,
     parse_antismash_json,
     parse_deepbgc_json,
@@ -385,3 +386,24 @@ def test_get_seq_length_map_non_json_file(tmp_path):
     non_json_file.write_text("not a json")
     result = get_seq_length_map({}, non_json_file)
     assert result is None
+
+
+class DummyConfig(Config):
+    def __init__(self, margin):
+        self.bgc_completeness_margin = margin
+
+
+@pytest.mark.parametrize(
+    "seq_length_map,sequence_id,start,end,margin,expected",
+    [
+        ({"seq1": 1000}, "seq1", 10, 990, 10, "Complete"),
+        ({"seq1": 1000}, "seq1", 5, 990, 10, "Incomplete"),
+        ({"seq1": 1000}, "seq1", 10, 995, 10, "Incomplete"),
+        ({}, "seq1", 10, 990, 10, "Unknown"),
+        ({"seq1": 1000}, "seq2", 10, 990, 10, "Unknown"),
+    ],
+)
+def test_get_completeness(seq_length_map, sequence_id, start, end, margin, expected):
+    config = DummyConfig(margin)
+    result = get_completeness(config, seq_length_map, sequence_id, start, end)
+    assert result == expected

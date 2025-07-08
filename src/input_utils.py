@@ -155,33 +155,18 @@ def get_file_label_from_path(file_path: Path) -> str:
     return file_path.with_suffix("").name  # Remove an extension
 
 
-def get_completeness(
-    config: Config,
-    seq_length_map: Union[dict[str, int], None],
-    sequence_id: str,
-    start: int,
-    end: int,
-) -> Literal["Complete", "Incomplete", "Unknown"]:
+def get_base_extension(file_path: Path) -> str:
     """
-    Get the completeness status of a BGC based on the corresponding sequence length.
+    Get the base extension of a file, excluding any compression suffixes.
+    Example: "example.txt.gz" -> ".txt", "kittens.fastq" -> ".fastq".
 
     Args:
-        config (Config): The configuration object containing completeness margin.
-        seq_length_map (dict): A dictionary mapping sequence IDs to their lengths.
-        sequence_id (str): The ID of the sequence to check.
-        start (int): The start position of the BGC in the sequence.
-        end (int): The end position of the BGC in the sequence.
+        file_path (Path): The path to the file.
 
     Returns:
-        str: "Complete", "Incomplete", or "Unknown" based on the BGC's completeness.
+        str: The base extension of the file.
     """
-    if seq_length_map and sequence_id in seq_length_map:
-        completeness = (
-            "Complete"
-            if end + config.bgc_completeness_margin <= seq_length_map[sequence_id]
-            and start >= config.bgc_completeness_margin
-            else "Incomplete"
-        )
-    else:
-        completeness = "Unknown"
-    return completeness
+    compression_suffixes = [".gz", ".bz2", ".bgz", ".zst", ".xz", ".zip", ".bgzf"]
+    if file_path.suffix.lower() in compression_suffixes:
+        return file_path.with_suffix("").suffix.lower()
+    return file_path.suffix.lower()

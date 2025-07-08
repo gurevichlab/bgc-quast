@@ -5,7 +5,6 @@ from src.config import Config
 from src.genome_mining_result import GenomeMiningResult
 from src.input_utils import (
     determine_running_mode,
-    get_completeness,
     get_file_label_from_path,
 )
 from src.report import RunningMode
@@ -106,27 +105,6 @@ def test_determine_running_mode_different_labels_and_tools_unknown():
 
     mode = determine_running_mode(None, genome_results)
     assert mode == RunningMode.UNKNOWN
-
-
-class DummyConfig(Config):
-    def __init__(self, margin):
-        self.bgc_completeness_margin = margin
-
-
-@pytest.mark.parametrize(
-    "seq_length_map,sequence_id,start,end,margin,expected",
-    [
-        ({"seq1": 1000}, "seq1", 10, 990, 10, "Complete"),
-        ({"seq1": 1000}, "seq1", 5, 990, 10, "Incomplete"),
-        ({"seq1": 1000}, "seq1", 10, 995, 10, "Incomplete"),
-        ({}, "seq1", 10, 990, 10, "Unknown"),
-        ({"seq1": 1000}, "seq2", 10, 990, 10, "Unknown"),
-    ],
-)
-def test_get_completeness(seq_length_map, sequence_id, start, end, margin, expected):
-    config = DummyConfig(margin)
-    result = get_completeness(config, seq_length_map, sequence_id, start, end)
-    assert result == expected
 
 
 @pytest.mark.parametrize(
