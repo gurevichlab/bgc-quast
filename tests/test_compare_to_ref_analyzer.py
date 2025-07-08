@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Literal
 
 import pytest
 
@@ -9,8 +10,8 @@ from src.compare_to_ref_analyzer import (
     compute_reference_coverage,
     compute_stats,
     determine_ref_bgc_status,
-    get_intersecting_bgcs_from_alignment,
     get_asm_bgc_coords_on_ref,
+    get_intersecting_bgcs_from_alignment,
 )
 from src.compare_to_ref_data import Intersection
 from src.genome_mining_result import AlignmentInfo, Bgc, GenomeMiningResult, QuastResult
@@ -24,7 +25,7 @@ def create_bgc(
     start=0,
     end=100,
     bgc_id="",
-    completeness="Unknown",
+    completeness: Literal["Complete", "Incomplete", "Unknown"] = "Unknown",
     product_types=None,
     metadata=None,
 ):
@@ -46,7 +47,7 @@ def create_reference_bgc(
     start=0,
     end=100,
     bgc_id="",
-    completeness="Unknown",
+    completeness: Literal["Complete", "Incomplete", "Unknown"] = "Unknown",
     product_types=None,
     metadata=None,
     intersecting_assembly_bgcs=None,

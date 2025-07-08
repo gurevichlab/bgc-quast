@@ -31,19 +31,23 @@ class Bgc:
 @dataclass
 class GenomeMiningResult:
     """
-    Class for genome mining results. Contains information about the input file, mining tool, and regions.
+    Class for genome mining results. Contains information about the input file, mining
+    tool, and regions.
 
     Attributes:
         input_file (Path): The input file name.
         input_file_label (str): The input file label.
         mining_tool (str): The mining tool name.
         bgcs (list): The BGCs.
+        genome_data (Optional[Dict[str, int]]): Optional mapping of sequence IDs to
+        their lengths. Could be extended in the future to include more genome data.
     """
 
     input_file: Path
     input_file_label: str
     mining_tool: str
     bgcs: List[Bgc] = field(default_factory=list)
+    genome_data: Optional[Dict[str, int]] = None
 
 
 @dataclass

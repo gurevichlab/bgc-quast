@@ -8,3 +8,5 @@ product_yamls:
   antismash_product_mapping: "antismash_class_mapping.yaml"
   gecco_product_mapping: "gecco_class_mapping.yaml"
   deepbgc_product_mapping: "deepbgc_class_mapping.yaml"
+
+bgc_completeness_margin: 100

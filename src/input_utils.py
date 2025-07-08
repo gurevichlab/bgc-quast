@@ -1,10 +1,11 @@
 import gzip
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, TextIO, Union
+from typing import Dict, List, Literal, Optional, TextIO, Union
 
 import yaml
 
+from src.config import Config
 from src.genome_mining_result import GenomeMiningResult
 from src.report import RunningMode
 
@@ -127,3 +128,45 @@ def determine_running_mode(
     else:
         # If all mining results have the same file label regardless of the mining tools.
         return RunningMode.COMPARE_TOOLS
+
+
+def get_file_label_from_path(file_path: Path) -> str:
+    """
+    Extract the file label from the file path.
+    The file label is considered to be the name of the file without its extensions.
+    Example: "example.txt.gz" -> "example", "kittens.fastq" -> "kittens",
+    "best.sample.json" -> "best.sample".
+
+    Args:
+        file_path (Path): The path to the file.
+
+    Returns:
+        str: The file label.
+    """
+    if not file_path.is_file():
+        raise ValueError(f"Provided path {file_path} is not a valid file.")
+
+    compression_suffixes = [".gz", ".bz2", ".bgz", ".zst", ".xz", ".zip", ".bgzf"]
+
+    if file_path.suffix in compression_suffixes:
+        file_path = file_path.with_suffix(
+            ""
+        )  # Remove compression suffix for label extraction
+    return file_path.with_suffix("").name  # Remove an extension
+
+
+def get_base_extension(file_path: Path) -> str:
+    """
+    Get the base extension of a file, excluding any compression suffixes.
+    Example: "example.txt.gz" -> ".txt", "kittens.fastq" -> ".fastq".
+
+    Args:
+        file_path (Path): The path to the file.
+
+    Returns:
+        str: The base extension of the file.
+    """
+    compression_suffixes = [".gz", ".bz2", ".bgz", ".zst", ".xz", ".zip", ".bgzf"]
+    if file_path.suffix.lower() in compression_suffixes:
+        return file_path.with_suffix("").suffix.lower()
+    return file_path.suffix.lower()
