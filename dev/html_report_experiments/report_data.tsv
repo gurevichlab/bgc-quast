@@ -1,0 +1,24 @@
+Genome mining file	assembly_10	assembly_20
+Genome mining tool	antiSMASH	antiSMASH
+# BGC (total)	6	6
+# BGC (NRP)	1	1
+# BGC (PKS)	1	1
+# BGC (...)	4	4
+Mean BGC length (total)	29313.0	27759.2
+Mean BGC length (NRP)	52045.0	50160.0
+Mean BGC length (PKS)	38912.5	41000.7
+Mean BGC length (...)	26123.9	24877.6
+# complete BGC (total)	3	2
+# complete BGC (NRP)	1	1
+# complete BGC (PKS)	1	0
+# complete BGC (...)	1	1
+# incomplete BGC (...)	3	3
+# incomplete BGC (total)	3	4
+# incomplete BGC (NRP)	0	0
+# incomplete BGC (PKS)	0	1
+Mean complete BGC length (total)	31245.0	29000.3
+Mean complete BGC length (NRP)	52045.0	50160.0
+Mean complete BGC length (...)	22800.4	23212.0
+Mean incomplete BGC length (total)	27500.5	26600.1
+Mean incomplete BGC length (NRP)	0.0	0.0
+Mean incomplete BGC length (...)	24000.0	22555.5
