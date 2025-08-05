@@ -1,23 +1,38 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: "Courier New", "Lucida Console", monospace;
     margin: 20px;
-    background-color: #f8f9fa;
+    background-color: #EDF2F4;
 }
 h1 {
     color: #333;
-    text-align: center;
+    text-align: left;
 }
 table {
-    width: 100%;
+    width: 40%;
     border-collapse: collapse;
-    margin-top: 20px;
+    margin-top: 10px;
 }
 th, td {
     border: 1px solid #ccc;
     padding: 8px;
     text-align: left;
 }
+td {
+    background-color: #f8f9fa;
+}
 th {
-    background-color: #e9ecef;
+    background-color: #6cae75;
 }
 
+.extended-row {
+    display: none;
+}
+
+/* TO-DO: Fix the footer position (with Flexbox) */
+#footer {
+    margin-top: 250px;
+    text-align: left;
+    font-size: 15px;
+    border-top: 1px solid #333;
+    padding-top: 1px;
+}
