@@ -8,10 +8,22 @@
     </style>
 </head>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <body>
     <h1>BGC-QUAST Report</h1>
+    <!-- Table -->
+    <div id="reportLayout">
     <div id="reportTableContainer"></div>
+    <div>
+        <h2>Total BGC Count per Tool</h2>
+        <canvas id="bgcBarPlot" width="600" height="300"></canvas>
+    </div>
+</div>
+
+    <!-- Toggle Button -->
     <button id="toggleExtendedBtn">Show Extended Report</button>
+
+    <!-- Data injected by Python -->
     <script>
         const reportData = {{ report_json }};
     </script>

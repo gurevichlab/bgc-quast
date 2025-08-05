@@ -42,13 +42,33 @@ th {
     border-top: 1px solid #333;
     padding-top: 1px;
 }
+
+#reportLayout {
+  display: flex;
+  gap: 0px;
+}
+#reportLayout > div {
+  flex: 1;
+}
     </style>
 </head>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <body>
     <h1>BGC-QUAST Report</h1>
+    <!-- Table -->
+    <div id="reportLayout">
     <div id="reportTableContainer"></div>
+    <div>
+        <h2>Total BGC Count per Tool</h2>
+        <canvas id="bgcBarPlot" width="600" height="300"></canvas>
+    </div>
+</div>
+
+    <!-- Toggle Button -->
     <button id="toggleExtendedBtn">Show Extended Report</button>
+
+    <!-- Data injected by Python -->
     <script>
         const reportData = [["Genome mining file", "assembly_10", "assembly_10", "assembly_10"], ["Genome mining tool", "antiSMASH", "DeepBGC", "GECCO"], ["# BGC (total)", "6", "6", "5"], ["# BGC (NRP)", "1", "1", "1"], ["# BGC (PKS)", "1", "1", "0"], ["Mean BGC length (total)", "29313.0", "27759.2", "26500.5"], ["Mean BGC length (NRP)", "52045.0", "50160.0", "48790.0"], ["# complete BGC (total)", "3", "2", "1"], ["# complete BGC (NRP)", "1", "1", "0"], ["# complete BGC (PKS)", "1", "1", "0"], ["# incomplete BGC (total)", "3", "4", "4"], ["# incomplete BGC (NRP)", "0", "0", "1"], ["# incomplete BGC (PKS)", "0", "0", "0"], ["Mean complete BGC length (total)", "30500.0", "29500.0", "27000.0"], ["Mean complete BGC length (NRP)", "52045.0", "50160.0", "0.0"], ["Mean incomplete BGC length (total)", "28200.0", "26000.0", "25500.0"], ["Mean incomplete BGC length (NRP)", "0.0", "0.0", "48790.0"]];
     </script>
@@ -64,6 +84,49 @@ th {
     // const color = baseColor.brighten(1).hex();
     return scale(num).hex(); // returns color HEX code
 }
+
+function buildBarPlot(data) {
+    // Find the row with "# BGC (total)"
+    const row = data.find(r => r[0] === '# BGC (total)');
+    if (!row) return;
+
+    // Labels = tool + assembly from first 2 rows
+    const tools = data[1].slice(1);     // "Genome mining tool"
+    const assemblies = data[0].slice(1); // "Genome mining file"
+    const labels = tools.map((tool, i) => `${tool}\n${assemblies[i]}`);
+
+    // Data = counts from the "# BGC (total)" row
+    const counts = row.slice(1).map(v => parseInt(v));
+
+    // Create the chart
+    new Chart(document.getElementById('bgcBarPlot'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '# BGC (total)',
+                data: counts,
+                backgroundColor: '#6cae75'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `# BGCs: ${ctx.raw}`
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+
 
 function buildTable(data) {
     const container = document.getElementById('reportTableContainer');
@@ -117,6 +180,7 @@ function buildTable(data) {
 
 document.addEventListener('DOMContentLoaded', () => {
     buildTable(reportData);
+    buildBarPlot(reportData);
 
     const toggleBtn = document.getElementById('toggleExtendedBtn');
     toggleBtn.addEventListener('click', () => {

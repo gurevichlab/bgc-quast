@@ -10,6 +10,49 @@ function getHeatmapColor(value, min, max) {
     return scale(num).hex(); // returns color HEX code
 }
 
+function buildBarPlot(data) {
+    // Find the row with "# BGC (total)"
+    const row = data.find(r => r[0] === '# BGC (total)');
+    if (!row) return;
+
+    // Labels = tool + assembly from first 2 rows
+    const tools = data[1].slice(1);     // "Genome mining tool"
+    const assemblies = data[0].slice(1); // "Genome mining file"
+    const labels = tools.map((tool, i) => `${tool}\n${assemblies[i]}`);
+
+    // Data = counts from the "# BGC (total)" row
+    const counts = row.slice(1).map(v => parseInt(v));
+
+    // Create the chart
+    new Chart(document.getElementById('bgcBarPlot'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '# BGC (total)',
+                data: counts,
+                backgroundColor: '#6cae75'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `# BGCs: ${ctx.raw}`
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+
+
 function buildTable(data) {
     const container = document.getElementById('reportTableContainer');
     const table = document.createElement('table');
@@ -62,6 +105,7 @@ function buildTable(data) {
 
 document.addEventListener('DOMContentLoaded', () => {
     buildTable(reportData);
+    buildBarPlot(reportData);
 
     const toggleBtn = document.getElementById('toggleExtendedBtn');
     toggleBtn.addEventListener('click', () => {

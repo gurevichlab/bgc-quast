@@ -36,3 +36,11 @@ th {
     border-top: 1px solid #333;
     padding-top: 1px;
 }
+
+#reportLayout {
+  display: flex;
+  gap: 0px;
+}
+#reportLayout > div {
+  flex: 1;
+}
