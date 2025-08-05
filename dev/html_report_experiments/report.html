@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BGC-QUAST Report</title>
+    <style>
+    body {
+    font-family: "Courier New", "Lucida Console", monospace;
+    margin: 20px;
+    background-color: #EDF2F4;
+}
+h1 {
+    color: #333;
+    text-align: left;
+}
+table {
+    width: 40%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+}
+td {
+    background-color: #f8f9fa;
+}
+th {
+    background-color: #6cae75;
+}
+
+.extended-row {
+    display: none;
+}
+
+/* TO-DO: Fix the footer position (with Flexbox) */
+#footer {
+    margin-top: 250px;
+    text-align: left;
+    font-size: 15px;
+    border-top: 1px solid #333;
+    padding-top: 1px;
+}
+    </style>
+</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
+<body>
+    <h1>BGC-QUAST Report</h1>
+    <div id="reportTableContainer"></div>
+    <button id="toggleExtendedBtn">Show Extended Report</button>
+    <script>
+        const reportData = [["Genome mining file", "assembly_10", "assembly_10", "assembly_10"], ["Genome mining tool", "antiSMASH", "DeepBGC", "GECCO"], ["# BGC (total)", "6", "6", "5"], ["# BGC (NRP)", "1", "1", "1"], ["# BGC (PKS)", "1", "1", "0"], ["Mean BGC length (total)", "29313.0", "27759.2", "26500.5"], ["Mean BGC length (NRP)", "52045.0", "50160.0", "48790.0"], ["# complete BGC (total)", "3", "2", "1"], ["# complete BGC (NRP)", "1", "1", "0"], ["# complete BGC (PKS)", "1", "1", "0"], ["# incomplete BGC (total)", "3", "4", "4"], ["# incomplete BGC (NRP)", "0", "0", "1"], ["# incomplete BGC (PKS)", "0", "0", "0"], ["Mean complete BGC length (total)", "30500.0", "29500.0", "27000.0"], ["Mean complete BGC length (NRP)", "52045.0", "50160.0", "0.0"], ["Mean incomplete BGC length (total)", "28200.0", "26000.0", "25500.0"], ["Mean incomplete BGC length (NRP)", "0.0", "0.0", "48790.0"]];
+    </script>
+    <script>
+    function getHeatmapColor(value, min, max) {
+    const num = parseFloat(value);
+    if (isNaN(num)) return '';
+
+    if (min === max) return '#c4c4c4'; // neutral color if no range
+
+    const scale = chroma.scale('PRGn').domain([min, max]);
+    // const baseColor = scale(num);
+    // const color = baseColor.brighten(1).hex();
+    return scale(num).hex(); // returns color HEX code
+}
+
+function buildTable(data) {
+    const container = document.getElementById('reportTableContainer');
+    const table = document.createElement('table');
+    const headerRow = document.createElement('tr');
+
+    // Column headers (first row)
+    headerRow.appendChild(document.createElement('th')); // top-left empty cell
+    data[0].slice(1).forEach(col => {
+        const th = document.createElement('th');
+        th.textContent = col;
+        headerRow.appendChild(th);
+    }); // Loops through the first row of data (data[0]), skipping the first item (the row label)
+    table.appendChild(headerRow);
+
+    // Data rows + heatmap
+    for (let i = 1; i < data.length; i++) {
+        const row = document.createElement('tr');
+        const rowData = data[i];
+
+        // Mark extended rows
+        if (i > 6) {
+            row.classList.add('extended-row');
+        }
+
+        // Get numeric values for each row
+        const numericValues = rowData.slice(1)
+            .map(v => parseFloat(v))
+            .filter(v => !isNaN(v));
+        const min = Math.min(...numericValues);
+        const max = Math.max(...numericValues); // Find the smallest and largest numbers in that row
+
+        data[i].forEach((cell, j) => {
+            const td = document.createElement(j === 0 ? 'th' : 'td');
+            td.textContent = cell;
+
+            //Apply heatmap to numeric cells
+            if (j>0) {
+                const color = getHeatmapColor(cell, min, max)
+                if (color) {
+                    td.style.backgroundColor = color;
+                }
+            }
+            row.appendChild(td);
+        });
+        table.appendChild(row);
+    }
+
+    container.appendChild(table);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    buildTable(reportData);
+
+    const toggleBtn = document.getElementById('toggleExtendedBtn');
+    toggleBtn.addEventListener('click', () => {
+        const extendedRows = document.querySelectorAll('.extended-row');
+        const isHidden = extendedRows[0]?.style.display === 'none';
+
+        extendedRows.forEach(row => {
+            row.style.display = isHidden ? 'table-row' : 'none';
+        });
+
+        toggleBtn.textContent = isHidden ? 'Hide Extended Report' : 'Show Extended Report';
+    });
+});
+
+    </script>
+</body>
+<div id="footer">
+    <p>GitHub Project Page:
+    <a href="https://github.com/gurevichlab/bgc-quast">https://github.com/gurevichlab/bgc-quast</a>
+    </p>
+
+</div>
+</html>
+
