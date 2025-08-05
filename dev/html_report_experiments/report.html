@@ -4,69 +4,101 @@
     <meta charset="UTF-8">
     <title>BGC-QUAST Report</title>
     <style>
-    body {
-    font-family: "Courier New", "Lucida Console", monospace;
-    margin: 20px;
+    /* Entire page layout using Flexbox */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
     background-color: #EDF2F4;
+    font-family: "Courier New", "Lucida Console", monospace;
 }
+
+/* New wrapper to flexibly contain header, layout, and footer */
+#main {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 20px;
+}
+
+/* Growable content area: table and plot */
+#reportLayout {
+    display: flex;
+    gap: 0px;
+    flex: 1; /* Takes up remaining vertical space */
+}
+
+#reportLayout > div {
+    flex: 1;
+}
+
+/* Table styling (unchanged) */
 h1 {
     color: #333;
     text-align: left;
 }
+
 table {
-    width: 40%;
+    width: 80%;
     border-collapse: collapse;
     margin-top: 10px;
 }
+
 th, td {
     border: 1px solid #ccc;
     padding: 8px;
     text-align: left;
 }
+
 td {
     background-color: #f8f9fa;
 }
+
 th {
     background-color: #6cae75;
 }
 
+/* Hide extended rows initially */
 .extended-row {
     display: none;
 }
 
-/* TO-DO: Fix the footer position (with Flexbox) */
+/* Sticky footer */
 #footer {
-    margin-top: 250px;
-    text-align: left;
-    font-size: 15px;
     border-top: 1px solid #333;
-    padding-top: 1px;
+    padding-top: 10px;
+    font-size: 15px;
+    text-align: left;
 }
 
-#reportLayout {
-  display: flex;
-  gap: 0px;
-}
-#reportLayout > div {
-  flex: 1;
-}
     </style>
 </head>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <body>
+<div id="main"> <!-- Wrapper -->
     <h1>BGC-QUAST Report</h1>
-    <!-- Table -->
+
     <div id="reportLayout">
-    <div id="reportTableContainer"></div>
-    <div>
-        <h2>Total BGC Count per Tool</h2>
-        <canvas id="bgcBarPlot" width="600" height="300"></canvas>
+        <div>
+            <div id="reportTableContainer"></div>
+            <div style="margin-top: 10px;">
+                <button id="toggleExtendedBtn">Show Extended Report</button>
+            </div>
+        </div>
+
+        <div>
+            <h2>Total BGC Count per Tool</h2>
+            <canvas id="bgcBarPlot" width="600" height="300"></canvas>
+        </div>
+    </div>
+
+    <div id="footer">
+        <p>GitHub Project Page:<br>
+            <a href="https://github.com/gurevichlab/bgc-quast">https://github.com/gurevichlab/bgc-quast</a>
+        </p>
     </div>
 </div>
-
-    <!-- Toggle Button -->
-    <button id="toggleExtendedBtn">Show Extended Report</button>
 
     <!-- Data injected by Python -->
     <script>
@@ -197,11 +229,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     </script>
 </body>
-<div id="footer">
-    <p>GitHub Project Page:
-    <a href="https://github.com/gurevichlab/bgc-quast">https://github.com/gurevichlab/bgc-quast</a>
-    </p>
-
 </div>
 </html>
 

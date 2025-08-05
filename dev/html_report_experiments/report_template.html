@@ -10,18 +10,29 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <body>
+<div id="main"> <!-- Wrapper -->
     <h1>BGC-QUAST Report</h1>
-    <!-- Table -->
+
     <div id="reportLayout">
-    <div id="reportTableContainer"></div>
-    <div>
-        <h2>Total BGC Count per Tool</h2>
-        <canvas id="bgcBarPlot" width="600" height="300"></canvas>
+        <div>
+            <div id="reportTableContainer"></div>
+            <div style="margin-top: 10px;">
+                <button id="toggleExtendedBtn">Show Extended Report</button>
+            </div>
+        </div>
+
+        <div>
+            <h2>Total BGC Count per Tool</h2>
+            <canvas id="bgcBarPlot" width="600" height="300"></canvas>
+        </div>
+    </div>
+
+    <div id="footer">
+        <p>GitHub Project Page:<br>
+            <a href="https://github.com/gurevichlab/bgc-quast">https://github.com/gurevichlab/bgc-quast</a>
+        </p>
     </div>
 </div>
-
-    <!-- Toggle Button -->
-    <button id="toggleExtendedBtn">Show Extended Report</button>
 
     <!-- Data injected by Python -->
     <script>
@@ -31,11 +42,6 @@
     {{ script_js }}
     </script>
 </body>
-<div id="footer">
-    <p>GitHub Project Page:
-    <a href="https://github.com/gurevichlab/bgc-quast">https://github.com/gurevichlab/bgc-quast</a>
-    </p>
-
 </div>
 </html>
 
