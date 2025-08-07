@@ -12,7 +12,7 @@ html, body {
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: 20px;
+    padding: 10px;
 }
 
 /* Growable content area: table and plot */
@@ -60,7 +60,7 @@ th {
 /* Sticky footer */
 #footer {
     border-top: 1px solid #333;
-    padding-top: 10px;
+    padding-top: 0px;
     font-size: 15px;
     text-align: left;
 }

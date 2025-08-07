@@ -18,7 +18,7 @@ html, body {
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: 20px;
+    padding: 10px;
 }
 
 /* Growable content area: table and plot */
@@ -45,7 +45,7 @@ table {
 }
 
 th, td {
-    border: 1px solid #ccc;
+    border: 1px solid #878686;
     padding: 8px;
     text-align: left;
 }
@@ -55,7 +55,7 @@ td {
 }
 
 th {
-    background-color: #6cae75;
+    background-color: #bdd1db;
 }
 
 /* Hide extended rows initially */
@@ -66,7 +66,7 @@ th {
 /* Sticky footer */
 #footer {
     border-top: 1px solid #333;
-    padding-top: 10px;
+    padding-top: 0px;
     font-size: 15px;
     text-align: left;
 }
@@ -81,6 +81,25 @@ th {
 
     <div id="reportLayout">
         <div>
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                <!-- Gradient legend -->
+                <div id="heatmapLegend">
+                    <canvas id="gradientHeatmap" width="300" height="10"></canvas>
+                    <div style="font-size: 12px; display: flex; justify-content: space-between;">
+                        <span>Smallest</span>
+                        <span>Median</span>
+                        <span>Largest</span>
+                    </div>
+                </div>
+
+                <!-- Heatmap toggle checkbox -->
+                <label>
+                    <input type="checkbox" id="heatmapToggle" checked> Show heatmap
+                </label>
+
+
+            </div>
+
             <div id="reportTableContainer"></div>
             <div style="margin-top: 10px;">
                 <button id="toggleExtendedBtn">Show Extended Report</button>
@@ -104,32 +123,161 @@ th {
         const reportData = [["Genome mining file", "assembly_10", "assembly_10", "assembly_10"], ["Genome mining tool", "antiSMASH", "DeepBGC", "GECCO"], ["# BGC (total)", "6", "6", "5"], ["# BGC (NRP)", "1", "1", "1"], ["# BGC (PKS)", "1", "1", "0"], ["Mean BGC length (total)", "29313.0", "27759.2", "26500.5"], ["Mean BGC length (NRP)", "52045.0", "50160.0", "48790.0"], ["# complete BGC (total)", "3", "2", "1"], ["# complete BGC (NRP)", "1", "1", "0"], ["# complete BGC (PKS)", "1", "1", "0"], ["# incomplete BGC (total)", "3", "4", "4"], ["# incomplete BGC (NRP)", "0", "0", "1"], ["# incomplete BGC (PKS)", "0", "0", "0"], ["Mean complete BGC length (total)", "30500.0", "29500.0", "27000.0"], ["Mean complete BGC length (NRP)", "52045.0", "50160.0", "0.0"], ["Mean incomplete BGC length (total)", "28200.0", "26000.0", "25500.0"], ["Mean incomplete BGC length (NRP)", "0.0", "0.0", "48790.0"]];
     </script>
     <script>
-    function getHeatmapColor(value, min, max) {
-    const num = parseFloat(value);
-    if (isNaN(num)) return '';
-
-    if (min === max) return '#c4c4c4'; // neutral color if no range
-
-    const scale = chroma.scale('PRGn').domain([min, max]);
-    // const baseColor = scale(num);
-    // const color = baseColor.brighten(1).hex();
-    return scale(num).hex(); // returns color HEX code
+    // ======= Helper Function: Get Median =======
+function getMedian(arr) {
+    const sorted = [...arr].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 0
+        ? (sorted[mid - 1] + sorted[mid]) / 2
+        : sorted[mid];
 }
 
+// ======= Helper Function: Convert hue + lightness to HSL color string =======
+function getColor(hue, lightness = 92) {
+    return `hsl(${hue}, 80%, ${lightness}%)`;
+}
+
+function drawHeatmapLegend(lowHue, topHue) {
+    const canvas = document.getElementById('gradientHeatmap');
+    const ctx = canvas.getContext('2d');
+
+    const width = canvas.width;
+    const height = canvas.height;
+
+    const gradient = ctx.createLinearGradient(0, 0, width, 0);
+
+    // Create 3-part gradient: Worst (lowHue), Median (white), Best (topHue)
+    gradient.addColorStop(0, getColor(lowHue, 55));  // Worst
+    gradient.addColorStop(0.5, 'hsl(0, 0%, 100%)');  // Median = white
+    gradient.addColorStop(1, getColor(topHue, 55));  // Best
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
+}
+
+// ======= Main Heatmap Function: Apply background color to cells based on stats =======
+function heatMapOneRow(cells, values, direction = 'more_is_better') {
+    if (values.length < 2 || new Set(values).size === 1) return;
+
+    // Step 1: Calculate statistical parameters
+    const sorted = [...values].sort((a, b) => a - b);
+    const median = getMedian(sorted);
+    const q1 = sorted[Math.floor((sorted.length - 1) / 4)];
+    const q3 = sorted[Math.floor((sorted.length - 1) * 3 / 4)];
+    const iqr = q3 - q1;
+
+    // Step 2: Calculate "fences" for mild/extreme outliers
+    const lowOuter = q1 - 3 * iqr;
+    const lowInner = q1 - 1.5 * iqr;
+    const topInner = q3 + 1.5 * iqr;
+    const topOuter = q3 + 3 * iqr;
+
+    // Step 3: Color settings
+    const YELLOW = 60, PURPLE = 280;
+    const MID_BRT = 100, MIN_BRT = 75, INNER_BRT = 65, OUTER_BRT = 55;
+
+    // Step 4: Select hue direction depending on the metric
+    const [lowHue, topHue] = direction === 'less_is_better' ? [PURPLE, YELLOW] : [YELLOW, PURPLE];
+
+    // Step 5: Apply coloring logic per cell
+    for (let i = 0; i < cells.length; i++) {
+        const cell = cells[i];
+        const num = values[i];
+        let hue, lightness;
+
+        if (num < lowOuter) {
+            hue = lowHue; lightness = OUTER_BRT;
+            cell.style.backgroundColor = getColor(hue, lightness);
+            cell.style.color = 'white'; // improve contrast
+        } else if (num < lowInner) {
+            hue = lowHue; lightness = INNER_BRT;
+            cell.style.backgroundColor = getColor(hue, lightness);
+        } else if (num < median) {
+            hue = lowHue;
+            const k = (MID_BRT - MIN_BRT) / (median - lowInner);
+            lightness = MID_BRT - (median - num) * k;
+            cell.style.backgroundColor = getColor(hue, lightness);
+        } else if (num > topOuter) {
+            hue = topHue; lightness = OUTER_BRT;
+            cell.style.backgroundColor = getColor(hue, lightness);
+            cell.style.color = 'white';
+        } else if (num > topInner) {
+            hue = topHue; lightness = INNER_BRT;
+            cell.style.backgroundColor = getColor(hue, lightness);
+        } else if (num > median) {
+            hue = topHue;
+            const k = (MID_BRT - MIN_BRT) / (topInner - median);
+            lightness = MID_BRT - (num - median) * k;
+            cell.style.backgroundColor = getColor(hue, lightness);
+        }
+    }
+}
+
+const allNumericCells = [];
+// ======= Table Builder =======
+function buildTable(data) {
+    allNumericCells.length = 0;
+    const container = document.getElementById('reportTableContainer');
+    const table = document.createElement('table');
+    const headerRow = document.createElement('tr');
+
+    // Build column headers
+    headerRow.appendChild(document.createElement('th')); // top-left empty cell
+    data[0].slice(1).forEach(col => {
+        const th = document.createElement('th');
+        th.textContent = col;
+        headerRow.appendChild(th);
+    });
+    table.appendChild(headerRow);
+
+    // Loop over each data row
+    for (let i = 1; i < data.length; i++) {
+        const row = document.createElement('tr');
+        const rowData = data[i];
+
+        // Hide extended rows by default (toggle later)
+        if (i > 6) row.classList.add('extended-row');
+
+        const numericCells = [];
+        const numericValues = [];
+
+        // Build each cell in the row
+        data[i].forEach((cell, j) => {
+            const td = document.createElement(j === 0 ? 'th' : 'td');
+            td.textContent = cell;
+
+            // Only collect numeric values for heatmap
+            if (j > 0) {
+                const num = parseFloat(cell);
+                if (!isNaN(num)) {
+                    numericCells.push(td);
+                    numericValues.push(num);
+                }
+            }
+
+            row.appendChild(td);
+        });
+
+        // Apply the statistical heatmap coloring
+        heatMapOneRow(numericCells, numericValues);
+        allNumericCells.push({ cells: numericCells, values: numericValues });
+
+        table.appendChild(row);
+    }
+
+    container.appendChild(table);
+}
+
+// ======= Bar Chart Builder =======
 function buildBarPlot(data) {
-    // Find the row with "# BGC (total)"
     const row = data.find(r => r[0] === '# BGC (total)');
     if (!row) return;
 
-    // Labels = tool + assembly from first 2 rows
-    const tools = data[1].slice(1);     // "Genome mining tool"
-    const assemblies = data[0].slice(1); // "Genome mining file"
+    const tools = data[1].slice(1);
+    const assemblies = data[0].slice(1);
     const labels = tools.map((tool, i) => `${tool}\n${assemblies[i]}`);
-
-    // Data = counts from the "# BGC (total)" row
     const counts = row.slice(1).map(v => parseInt(v));
 
-    // Create the chart
     new Chart(document.getElementById('bgcBarPlot'), {
         type: 'bar',
         data: {
@@ -157,62 +305,12 @@ function buildBarPlot(data) {
     });
 }
 
-
-
-function buildTable(data) {
-    const container = document.getElementById('reportTableContainer');
-    const table = document.createElement('table');
-    const headerRow = document.createElement('tr');
-
-    // Column headers (first row)
-    headerRow.appendChild(document.createElement('th')); // top-left empty cell
-    data[0].slice(1).forEach(col => {
-        const th = document.createElement('th');
-        th.textContent = col;
-        headerRow.appendChild(th);
-    }); // Loops through the first row of data (data[0]), skipping the first item (the row label)
-    table.appendChild(headerRow);
-
-    // Data rows + heatmap
-    for (let i = 1; i < data.length; i++) {
-        const row = document.createElement('tr');
-        const rowData = data[i];
-
-        // Mark extended rows
-        if (i > 6) {
-            row.classList.add('extended-row');
-        }
-
-        // Get numeric values for each row
-        const numericValues = rowData.slice(1)
-            .map(v => parseFloat(v))
-            .filter(v => !isNaN(v));
-        const min = Math.min(...numericValues);
-        const max = Math.max(...numericValues); // Find the smallest and largest numbers in that row
-
-        data[i].forEach((cell, j) => {
-            const td = document.createElement(j === 0 ? 'th' : 'td');
-            td.textContent = cell;
-
-            //Apply heatmap to numeric cells
-            if (j>0) {
-                const color = getHeatmapColor(cell, min, max)
-                if (color) {
-                    td.style.backgroundColor = color;
-                }
-            }
-            row.appendChild(td);
-        });
-        table.appendChild(row);
-    }
-
-    container.appendChild(table);
-}
-
+// ======= Setup on Page Load =======
 document.addEventListener('DOMContentLoaded', () => {
     buildTable(reportData);
     buildBarPlot(reportData);
 
+    // Toggle visibility of extended report rows
     const toggleBtn = document.getElementById('toggleExtendedBtn');
     toggleBtn.addEventListener('click', () => {
         const extendedRows = document.querySelectorAll('.extended-row');
@@ -224,6 +322,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         toggleBtn.textContent = isHidden ? 'Hide Extended Report' : 'Show Extended Report';
     });
+
+    const heatmapToggle = document.getElementById('heatmapToggle');
+    heatmapToggle.addEventListener('change', () => {
+        const show = heatmapToggle.checked;
+        allNumericCells.forEach(({ cells, values }) => {
+            if (show) {
+                heatMapOneRow(cells, values);
+            } else {
+                cells.forEach(cell => {
+                    cell.style.backgroundColor = '';
+                    cell.style.color = '';
+                });
+            }
+        });
+    });
+    // Draw heatmap gradient
+    drawHeatmapLegend(60, 280);  // yellow to purple
+
+
 });
 
     </script>

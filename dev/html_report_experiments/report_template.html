@@ -15,6 +15,25 @@
 
     <div id="reportLayout">
         <div>
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                <!-- Gradient legend -->
+                <div id="heatmapLegend">
+                    <canvas id="gradientHeatmap" width="300" height="10"></canvas>
+                    <div style="font-size: 12px; display: flex; justify-content: space-between;">
+                        <span>Smallest</span>
+                        <span>Median</span>
+                        <span>Largest</span>
+                    </div>
+                </div>
+
+                <!-- Heatmap toggle checkbox -->
+                <label>
+                    <input type="checkbox" id="heatmapToggle" checked> Show heatmap
+                </label>
+
+
+            </div>
+
             <div id="reportTableContainer"></div>
             <div style="margin-top: 10px;">
                 <button id="toggleExtendedBtn">Show Extended Report</button>
