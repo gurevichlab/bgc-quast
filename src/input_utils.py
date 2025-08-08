@@ -1,13 +1,12 @@
 import gzip
 import json
 from pathlib import Path
-from typing import Dict, List, Literal, Optional, TextIO, Union
+from typing import Dict, List, Optional, TextIO, Union
 
 import yaml
 
-from src.config import Config
 from src.genome_mining_result import GenomeMiningResult
-from src.report import RunningMode
+from src.reporting.report_data import RunningMode
 
 
 def open_file(file_path: Path) -> Union[TextIO, gzip.GzipFile]:

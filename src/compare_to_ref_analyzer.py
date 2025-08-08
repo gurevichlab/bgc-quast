@@ -1,39 +1,35 @@
+from pathlib import Path
 from src.compare_to_ref_data import (
     Intersection,
     ReferenceBgc,
     Status,
 )
 from src.genome_mining_result import AlignmentInfo, Bgc, GenomeMiningResult, QuastResult
-from src.report import (
-    BasicReport,
-    CompareToRefReport,
-)
 
 
-def compute_stats(
-    basic_report: BasicReport,
+def compute_coverage(
     genome_mining_results: list[GenomeMiningResult],
     reference_genome_mining_result: GenomeMiningResult,
     quast_results: list[QuastResult],
-) -> CompareToRefReport:
+) -> dict[Path, list[ReferenceBgc]]:
     """
-    Compute statistics for the parsed results.
+    Compute reference BGC coverage for mining results.
 
     Match genome mining results with QUAST results by input_file_label.
     Each genome mining result should have a corresponding QUAST result.
     Process each pair independently to calculate reference coverage.
 
     Args:
-        basic_report (BasicReport): Basic report containing basic metrics.
         genome_mining_results (list): List of genome mining results.
         reference_genome_mining_result (GenomeMiningResult): Reference genome mining
         result.
         quast_results (list): Parsed QUAST results.
 
     Returns:
-        CompareToRefReport: Report with computed statistics.
+        dict[Path, list[ReferenceBgc]]: Dictionary mapping input file paths to ReferenceBgc
+        objects with computed statistics.
     """
-    report = CompareToRefReport.from_basic(basic_report)
+    ref_bgc_coverage = {}
 
     for genome_mining_result in genome_mining_results:
         corresponding_quast_result = next(
@@ -49,7 +45,7 @@ def compute_stats(
                 f"No QUAST result found for genome mining result: "
                 f"{genome_mining_result.input_file_label}"
             )
-        report.ref_bgc_coverage[genome_mining_result.input_file] = (
+        ref_bgc_coverage[genome_mining_result.input_file] = (
             compute_reference_coverage(
                 genome_mining_result,
                 corresponding_quast_result,
@@ -57,7 +53,7 @@ def compute_stats(
             )
         )
 
-    return report
+    return ref_bgc_coverage
 
 
 def compute_reference_coverage(

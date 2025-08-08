@@ -1,0 +1,132 @@
+# Report configuration file for BGC-QUAST
+# This file defines the structure and content of different report types
+
+basic_report:
+  metrics:
+    - name: "total_bgc_count"
+      display_name: "# BGCs"
+      description: "Total number of BGCs identified"
+    - name: "mean_bgc_length"
+      display_name: "Mean BGC length"
+      description: "Average length of BGCs in base pairs"
+      
+  grouping_dimensions:
+    product_type:
+      include_total: true
+      order: ["total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid", "Hybrid"]
+    completeness:
+      include_total: true
+      order: ["total", "Complete", "Incomplete", "Unknown"]
+
+  grouping_combinations: [["product_type", "completeness"]]
+
+
+compare_to_reference:
+  metrics:
+    - name: "fully_recovered_bgcs"
+      display_name: "Fully recovered BGCs"
+      description: "Reference BGCs where >95% of the region is covered by at least one assembly BGC with the same product type"
+    - name: "partially_recovered_bgcs"
+      display_name: "Partially recovered BGCs"
+      description: "Reference BGCs where 10-95% of the region is covered by assembly BGCs"
+    - name: "missed_bgcs"
+      display_name: "Missed BGCs"
+      description: "Reference BGCs with <10% coverage by any assembly BGC"
+    - name: "fragmented_recovery"
+      display_name: "Fragmented recovery"
+      description: "Reference BGCs recovered by multiple disjoint assembly BGCs"
+    - name: "misclassified_product_type"
+      display_name: "Misclassified product type"
+      description: "Recovered reference BGCs predicted with a wrong product type in the assembly"
+    - name: "recovery_rate"
+      display_name: "Recovery rate"
+      description: "Percentage of reference BGCs that are fully or partially recovered"
+    - name: "mean_coverage"
+      display_name: "Mean coverage"
+      description: "Average coverage of reference BGCs by assembly BGCs"
+      
+  grouping_dimensions:
+    product_type:
+      include_total: true
+      order: ["total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid", "Hybrid"]
+    completeness:
+      include_total: true
+      order: ["total", "Complete", "Incomplete", "Unknown"]
+
+  grouping_combinations: [["product_type", "completeness"]]
+
+
+compare_tools:
+  metrics:
+    - name: "total_bgc_count"
+      display_name: "# BGCs"
+      description: "Total number of BGCs identified by each tool"
+    - name: "mean_bgc_length"
+      display_name: "Mean BGC length"
+      description: "Average length of BGCs identified by each tool"
+    - name: "shared_bgcs"
+      display_name: "Shared BGCs"
+      description: "Number of BGCs found by multiple tools"
+    - name: "unique_bgcs"
+      display_name: "Unique BGCs"
+      description: "Number of BGCs found by only one tool"
+    - name: "tool_agreement"
+      display_name: "Tool agreement"
+      description: "Percentage of BGCs where tools agree"
+      
+  grouping_dimensions:
+    product_type:
+      include_total: true
+      order: ["total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid", "Hybrid"]
+    tool:
+      include_total: false
+      order: ["antiSMASH", "GECCO", "DeepBGC", "BiG-SCAPE"]
+  
+
+compare_samples:
+  metrics:
+    - name: "total_bgc_count"
+      display_name: "# BGCs"
+      description: "Total number of BGCs identified in each sample"
+    - name: "mean_bgc_length"
+      display_name: "Mean BGC length"
+      description: "Average length of BGCs in each sample"
+    - name: "bgc_diversity"
+      display_name: "BGC diversity"
+      description: "Number of unique BGC types in each sample"
+    - name: "sample_similarity"
+      display_name: "Sample similarity"
+      description: "Similarity between samples based on BGC content"
+    - name: "core_bgcs"
+      display_name: "Core BGCs"
+      description: "Number of BGCs present in all samples"
+    - name: "accessory_bgcs"
+      display_name: "Accessory BGCs"
+      description: "Number of BGCs present in some but not all samples"
+      
+  grouping_dimensions:
+    product_type:
+      include_total: true
+      order: ["total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid", "Hybrid"]
+    sample_group:
+      include_total: true
+      order: ["total", "group_A", "group_B", "group_C"]
+  
+
+# Global settings
+output_settings:
+  decimal_places: 2
+  include_descriptions: true
+  show_empty_metrics: false
+  
+# Formatting settings for different output types
+formatting:
+  txt:
+    column_width: 15
+    show_index: true
+  html:
+    table_class: "report-table"
+    include_css: true
+  tsv:
+    na_rep: "N/A"
+    float_format: "%.2f"

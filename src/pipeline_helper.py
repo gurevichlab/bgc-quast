@@ -1,21 +1,20 @@
 from typing import List, Optional
 
-import src.basic_analyzer as basic_analyzer
 import src.input_utils as input_utils
-import src.report_writer as report_writer
-from src import compare_to_ref_analyzer
+import src.reporting.report_writer as report_writer
 from src.config import load_config
 from src.genome_mining_parser import (
     GenomeMiningResult,
     QuastResult,
-    parse_genome_data,
     parse_input_mining_result_files,
     parse_quast_output_dir,
     parse_reference_genome_mining_result,
 )
 from src.logger import Logger
 from src.option_parser import ValidationError, get_command_line_args
-from src.report import BasicReport, RunningMode
+from src.reporting.report_builder import ReportBuilder
+from src.reporting.report_config import ReportConfigManager
+from src.reporting.report_data import ReportData, RunningMode
 
 
 class PipelineHelper:
@@ -47,7 +46,7 @@ class PipelineHelper:
         self.reference_genome_mining_result: Optional[GenomeMiningResult] = None
         self.quast_results: Optional[List[QuastResult]] = None
         self.running_mode: Optional[RunningMode] = None
-        self.analysis_report: Optional[BasicReport] = None
+        self.analysis_report: Optional[ReportData] = None
 
         default_cfg = load_config()
         try:
@@ -163,23 +162,12 @@ class PipelineHelper:
         Compute statistics for the parsed results.
         """
 
-        analysis_report = basic_analyzer.generate_basic_report(
-            self.assembly_genome_mining_results
+        analysis_report = ReportBuilder(ReportConfigManager()).build_report(
+            results=self.assembly_genome_mining_results,
+            running_mode=self.running_mode,  # type: ignore
+            quast_results=self.quast_results,
+            reference_genome_mining_result=self.reference_genome_mining_result,
         )
-
-        if self.running_mode == RunningMode.COMPARE_TO_REFERENCE:
-            analysis_report = compare_to_ref_analyzer.compute_stats(
-                analysis_report,
-                self.assembly_genome_mining_results,
-                self.reference_genome_mining_result,
-                self.quast_results,
-            )
-        elif self.running_mode == RunningMode.COMPARE_TOOLS:
-            # TODO: Implement analysis for COMPARE_TOOLS mode
-            pass
-        elif self.running_mode == RunningMode.COMPARE_SAMPLES:
-            # TODO: Implement analysis for COMPARE_SAMPLES mode
-            pass
 
         self.analysis_report = analysis_report
 
@@ -209,6 +197,5 @@ class PipelineHelper:
             f"HTML report is saved to {self.config.output_config.html_report}",
             indent=1,
         )
-        # TODO: Actually write something to the specified reports
 
         self.log.finish()  # TODO: Create a separate method for this and "cleaning up"

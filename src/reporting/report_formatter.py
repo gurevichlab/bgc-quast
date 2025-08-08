@@ -1,0 +1,209 @@
+"""Unified report formatters for different output formats."""
+
+from pathlib import Path
+from typing import Optional
+
+import pandas as pd
+from src.reporting.report_config import ReportConfig
+from src.reporting.report_data import ReportData
+
+
+class DataFrameTableBuilder:
+    """Builds pivot tables from ReportData for formatting."""
+
+    def __init__(self, config: ReportConfig):
+        self.config = config
+
+    def build_pivot_table(self, data: ReportData) -> pd.DataFrame:
+        """
+        Build a pivot table from ReportData using metrics as rows, files as columns, and grouping dimensions.
+        """
+        df = data.metrics_df.copy()
+
+        # Create hierarchical row labels and sort keys
+        df["row_label"], df["sort_key"] = zip(
+            *[self._create_row_label_and_sort_key(row) for _, row in df.iterrows()]
+        )
+
+        # Sort the dataframe by the sort keys
+        df = df.sort_values("sort_key").drop("sort_key", axis=1)
+
+        # Always use file_path as columns
+        pivot_table = df.pivot_table(
+            index="row_label",
+            columns="file_path" if "file_path" in df.columns else None,
+            values="value",
+            aggfunc="first",
+            sort=False,
+        )
+
+        return pivot_table
+
+    def _create_row_label_and_sort_key(self, row: pd.Series) -> tuple[str, tuple]:
+        """Create hierarchical row labels and sort keys from metric names and grouping columns,
+        respecting config order."""
+        exclude = {"metric_name", "value", "file_path", "row_label", "sort_key"}
+
+        # Use grouping_combinations from config if present, else all grouping columns
+        grouping_combinations = self.config.grouping_combinations
+        if grouping_combinations:
+            # Use the first combination for ordering/grouping
+            grouping_dims = grouping_combinations[0]
+        else:
+            grouping_dims = [col for col in row.index if col not in exclude]
+
+        metric_display = self._get_metric_display_name(row["metric_name"])
+
+        # Start with metric order
+        metric_order = self._get_metric_order(row["metric_name"])
+
+        # Determine grouping category and build sort key
+        grouping_parts = []
+        non_total_values = []
+
+        for group_dim in grouping_dims:
+            if group_dim in row and pd.notna(row[group_dim]):
+                value = str(row[group_dim])
+                grouping_parts.append(value)
+                non_total_values.append((group_dim, value))
+
+        # Determine the grouping category for sorting
+        if not non_total_values:
+            # This is a total row
+            grouping_category = 0
+            sort_key_parts = [metric_order, grouping_category]
+        elif len(non_total_values) == 1:
+            # Single dimension grouping
+            dim_name, dim_value = non_total_values[0]
+            grouping_category = 1
+            dim_order = self._get_dimension_value_order(dim_name, dim_value)
+            # For single dimensions, we want them ordered by their position in grouping_dims
+            dim_position = (
+                grouping_dims.index(dim_name) if dim_name in grouping_dims else 999
+            )
+            sort_key_parts = [metric_order, grouping_category, dim_position, dim_order]
+        else:
+            # Multi-dimension grouping
+            grouping_category = 2
+            # Sort by the values in the order of grouping_dims
+            dim_sort_parts = []
+            for group_dim in grouping_dims:
+                found_value = None
+                for dim_name, dim_value in non_total_values:
+                    if dim_name == group_dim:
+                        found_value = dim_value
+                        break
+
+                if found_value:
+                    dim_order = self._get_dimension_value_order(group_dim, found_value)
+                    dim_sort_parts.append(dim_order)
+                else:
+                    dim_sort_parts.append(float("inf"))
+
+            sort_key_parts = [metric_order, grouping_category] + dim_sort_parts
+
+        # Create the label
+        if grouping_parts:
+            label = f"{metric_display} ({', '.join(grouping_parts)})"
+        else:
+            label = f"{metric_display} (total)"
+
+        return label, tuple(sort_key_parts)
+
+    def _get_metric_order(self, metric_name: str) -> int:
+        """Get the order index for a metric based on config."""
+        for i, metric_config in enumerate(self.config.metrics):
+            if metric_config.name == metric_name:
+                return i
+        return len(self.config.metrics)  # Unknown metrics go last
+
+    def _get_dimension_value_order(self, dimension_name: str, value: str) -> int:
+        """Get the order index for a dimension value based on config."""
+        if dimension_name in self.config.grouping_dimensions:
+            dimension_config = self.config.grouping_dimensions[dimension_name]
+            if value in dimension_config.order:
+                return dimension_config.order.index(value)
+            else:
+                # Unknown values go after known ones
+                return len(dimension_config.order)
+        return 0  # Default order if dimension not configured
+
+    def _get_metric_display_name(self, metric_name: str) -> str:
+        """Get display name for a metric."""
+        for metric_config in self.config.metrics:
+            if metric_config.name == metric_name:
+                return metric_config.display_name
+        return metric_name  # Fallback to original name
+
+
+class ReportFormatter:
+    """Unified report formatter that can output to multiple formats."""
+
+    def __init__(self, config: ReportConfig):
+        self.config = config
+        self.table_builder = DataFrameTableBuilder(config)
+
+    def write_txt(self, data: ReportData, output_path: Path) -> None:
+        """Format and save report as plain text table."""
+        pivot_table = self.table_builder.build_pivot_table(data)
+
+        # Format numbers to 3 decimal places for numeric columns
+        formatted_table = pivot_table.copy()
+        for col in formatted_table.columns:
+            formatted_table[col] = formatted_table[col].apply(
+                lambda x: f"{x:.3f}"
+                if isinstance(x, float) and pd.notna(x)
+                else str(x)
+                if pd.notna(x)
+                else ""
+            )
+
+        txt = formatted_table.to_string(na_rep="")
+        output_path.write_text(txt, encoding="utf-8")
+
+    def write_html(self, data: ReportData, output_path: Path) -> None:
+        """Format and save report as HTML with basic styling."""
+        pivot_table = self.table_builder.build_pivot_table(data)
+
+        # Create HTML with basic styling
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BGC-QUAST Report</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; margin: 20px; }}
+        table {{ border-collapse: collapse; width: 100%; }}
+        th, td {{ border: 1px solid #ddd; padding: 8px; text-align: right; }}
+        th {{ background-color: #f2f2f2; font-weight: bold; }}
+        .metric-header {{ text-align: left; font-weight: bold; }}
+    </style>
+</head>
+<body>
+    <h1>BGC-QUAST Report</h1>
+    {pivot_table.to_html(classes="report-table", na_rep="", float_format=lambda x: f"{x:.3f}")}
+</body>
+</html>
+"""
+        output_path.write_text(html_content, encoding="utf-8")
+
+    def write_tsv(self, data: ReportData, output_path: Path) -> None:
+        """Format and save report as TSV."""
+        pivot_table = self.table_builder.build_pivot_table(data)
+        pivot_table.to_csv(output_path, sep="\t", na_rep="", float_format="%.3f")
+
+    def format_report(
+        self,
+        report: ReportData,
+        txt_destination: Path,
+        html_destination: Path,
+        tsv_destination: Optional[Path] = None,
+    ) -> None:
+        """
+        Legacy method for backwards compatibility.
+        Write the report to text, HTML, and optionally TSV files.
+        """
+        self.write_txt(report, txt_destination)
+        self.write_html(report, html_destination)
+        if tsv_destination:
+            self.write_tsv(report, tsv_destination)
