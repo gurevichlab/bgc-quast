@@ -184,7 +184,11 @@ function lighten(hex, factor = 0.5) {
 function renderTypeFilters(types) {
     const group = document.getElementById('typeFilterGroup');
     if (!group) return;
+
+    // Preserve the legend if present
+    const legend = group.querySelector('legend');
     group.innerHTML = '';
+    if (legend) group.appendChild(legend);
 
     const frag = document.createDocumentFragment();
     types.forEach(type => {
@@ -210,17 +214,30 @@ function selectedTypesFromUI(allTypes) {
     });
 }
 
+// Which completeness statuses are ON
+function selectedStatusesFromUI() {
+  const on = [];
+  if (document.getElementById('status_complete')?.checked)   on.push('complete');
+  if (document.getElementById('status_incomplete')?.checked) on.push('incomplete');
+  // If none selected, return empty array (chart will show nothing for completeness parts)
+  return on;
+}
+
 // Enable/disable controls depending on mode
 function syncShowByDisabled() {
-    const isTotal  = document.getElementById('barModeTotal').checked;
-    const showBy   = document.getElementById('barModeShowBy').checked;
-    const byTypeOn = document.getElementById('byType').checked;
+    const isTotal   = document.getElementById('barModeTotal').checked;
+    const showBy    = document.getElementById('barModeShowBy').checked;
+    const byTypeOn  = document.getElementById('byType').checked;
+    const byCompOn  = document.getElementById('byCompleteness').checked;
 
     const showByGroup = document.getElementById('showByGroup');
     if (showByGroup) showByGroup.disabled = isTotal;
 
     const typeFilterGroup = document.getElementById('typeFilterGroup');
     if (typeFilterGroup) typeFilterGroup.disabled = isTotal || !showBy || !byTypeOn;
+
+    const completenessFilterGroup = document.getElementById('completenessFilterGroup');
+    if (completenessFilterGroup) completenessFilterGroup.disabled = isTotal || !showBy || !byCompOn;
 }
 
 
@@ -268,7 +285,7 @@ function buildBarPlotDynamic(data) {
     if (mode === 'total') {
         const row = getRowByLabel(data, '# BGC (total)');
         if (row) {
-            const counts = row.slice(1).map(v => parseInt(v));
+            const counts = row.slice(1).map(v => parseInt(v, 10));
             datasets.push({
                 label: '# BGC (total)',
                 data: counts,
@@ -281,22 +298,24 @@ function buildBarPlotDynamic(data) {
             // stacks are (type x completeness)
             const allTypes = detectTypes(data);
             const types = selectedTypesFromUI(allTypes);
+            const statuses = selectedStatusesFromUI();
+
             for (const type of types) {
                 const baseColor = productColors[type] || productColors['Other'];
                 const rowComplete = getRowByLabel(data, `# complete BGC (${type})`);
                 const rowIncomplete = getRowByLabel(data, `# incomplete BGC (${type})`);
 
-                if (rowComplete) {
+                if (statuses.includes('complete') && rowComplete) {
                     datasets.push({
                         label: `${type} complete`,
-                        data: rowComplete.slice(1).map(v => parseInt(v)),
+                        data: rowComplete.slice(1).map(v => parseInt(v, 10)),
                         backgroundColor: baseColor
                     });
                 }
-                if (rowIncomplete) {
+                if (statuses.includes('incomplete') && rowIncomplete) {
                     datasets.push({
                         label: `${type} incomplete`,
-                        data: rowIncomplete.slice(1).map(v => parseInt(v)),
+                        data: rowIncomplete.slice(1).map(v => parseInt(v, 10)),
                         backgroundColor: lighten(baseColor, 0.45) // lighter shade
                     });
                 }
@@ -305,18 +324,19 @@ function buildBarPlotDynamic(data) {
             // stacks are complete vs incomplete (total)
             const rowComplete = getRowByLabel(data, '# complete BGC (total)');
             const rowIncomplete = getRowByLabel(data, '# incomplete BGC (total)');
+            const statuses = selectedStatusesFromUI();
 
-            if (rowComplete) {
+            if (statuses.includes('complete') && rowComplete) {
                 datasets.push({
                     label: 'Complete',
-                    data: rowComplete.slice(1).map(v => parseInt(v)),
+                    data: rowComplete.slice(1).map(v => parseInt(v, 10)),
                     backgroundColor: '#4e948f'
                 });
             }
-            if (rowIncomplete) {
+            if (statuses.includes('incomplete') && rowIncomplete) {
                 datasets.push({
                     label: 'Incomplete',
-                    data: rowIncomplete.slice(1).map(v => parseInt(v)),
+                    data: rowIncomplete.slice(1).map(v => parseInt(v, 10)),
                     backgroundColor: '#a18e8a'
                 });
             }
@@ -329,7 +349,7 @@ function buildBarPlotDynamic(data) {
                 if (row) {
                     datasets.push({
                         label: type,
-                        data: row.slice(1).map(v => parseInt(v)),
+                        data: row.slice(1).map(v => parseInt(v, 10)),
                         backgroundColor: productColors[type] || productColors['Other']
                     });
                 }
@@ -339,7 +359,7 @@ function buildBarPlotDynamic(data) {
             // just show the total to avoid an empty chart.
             const row = getRowByLabel(data, '# BGC (total)');
             if (row) {
-                const counts = row.slice(1).map(v => parseInt(v));
+                const counts = row.slice(1).map(v => parseInt(v, 10));
                 datasets.push({
                     label: '# BGC (total)',
                     data: counts,
@@ -437,17 +457,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Add the event listener for complete/incomplete
+    const compGroup = document.getElementById('completenessFilterGroup');
+    if (compGroup) {
+        compGroup.addEventListener('change', (e) => {
+            if (e.target && e.target.matches('input[type="checkbox"]')) {
+                buildBarPlotDynamic(reportData);
+            }
+        });
+    }
+
     // Initialize disabled/enabled state on first load
     syncShowByDisabled();
 
-    document.getElementById('barModeTotal').addEventListener('change', syncShowByDisabled);
-    document.getElementById('barModeShowBy').addEventListener('change', syncShowByDisabled);
-    syncShowByDisabled();
-    // Re-render when the Show by checkboxes change
-    ['byCompleteness','byType'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener('change', () => buildBarPlotDynamic(reportData));
-    });
+    // document.getElementById('barModeTotal').addEventListener('change', syncShowByDisabled);
+    // document.getElementById('barModeShowBy').addEventListener('change', syncShowByDisabled);
+    // syncShowByDisabled();
+    // // Re-render when the Show by checkboxes change
+    // ['byCompleteness','byType'].forEach(id => {
+    //     const el = document.getElementById(id);
+    //     if (el) el.addEventListener('change', () => buildBarPlotDynamic(reportData));
+    // });
 
     // Draw heatmap gradient
     drawHeatmapLegend(60, 280);  // yellow to purple
