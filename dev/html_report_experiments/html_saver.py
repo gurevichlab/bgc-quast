@@ -15,7 +15,7 @@ def main():
     with open('build_report.js', 'r', encoding='utf-8') as f:
         script_js = f.read()
 
-    data_json = json.dumps(read_tsv_as_json('report_data.tsv'))
+    data_json = json.dumps(read_tsv_as_json('report_data2.tsv'))
 
     html_filled = html_template.replace('{{ style_css }}', style_css)\
                                .replace('{{ script_js }}', script_js)\
