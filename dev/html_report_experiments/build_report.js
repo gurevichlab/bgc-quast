@@ -118,8 +118,14 @@ function buildTable(data) {
         const row = document.createElement('tr');
         const rowData = data[i];
 
-        // Hide extended rows by default (toggle later)
-        if (i > 6) row.classList.add('extended-row');
+        // Hide extended rows by default (only show "total" by default)
+        const label = String(rowData[0] ?? '').toLowerCase();
+        const isTotal = label.includes('(total)');
+        const isGenomeTool = label === 'genome mining tool';
+        if (!isTotal && !isGenomeTool) {
+            row.classList.add('extended-row');
+        }
+
 
         const numericCells = [];
         const numericValues = [];
@@ -197,6 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleBtn = document.getElementById('toggleExtendedBtn');
     toggleBtn.addEventListener('click', () => {
         const extendedRows = document.querySelectorAll('.extended-row');
+        if (!extendedRows.length) return; // nothing to toggle
         const isHidden = getComputedStyle(extendedRows[0]).display === 'none';
 
         extendedRows.forEach(row => {
