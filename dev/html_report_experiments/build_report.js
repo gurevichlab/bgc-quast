@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleBtn = document.getElementById('toggleExtendedBtn');
     toggleBtn.addEventListener('click', () => {
         const extendedRows = document.querySelectorAll('.extended-row');
-        const isHidden = extendedRows[0]?.style.display === 'none';
+        const isHidden = getComputedStyle(extendedRows[0]).display === 'none';
 
         extendedRows.forEach(row => {
             row.style.display = isHidden ? 'table-row' : 'none';
