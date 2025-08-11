@@ -351,14 +351,14 @@ function buildBarPlotDynamic(data) {
 
     // cleanup previous chart
     if (bgcChart) {
-        bgcChart.destroy();
+        bgcChart.destroy();  // clean up the old chart instance
         bgcChart = null;
     }
 
     // stacked if more than one dataset
     const stacked = datasets.length > 1;
 
-    bgcChart = new Chart(document.getElementById('bgcBarPlot'), {
+    bgcChart = new Chart(document.getElementById('bgcBarPlot'), { // save the new chart in the same variable
         type: 'bar',
         data: { labels, datasets },
         options: {
