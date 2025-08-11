@@ -83,13 +83,51 @@ th {
 }
 
 /* Barplot */
-.barplot-controls {
+.plot-and-controls {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 6px 0 10px 0;
+  align-items: flex-start;
+  gap: 16px;
+  /* Prevent accidental wrapping below the canvas */
+  flex-wrap: nowrap;
+}
+
+.plot-and-controls .chart-wrap {
+  flex: 1 1 720px;   /* <- initial width; grows/shrinks with the layout */
+  min-width: 480px;  /* <- optional floor so it never gets too small */
+  display: block;
+}
+
+.plot-and-controls .chart-wrap canvas {
+  display: block;
+  width: 100% !important;
+  height: auto !important; /* keeps aspect ratio unless you later fix height */
+}
+
+.barplot-controls {
+  /* Keep controls in a narrow column on the right */
+  flex: 0 0 240px;         /* ~240px fixed column */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   font-size: 14px;
 }
+
+.barplot-controls fieldset {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.barplot-controls fieldset label {
+  display: block;
+  margin: 4px 0;
+}
+
+.barplot-controls legend {
+  font-weight: 600;
+  font-size: 13px;
+}
+
 
 
 
@@ -137,25 +175,32 @@ th {
             </div>
         </div>
 
+        <!-- The barplot -->
         <div>
-            <div class="barplot-controls">
-                <!-- main toggle (mutually exclusive) -->
-                <label>
-                    <input type="radio" name="barMode" value="total" id="barModeTotal" checked>
-                    Total
-                </label>
-                <label>
-                    <input type="radio" name="barMode" value="showby" id="barModeShowBy">
-                    Show by:
-                </label>
+            <div class="plot-and-controls">
+                <div class="chart-wrap">
+                    <canvas id="bgcBarPlot"></canvas>
+                </div>
 
-                <!-- Wrap checkboxes in a fieldset (only matter when Show by is active) -->
-                <fieldset id="showByGroup">
-                    <label><input type="checkbox" id="byCompleteness"> by completeness</label>
-                    <label><input type="checkbox" id="byType"> by type</label>
-                </fieldset>
+                <div class="barplot-controls">
+                    <div class="barplot-mode">
+                        <label><input type="radio" name="barMode" value="total" id="barModeTotal" checked> Total</label>
+                        <label><input type="radio" name="barMode" value="showby" id="barModeShowBy"> Show by:</label>
+                    </div>
+
+                    <!-- Show-by group (completeness + type) -->
+                    <fieldset id="showByGroup">
+                        <label><input type="checkbox" id="byCompleteness"> by completeness</label>
+                        <label><input type="checkbox" id="byType"> by type</label>
+                    </fieldset>
+
+                    <!-- Dynamic product filters (NRP/PKS/RiPP/...) -->
+                    <fieldset id="typeFilterGroup">
+                        <legend>Products</legend>
+                        <!-- JS fills in checkboxes here -->
+                    </fieldset>
+                </div>
             </div>
-            <canvas id="bgcBarPlot" width="600" height="300"></canvas>
         </div>
     </div>
 
@@ -353,6 +398,50 @@ function lighten(hex, factor = 0.5) {
     return `rgb(${r}, ${g}, ${b})`;
 }
 
+// Build the product checkboxes from data (NRP/PKS/RiPP/...)
+function renderTypeFilters(types) {
+    const group = document.getElementById('typeFilterGroup');
+    if (!group) return;
+    group.innerHTML = '';
+
+    const frag = document.createDocumentFragment();
+    types.forEach(type => {
+        const id = `type_${type.replace(/\W+/g, '_')}`;
+        const label = document.createElement('label');
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = id;
+        input.dataset.type = type;
+        input.checked = true; // default: include
+        label.appendChild(input);
+        label.append(` ${type}`);
+        frag.appendChild(label);
+    });
+    group.appendChild(frag);
+}
+
+// Which product checkboxes are ON
+function selectedTypesFromUI(allTypes) {
+    return allTypes.filter(t => {
+        const el = document.getElementById(`type_${t.replace(/\W+/g, '_')}`);
+        return !el || el.checked; // include if missing or checked
+    });
+}
+
+// Enable/disable controls depending on mode
+function syncShowByDisabled() {
+    const isTotal  = document.getElementById('barModeTotal').checked;
+    const showBy   = document.getElementById('barModeShowBy').checked;
+    const byTypeOn = document.getElementById('byType').checked;
+
+    const showByGroup = document.getElementById('showByGroup');
+    if (showByGroup) showByGroup.disabled = isTotal;
+
+    const typeFilterGroup = document.getElementById('typeFilterGroup');
+    if (typeFilterGroup) typeFilterGroup.disabled = isTotal || !showBy || !byTypeOn;
+}
+
+
 let bgcChart = null; // keep a reference so we can update/destroy cleanly
 
 // --- Read data rows by label ---
@@ -408,7 +497,8 @@ function buildBarPlotDynamic(data) {
         // SHOW BY...
         if (byCompleteness && byType) {
             // stacks are (type x completeness)
-            const types = detectTypes(data);
+            const allTypes = detectTypes(data);
+            const types = selectedTypesFromUI(allTypes);
             for (const type of types) {
                 const baseColor = productColors[type] || productColors['Other'];
                 const rowComplete = getRowByLabel(data, `# complete BGC (${type})`);
@@ -450,7 +540,8 @@ function buildBarPlotDynamic(data) {
             }
         } else if (byType) {
             // stacks are by type (totals per type)
-            const types = detectTypes(data);
+            const allTypes = detectTypes(data);
+            const types = selectedTypesFromUI(allTypes);
             for (const type of types) {
                 const row = getRowByLabel(data, `# BGC (${type})`);
                 if (row) {
@@ -490,6 +581,8 @@ function buildBarPlotDynamic(data) {
         data: { labels, datasets },
         options: {
             responsive: true,
+            maintainAspectRatio: true, // height auto-adjusts from width
+            aspectRatio: 1.7,          // tweak: width / height (e.g., 1.6, 1.7, 1.8)
             plugins: {
                 legend: { position: 'top' },
                 tooltip: {
@@ -510,6 +603,7 @@ function buildBarPlotDynamic(data) {
 // ======= Setup on Page Load =======
 document.addEventListener('DOMContentLoaded', () => {
     buildTable(reportData);
+    renderTypeFilters(detectTypes(reportData));
     buildBarPlotDynamic(reportData);
 
     // Toggle visibility of extended report rows
@@ -542,16 +636,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Bar plot controls listeners ===
-    ['barModeTotal', 'barModeShowBy', 'byCompleteness', 'byType'].forEach(id => {
+    // Radios & "by ..." checkboxes: sync disabled state + rebuild
+    ['barModeTotal','barModeShowBy','byCompleteness','byType'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.addEventListener('change', () => buildBarPlotDynamic(reportData));
+        if (el) el.addEventListener('change', () => {
+            syncShowByDisabled();
+            buildBarPlotDynamic(reportData);
+        });
     });
 
-     // === Disable/enable the "Show by" checkboxes when switching Total/Show by ===
-    const syncShowByDisabled = () => {
-        const isTotal = document.getElementById('barModeTotal').checked;
-        document.getElementById('showByGroup').disabled = isTotal;
-    };
+    // Delegate product checkbox changes to the fieldset
+    const typeGroup = document.getElementById('typeFilterGroup');
+    if (typeGroup) {
+        typeGroup.addEventListener('change', (e) => {
+            if (e.target && e.target.matches('input[type="checkbox"]')) {
+                buildBarPlotDynamic(reportData);
+            }
+        });
+    }
+
+    // Initialize disabled/enabled state on first load
+    syncShowByDisabled();
+
     document.getElementById('barModeTotal').addEventListener('change', syncShowByDisabled);
     document.getElementById('barModeShowBy').addEventListener('change', syncShowByDisabled);
     syncShowByDisabled();

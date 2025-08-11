@@ -180,6 +180,50 @@ function lighten(hex, factor = 0.5) {
     return `rgb(${r}, ${g}, ${b})`;
 }
 
+// Build the product checkboxes from data (NRP/PKS/RiPP/...)
+function renderTypeFilters(types) {
+    const group = document.getElementById('typeFilterGroup');
+    if (!group) return;
+    group.innerHTML = '';
+
+    const frag = document.createDocumentFragment();
+    types.forEach(type => {
+        const id = `type_${type.replace(/\W+/g, '_')}`;
+        const label = document.createElement('label');
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = id;
+        input.dataset.type = type;
+        input.checked = true; // default: include
+        label.appendChild(input);
+        label.append(` ${type}`);
+        frag.appendChild(label);
+    });
+    group.appendChild(frag);
+}
+
+// Which product checkboxes are ON
+function selectedTypesFromUI(allTypes) {
+    return allTypes.filter(t => {
+        const el = document.getElementById(`type_${t.replace(/\W+/g, '_')}`);
+        return !el || el.checked; // include if missing or checked
+    });
+}
+
+// Enable/disable controls depending on mode
+function syncShowByDisabled() {
+    const isTotal  = document.getElementById('barModeTotal').checked;
+    const showBy   = document.getElementById('barModeShowBy').checked;
+    const byTypeOn = document.getElementById('byType').checked;
+
+    const showByGroup = document.getElementById('showByGroup');
+    if (showByGroup) showByGroup.disabled = isTotal;
+
+    const typeFilterGroup = document.getElementById('typeFilterGroup');
+    if (typeFilterGroup) typeFilterGroup.disabled = isTotal || !showBy || !byTypeOn;
+}
+
+
 let bgcChart = null; // keep a reference so we can update/destroy cleanly
 
 // --- Read data rows by label ---
@@ -235,7 +279,8 @@ function buildBarPlotDynamic(data) {
         // SHOW BY...
         if (byCompleteness && byType) {
             // stacks are (type x completeness)
-            const types = detectTypes(data);
+            const allTypes = detectTypes(data);
+            const types = selectedTypesFromUI(allTypes);
             for (const type of types) {
                 const baseColor = productColors[type] || productColors['Other'];
                 const rowComplete = getRowByLabel(data, `# complete BGC (${type})`);
@@ -277,7 +322,8 @@ function buildBarPlotDynamic(data) {
             }
         } else if (byType) {
             // stacks are by type (totals per type)
-            const types = detectTypes(data);
+            const allTypes = detectTypes(data);
+            const types = selectedTypesFromUI(allTypes);
             for (const type of types) {
                 const row = getRowByLabel(data, `# BGC (${type})`);
                 if (row) {
@@ -317,6 +363,8 @@ function buildBarPlotDynamic(data) {
         data: { labels, datasets },
         options: {
             responsive: true,
+            maintainAspectRatio: true, // height auto-adjusts from width
+            aspectRatio: 1.7,          // tweak: width / height (e.g., 1.6, 1.7, 1.8)
             plugins: {
                 legend: { position: 'top' },
                 tooltip: {
@@ -337,6 +385,7 @@ function buildBarPlotDynamic(data) {
 // ======= Setup on Page Load =======
 document.addEventListener('DOMContentLoaded', () => {
     buildTable(reportData);
+    renderTypeFilters(detectTypes(reportData));
     buildBarPlotDynamic(reportData);
 
     // Toggle visibility of extended report rows
@@ -369,16 +418,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Bar plot controls listeners ===
-    ['barModeTotal', 'barModeShowBy', 'byCompleteness', 'byType'].forEach(id => {
+    // Radios & "by ..." checkboxes: sync disabled state + rebuild
+    ['barModeTotal','barModeShowBy','byCompleteness','byType'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.addEventListener('change', () => buildBarPlotDynamic(reportData));
+        if (el) el.addEventListener('change', () => {
+            syncShowByDisabled();
+            buildBarPlotDynamic(reportData);
+        });
     });
 
-     // === Disable/enable the "Show by" checkboxes when switching Total/Show by ===
-    const syncShowByDisabled = () => {
-        const isTotal = document.getElementById('barModeTotal').checked;
-        document.getElementById('showByGroup').disabled = isTotal;
-    };
+    // Delegate product checkbox changes to the fieldset
+    const typeGroup = document.getElementById('typeFilterGroup');
+    if (typeGroup) {
+        typeGroup.addEventListener('change', (e) => {
+            if (e.target && e.target.matches('input[type="checkbox"]')) {
+                buildBarPlotDynamic(reportData);
+            }
+        });
+    }
+
+    // Initialize disabled/enabled state on first load
+    syncShowByDisabled();
+
     document.getElementById('barModeTotal').addEventListener('change', syncShowByDisabled);
     document.getElementById('barModeShowBy').addEventListener('change', syncShowByDisabled);
     syncShowByDisabled();

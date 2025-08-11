@@ -40,25 +40,32 @@
             </div>
         </div>
 
+        <!-- The barplot -->
         <div>
-            <div class="barplot-controls">
-                <!-- main toggle (mutually exclusive) -->
-                <label>
-                    <input type="radio" name="barMode" value="total" id="barModeTotal" checked>
-                    Total
-                </label>
-                <label>
-                    <input type="radio" name="barMode" value="showby" id="barModeShowBy">
-                    Show by:
-                </label>
+            <div class="plot-and-controls">
+                <div class="chart-wrap">
+                    <canvas id="bgcBarPlot"></canvas>
+                </div>
 
-                <!-- Wrap checkboxes in a fieldset (only matter when Show by is active) -->
-                <fieldset id="showByGroup">
-                    <label><input type="checkbox" id="byCompleteness"> by completeness</label>
-                    <label><input type="checkbox" id="byType"> by type</label>
-                </fieldset>
+                <div class="barplot-controls">
+                    <div class="barplot-mode">
+                        <label><input type="radio" name="barMode" value="total" id="barModeTotal" checked> Total</label>
+                        <label><input type="radio" name="barMode" value="showby" id="barModeShowBy"> Show by:</label>
+                    </div>
+
+                    <!-- Show-by group (completeness + type) -->
+                    <fieldset id="showByGroup">
+                        <label><input type="checkbox" id="byCompleteness"> by completeness</label>
+                        <label><input type="checkbox" id="byType"> by type</label>
+                    </fieldset>
+
+                    <!-- Dynamic product filters (NRP/PKS/RiPP/...) -->
+                    <fieldset id="typeFilterGroup">
+                        <legend>Products</legend>
+                        <!-- JS fills in checkboxes here -->
+                    </fieldset>
+                </div>
             </div>
-            <canvas id="bgcBarPlot" width="600" height="300"></canvas>
         </div>
     </div>
 

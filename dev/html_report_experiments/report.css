@@ -77,13 +77,51 @@ th {
 }
 
 /* Barplot */
-.barplot-controls {
+.plot-and-controls {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 6px 0 10px 0;
+  align-items: flex-start;
+  gap: 16px;
+  /* Prevent accidental wrapping below the canvas */
+  flex-wrap: nowrap;
+}
+
+.plot-and-controls .chart-wrap {
+  flex: 1 1 720px;   /* <- initial width; grows/shrinks with the layout */
+  min-width: 480px;  /* <- optional floor so it never gets too small */
+  display: block;
+}
+
+.plot-and-controls .chart-wrap canvas {
+  display: block;
+  width: 100% !important;
+  height: auto !important; /* keeps aspect ratio unless you later fix height */
+}
+
+.barplot-controls {
+  /* Keep controls in a narrow column on the right */
+  flex: 0 0 240px;         /* ~240px fixed column */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   font-size: 14px;
 }
+
+.barplot-controls fieldset {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.barplot-controls fieldset label {
+  display: block;
+  margin: 4px 0;
+}
+
+.barplot-controls legend {
+  font-weight: 600;
+  font-size: 13px;
+}
+
 
 
 
