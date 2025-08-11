@@ -1,17 +1,17 @@
-// ======= Helper Function: Get Median =======
+// =======  Compute the median of a numeric array =======
 function getMedian(arr) {
-    const sorted = [...arr].sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    return sorted.length % 2 === 0
-        ? (sorted[mid - 1] + sorted[mid]) / 2
-        : sorted[mid];
+    const mid = Math.floor(arr.length / 2); // Calculate the middle index of the array
+    return arr.length % 2 === 0
+        ? (arr[mid - 1] + arr[mid]) / 2
+        : arr[mid];
 }
 
-// ======= Helper Function: Convert hue + lightness to HSL color string =======
+// ======= Convert hue + lightness to HSL color string =======
 function getColor(hue, lightness = 92) {
     return `hsl(${hue}, 80%, ${lightness}%)`;
 }
 
+// ======= Draw the heatmap legend above the table =======
 function drawHeatmapLegend(lowHue, topHue) {
     const canvas = document.getElementById('gradientHeatmap');
     const ctx = canvas.getContext('2d');
@@ -21,70 +21,78 @@ function drawHeatmapLegend(lowHue, topHue) {
 
     const gradient = ctx.createLinearGradient(0, 0, width, 0);
 
-    // Create 3-part gradient: Worst (lowHue), Median (white), Best (topHue)
-    gradient.addColorStop(0, getColor(lowHue, 55));  // Worst
+    // Create 3-part gradient: Smallest (lowHue), Median (white), Largest (topHue)
+    gradient.addColorStop(0, getColor(lowHue, 55));  // Smallest
     gradient.addColorStop(0.5, 'hsl(0, 0%, 100%)');  // Median = white
-    gradient.addColorStop(1, getColor(topHue, 55));  // Best
+    gradient.addColorStop(1, getColor(topHue, 55));  // Largest
 
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
 }
 
-// ======= Main Heatmap Function: Apply background color to cells based on stats =======
+// ======= Apply background color to cells based on stats =======
 function heatMapOneRow(cells, values, direction = 'more_is_better') {
+    // Skip if too few values or all are the same (no variation to color)
     if (values.length < 2 || new Set(values).size === 1) return;
 
-    // Step 1: Calculate statistical parameters
+    // Sort values and calculate statistical parameters
     const sorted = [...values].sort((a, b) => a - b);
     const median = getMedian(sorted);
     const q1 = sorted[Math.floor((sorted.length - 1) / 4)];
     const q3 = sorted[Math.floor((sorted.length - 1) * 3 / 4)];
     const iqr = q3 - q1;
 
-    // Step 2: Calculate "fences" for mild/extreme outliers
+    // Calculate "fences" for mild/extreme outliers
     const lowOuter = q1 - 3 * iqr;
     const lowInner = q1 - 1.5 * iqr;
     const topInner = q3 + 1.5 * iqr;
     const topOuter = q3 + 3 * iqr;
 
-    // Step 3: Color settings
+    // Set up the color settings (hues/brightness)
     const YELLOW = 60, PURPLE = 280;
     const MID_BRT = 100, MIN_BRT = 75, INNER_BRT = 65, OUTER_BRT = 55;
 
-    // Step 4: Select hue direction depending on the metric
+    // Select hue direction depending on the metric
     const [lowHue, topHue] = direction === 'less_is_better' ? [PURPLE, YELLOW] : [YELLOW, PURPLE];
 
-    // Step 5: Apply coloring logic per cell
+    // Apply coloring logic per cell
     for (let i = 0; i < cells.length; i++) {
         const cell = cells[i];
         const num = values[i];
         let hue, lightness;
 
         if (num < lowOuter) {
+            // Extreme low outlier
             hue = lowHue; lightness = OUTER_BRT;
             cell.style.backgroundColor = getColor(hue, lightness);
             cell.style.color = 'white'; // improve contrast
         } else if (num < lowInner) {
+            // Mid low outlier
             hue = lowHue; lightness = INNER_BRT;
             cell.style.backgroundColor = getColor(hue, lightness);
         } else if (num < median) {
+            // Between low inner and median → interpolate brightness
             hue = lowHue;
             const k = (MID_BRT - MIN_BRT) / (median - lowInner);
             lightness = MID_BRT - (median - num) * k;
             cell.style.backgroundColor = getColor(hue, lightness);
         } else if (num > topOuter) {
+            // Extreme high outlier
             hue = topHue; lightness = OUTER_BRT;
             cell.style.backgroundColor = getColor(hue, lightness);
             cell.style.color = 'white';
         } else if (num > topInner) {
+            // Mild high outlier
             hue = topHue; lightness = INNER_BRT;
             cell.style.backgroundColor = getColor(hue, lightness);
         } else if (num > median) {
+            // Between median and top inner → interpolate brightness
             hue = topHue;
             const k = (MID_BRT - MIN_BRT) / (topInner - median);
             lightness = MID_BRT - (num - median) * k;
             cell.style.backgroundColor = getColor(hue, lightness);
         }
+        // If num === median → no color applied (keeps white)
     }
 }
 
