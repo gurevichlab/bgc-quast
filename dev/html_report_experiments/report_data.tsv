@@ -1,16 +1,16 @@
 Genome mining file	assembly_10	assembly_10	assembly_10
 Genome mining tool	antiSMASH	DeepBGC	GECCO
-# BGC (total)	6	6	5
-# BGC (NRP)	1	1	1
-# BGC (PKS)	1	1	0
+# BGC (total)	6	7	5
+# BGC (NRP)	5	5	1
+# BGC (PKS)	1	2	4
 Mean BGC length (total)	29313.0	27759.2	26500.5
 Mean BGC length (NRP)	52045.0	50160.0	48790.0
-# complete BGC (total)	3	2	1
-# complete BGC (NRP)	1	1	0
-# complete BGC (PKS)	1	1	0
-# incomplete BGC (total)	3	4	4
-# incomplete BGC (NRP)	0	0	1
-# incomplete BGC (PKS)	0	0	0
+# complete BGC (total)	4	3	2
+# complete BGC (NRP)	3	2	0
+# complete BGC (PKS)	1	1	2
+# incomplete BGC (total)	4	4	3
+# incomplete BGC (NRP)	2	3	1
+# incomplete BGC (PKS)	0	1	2
 Mean complete BGC length (total)	30500.0	29500.0	27000.0
 Mean complete BGC length (NRP)	52045.0	50160.0	0.0
 Mean incomplete BGC length (total)	28200.0	26000.0	25500.0

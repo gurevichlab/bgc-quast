@@ -158,46 +158,186 @@ function buildTable(data) {
 }
 
 // ======= Bar Chart Builder =======
-function buildBarPlot(data) {
-    const row = data.find(r => r[0] === '# BGC (total)');
-    if (!row) return;
+// --- product colors (modifiable) ---
+const productColors = {
+    'NRP': '#2e8b57',
+    'PKS': '#f4a460',
+    'RiPP': '#4169e1',
+    'Hybrid': '#b0c4de',
+    'Terpene': '#800080',
+    'Other': '#c7c2c1'
+};
 
+// Lighten a hex color toward white by "factor" (0..1)
+function lighten(hex, factor = 0.5) {
+    const num = parseInt(hex.slice(1), 16);
+    let r = (num >> 16) & 0xff;
+    let g = (num >> 8) & 0xff;
+    let b = num & 0xff;
+    r = Math.round(r + (255 - r) * factor);
+    g = Math.round(g + (255 - g) * factor);
+    b = Math.round(b + (255 - b) * factor);
+    return `rgb(${r}, ${g}, ${b})`;
+}
+
+let bgcChart = null; // keep a reference so we can update/destroy cleanly
+
+// --- Read data rows by label ---
+function getRowByLabel(data, label) {
+    return data.find(r => r[0] === label) || null;
+}
+
+// Return all product types that exist in the table (excluding 'total')
+function detectTypes(data) {
+    // matches: "# BGC (<Type>)"
+    const types = new Set();
+    for (const r of data) {
+        const m = /^#\s*(?:complete|incomplete\s+)?BGC\s*\((.+)\)\s*$/i.exec(r[0]);
+        if (m) {
+            const type = m[1].trim();
+            if (type.toLowerCase() !== 'total') types.add(type);
+        }
+    }
+    // Product types
+    const preferred = ['NRP', 'PKS', 'RiPP', 'Hybrid', 'Terpene'];
+    const detected = Array.from(types);
+    const ordered = [
+        ...preferred.filter(t => detected.includes(t)),
+        ...detected.filter(t => !preferred.includes(t))
+    ];
+    return ordered.length ? ordered : ['Other'];
+}
+
+function buildBarPlotDynamic(data) {
+    // labels are Assembly+Tool as before
     const tools = data[1].slice(1);
     const assemblies = data[0].slice(1);
     const labels = tools.map((tool, i) => `${tool}\n${assemblies[i]}`);
-    const counts = row.slice(1).map(v => parseInt(v));
 
-    new Chart(document.getElementById('bgcBarPlot'), {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
+    // read UI
+    const mode = document.getElementById('barModeShowBy').checked ? 'showby' : 'total';
+    const byCompleteness = document.getElementById('byCompleteness').checked;
+    const byType = document.getElementById('byType').checked;
+
+    let datasets = [];
+
+    if (mode === 'total') {
+        const row = getRowByLabel(data, '# BGC (total)');
+        if (row) {
+            const counts = row.slice(1).map(v => parseInt(v));
+            datasets.push({
                 label: '# BGC (total)',
                 data: counts,
-                backgroundColor: '#6cae75'
-            }]
-        },
+                backgroundColor: '#d2d694'
+            });
+        }
+    } else {
+        // SHOW BY...
+        if (byCompleteness && byType) {
+            // stacks are (type x completeness)
+            const types = detectTypes(data);
+            for (const type of types) {
+                const baseColor = productColors[type] || productColors['Other'];
+                const rowComplete = getRowByLabel(data, `# complete BGC (${type})`);
+                const rowIncomplete = getRowByLabel(data, `# incomplete BGC (${type})`);
+
+                if (rowComplete) {
+                    datasets.push({
+                        label: `${type} complete`,
+                        data: rowComplete.slice(1).map(v => parseInt(v)),
+                        backgroundColor: baseColor
+                    });
+                }
+                if (rowIncomplete) {
+                    datasets.push({
+                        label: `${type} incomplete`,
+                        data: rowIncomplete.slice(1).map(v => parseInt(v)),
+                        backgroundColor: lighten(baseColor, 0.45) // lighter shade
+                    });
+                }
+            }
+        } else if (byCompleteness) {
+            // stacks are complete vs incomplete (total)
+            const rowComplete = getRowByLabel(data, '# complete BGC (total)');
+            const rowIncomplete = getRowByLabel(data, '# incomplete BGC (total)');
+
+            if (rowComplete) {
+                datasets.push({
+                    label: 'Complete',
+                    data: rowComplete.slice(1).map(v => parseInt(v)),
+                    backgroundColor: '#4e948f'
+                });
+            }
+            if (rowIncomplete) {
+                datasets.push({
+                    label: 'Incomplete',
+                    data: rowIncomplete.slice(1).map(v => parseInt(v)),
+                    backgroundColor: '#a18e8a'
+                });
+            }
+        } else if (byType) {
+            // stacks are by type (totals per type)
+            const types = detectTypes(data);
+            for (const type of types) {
+                const row = getRowByLabel(data, `# BGC (${type})`);
+                if (row) {
+                    datasets.push({
+                        label: type,
+                        data: row.slice(1).map(v => parseInt(v)),
+                        backgroundColor: productColors[type] || productColors['Other']
+                    });
+                }
+            }
+        } else {
+            // fallback: if user selected "Show by" but no boxes,
+            // just show the total to avoid an empty chart.
+            const row = getRowByLabel(data, '# BGC (total)');
+            if (row) {
+                const counts = row.slice(1).map(v => parseInt(v));
+                datasets.push({
+                    label: '# BGC (total)',
+                    data: counts,
+                    backgroundColor: '#d2d694'
+                });
+            }
+        }
+    }
+
+    // cleanup previous chart
+    if (bgcChart) {
+        bgcChart.destroy();
+        bgcChart = null;
+    }
+
+    // stacked if more than one dataset
+    const stacked = datasets.length > 1;
+
+    bgcChart = new Chart(document.getElementById('bgcBarPlot'), {
+        type: 'bar',
+        data: { labels, datasets },
         options: {
             responsive: true,
             plugins: {
-                legend: { display: false },
+                legend: { position: 'top' },
                 tooltip: {
                     callbacks: {
-                        label: ctx => `# BGCs: ${ctx.raw}`
+                        label: ctx => `${ctx.dataset.label}: ${ctx.raw}`
                     }
                 }
             },
             scales: {
-                y: { beginAtZero: true }
+                x: { stacked },
+                y: { beginAtZero: true, stacked }
             }
         }
     });
 }
 
+
 // ======= Setup on Page Load =======
 document.addEventListener('DOMContentLoaded', () => {
     buildTable(reportData);
-    buildBarPlot(reportData);
+    buildBarPlotDynamic(reportData);
 
     // Toggle visibility of extended report rows
     const toggleBtn = document.getElementById('toggleExtendedBtn');
@@ -227,6 +367,27 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // Bar plot controls listeners ===
+    ['barModeTotal', 'barModeShowBy', 'byCompleteness', 'byType'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', () => buildBarPlotDynamic(reportData));
+    });
+
+     // === Disable/enable the "Show by" checkboxes when switching Total/Show by ===
+    const syncShowByDisabled = () => {
+        const isTotal = document.getElementById('barModeTotal').checked;
+        document.getElementById('showByGroup').disabled = isTotal;
+    };
+    document.getElementById('barModeTotal').addEventListener('change', syncShowByDisabled);
+    document.getElementById('barModeShowBy').addEventListener('change', syncShowByDisabled);
+    syncShowByDisabled();
+    // Re-render when the Show by checkboxes change
+    ['byCompleteness','byType'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', () => buildBarPlotDynamic(reportData));
+    });
+
     // Draw heatmap gradient
     drawHeatmapLegend(60, 280);  // yellow to purple
 

@@ -41,6 +41,23 @@
         </div>
 
         <div>
+            <div class="barplot-controls">
+                <!-- main toggle (mutually exclusive) -->
+                <label>
+                    <input type="radio" name="barMode" value="total" id="barModeTotal" checked>
+                    Total
+                </label>
+                <label>
+                    <input type="radio" name="barMode" value="showby" id="barModeShowBy">
+                    Show by:
+                </label>
+
+                <!-- Wrap checkboxes in a fieldset (only matter when Show by is active) -->
+                <fieldset id="showByGroup">
+                    <label><input type="checkbox" id="byCompleteness"> by completeness</label>
+                    <label><input type="checkbox" id="byType"> by type</label>
+                </fieldset>
+            </div>
             <canvas id="bgcBarPlot" width="600" height="300"></canvas>
         </div>
     </div>
