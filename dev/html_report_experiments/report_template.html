@@ -15,11 +15,11 @@
 
     <div id="reportLayout">
         <div>
-            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+            <div class="heatmap-controls">
                 <!-- Gradient legend -->
                 <div id="heatmapLegend">
                     <canvas id="gradientHeatmap" width="300" height="10"></canvas>
-                    <div style="font-size: 12px; display: flex; justify-content: space-between;">
+                    <div class="heatmap-legend-labels">
                         <span>Smallest</span>
                         <span>Median</span>
                         <span>Largest</span>
@@ -35,7 +35,7 @@
             </div>
 
             <div id="reportTableContainer"></div>
-            <div style="margin-top: 10px;">
+            <div class="extended-btn-wrapper">
                 <button id="toggleExtendedBtn">Show Extended Report</button>
             </div>
         </div>

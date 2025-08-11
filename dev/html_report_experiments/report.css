@@ -52,9 +52,28 @@ th {
     background-color: #bdd1db;
 }
 
-/* Hide extended rows initially */
+/* Table style - rows */
 .extended-row {
     display: none;
+}
+
+.extended-btn-wrapper {
+    margin-top: 10px;
+}
+
+
+/*Heatmap style*/
+.heatmap-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.heatmap-legend-labels {
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
 }
 
 /* Sticky footer */
@@ -64,3 +83,4 @@ th {
     font-size: 15px;
     text-align: left;
 }
+
