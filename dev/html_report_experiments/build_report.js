@@ -289,7 +289,7 @@ function buildBarPlotDynamic(data) {
             datasets.push({
                 label: '# BGC (total)',
                 data: counts,
-                backgroundColor: '#d2d694'
+                backgroundColor: '#322b7a'
             });
         }
     } else {
@@ -330,14 +330,14 @@ function buildBarPlotDynamic(data) {
                 datasets.push({
                     label: 'Complete',
                     data: rowComplete.slice(1).map(v => parseInt(v, 10)),
-                    backgroundColor: '#4e948f'
+                    backgroundColor: '#578c18'
                 });
             }
             if (statuses.includes('incomplete') && rowIncomplete) {
                 datasets.push({
                     label: 'Incomplete',
                     data: rowIncomplete.slice(1).map(v => parseInt(v, 10)),
-                    backgroundColor: '#a18e8a'
+                    backgroundColor: '#ccca3d'
                 });
             }
         } else if (byType) {
@@ -363,7 +363,7 @@ function buildBarPlotDynamic(data) {
                 datasets.push({
                     label: '# BGC (total)',
                     data: counts,
-                    backgroundColor: '#d2d694'
+                    backgroundColor: '#322b7a'
                 });
             }
         }

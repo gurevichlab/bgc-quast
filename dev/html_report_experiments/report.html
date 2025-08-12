@@ -32,11 +32,35 @@ html, body {
     flex: 1;
 }
 
-/* Table styling (unchanged) */
-h1 {
-    color: #333;
-    text-align: left;
+/* Header */
+:root {
+  /* pick your color here */
+  --accent: #050752;
+  --bar-text: #ffffff; /* title text color */
 }
+
+.page-header {
+  background: var(--accent);
+  color: var(--bar-text);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin-left: -10px;   /* match #main { padding: 10px } */
+  margin-right: -10px;
+  margin-top: -10px;
+  margin-bottom: 12px;
+}
+
+.page-header h1 {
+  margin: 10px;
+  font-weight: 600;
+  font-size: 32px;
+  letter-spacing: 0.2px;
+  color: inherit;
+}
+
+
+/* Table styling (unchanged) */
 
 table {
     width: 80%;
@@ -89,6 +113,7 @@ th {
   gap: 16px;
   /* Prevent accidental wrapping below the canvas */
   flex-wrap: nowrap;
+  margin-top: 150px;
 }
 
 .plot-and-controls .chart-wrap {
@@ -144,7 +169,11 @@ th {
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <body>
 <div id="main"> <!-- Wrapper -->
-    <h1>BGC-QUAST Report</h1>
+    <!-- Header with accent stripe + title -->
+    <header class="page-header">
+        <h1>BGC-QUAST Report</h1>
+    </header>
+
 
     <!-- Two-column layout: left - table+heatmap, right - plot+controls -->
     <div id="reportLayout">
@@ -512,7 +541,7 @@ function buildBarPlotDynamic(data) {
             datasets.push({
                 label: '# BGC (total)',
                 data: counts,
-                backgroundColor: '#d2d694'
+                backgroundColor: '#322b7a'
             });
         }
     } else {
@@ -553,14 +582,14 @@ function buildBarPlotDynamic(data) {
                 datasets.push({
                     label: 'Complete',
                     data: rowComplete.slice(1).map(v => parseInt(v, 10)),
-                    backgroundColor: '#4e948f'
+                    backgroundColor: '#578c18'
                 });
             }
             if (statuses.includes('incomplete') && rowIncomplete) {
                 datasets.push({
                     label: 'Incomplete',
                     data: rowIncomplete.slice(1).map(v => parseInt(v, 10)),
-                    backgroundColor: '#a18e8a'
+                    backgroundColor: '#ccca3d'
                 });
             }
         } else if (byType) {
@@ -586,7 +615,7 @@ function buildBarPlotDynamic(data) {
                 datasets.push({
                     label: '# BGC (total)',
                     data: counts,
-                    backgroundColor: '#d2d694'
+                    backgroundColor: '#322b7a'
                 });
             }
         }
