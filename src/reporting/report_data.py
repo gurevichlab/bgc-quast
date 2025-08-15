@@ -58,9 +58,13 @@ class MetricValue:
     def to_series_row(self) -> dict[str, Any]:
         """Convert to a dictionary suitable for pandas DataFrame row."""
         row = {
-            "file_path": str(self.file_path),
+            "file_path": self.file_path,
             "metric_name": self.metric_name,
-            "value": self.value,
+            "value": f"{self.value:.3f}"
+                if not self.metric_name.endswith("count") and pd.notna(self.value)
+                else str(self.value)
+                if pd.notna(self.value)
+                else "",
         }
         row.update(self.grouping)
         return row

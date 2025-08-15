@@ -3,6 +3,7 @@
 from typing import List, Optional
 
 import src.compare_to_ref_analyzer as compare_to_ref_analyzer
+import src.input_utils as input_utils
 from src.genome_mining_result import GenomeMiningResult, QuastResult
 from src.reporting.metrics_calculators import (
     BasicMetricsCalculator,
@@ -85,5 +86,9 @@ class ReportBuilder:
 
         # Create DataFrame.
         df = create_dataframe_from_metrics(metrics)
+        df["file_label"] = df["file_path"].apply(
+            lambda x: input_utils.get_file_label_from_path(x)
+        )
+        df.drop(columns=["file_path"], inplace=True, errors="ignore")
 
         return ReportData(metrics_df=df, running_mode=running_mode, metadata=metadata)

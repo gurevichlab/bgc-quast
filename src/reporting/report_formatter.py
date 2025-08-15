@@ -1,9 +1,9 @@
 """Unified report formatters for different output formats."""
 
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
+import src.input_utils as input_utils
 from src.reporting.report_config import ReportConfig
 from src.reporting.report_data import ReportData
 
@@ -28,10 +28,10 @@ class DataFrameTableBuilder:
         # Sort the dataframe by the sort keys
         df = df.sort_values("sort_key").drop("sort_key", axis=1)
 
-        # Always use file_path as columns
+        # Always use file_label as columns
         pivot_table = df.pivot_table(
             index="row_label",
-            columns="file_path" if "file_path" in df.columns else None,
+            columns="file_label" if "file_label" in df.columns else None,
             values="value",
             aggfunc="first",
             sort=False,
@@ -42,7 +42,7 @@ class DataFrameTableBuilder:
     def _create_row_label_and_sort_key(self, row: pd.Series) -> tuple[str, tuple]:
         """Create hierarchical row labels and sort keys from metric names and grouping columns,
         respecting config order."""
-        exclude = {"metric_name", "value", "file_path", "row_label", "sort_key"}
+        exclude = {"metric_name", "value", "file_label", "row_label", "sort_key"}
 
         # Use grouping_combinations from config if present, else all grouping columns
         grouping_combinations = self.config.grouping_combinations
@@ -145,20 +145,10 @@ class ReportFormatter:
 
     def write_txt(self, data: ReportData, output_path: Path) -> None:
         """Format and save report as plain text table."""
+
         pivot_table = self.table_builder.build_pivot_table(data)
 
-        # Format numbers to 3 decimal places for numeric columns
-        formatted_table = pivot_table.copy()
-        for col in formatted_table.columns:
-            formatted_table[col] = formatted_table[col].apply(
-                lambda x: f"{x:.3f}"
-                if isinstance(x, float) and pd.notna(x)
-                else str(x)
-                if pd.notna(x)
-                else ""
-            )
-
-        txt = formatted_table.to_string(na_rep="")
+        txt = pivot_table.to_string(na_rep="")
         output_path.write_text(txt, encoding="utf-8")
 
     def write_html(self, data: ReportData, output_path: Path) -> None:
@@ -181,7 +171,7 @@ class ReportFormatter:
 </head>
 <body>
     <h1>BGC-QUAST Report</h1>
-    {pivot_table.to_html(classes="report-table", na_rep="", float_format=lambda x: f"{x:.3f}")}
+    {pivot_table.to_html(classes="report-table", na_rep="")}
 </body>
 </html>
 """
@@ -190,20 +180,4 @@ class ReportFormatter:
     def write_tsv(self, data: ReportData, output_path: Path) -> None:
         """Format and save report as TSV."""
         pivot_table = self.table_builder.build_pivot_table(data)
-        pivot_table.to_csv(output_path, sep="\t", na_rep="", float_format="%.3f")
-
-    def format_report(
-        self,
-        report: ReportData,
-        txt_destination: Path,
-        html_destination: Path,
-        tsv_destination: Optional[Path] = None,
-    ) -> None:
-        """
-        Legacy method for backwards compatibility.
-        Write the report to text, HTML, and optionally TSV files.
-        """
-        self.write_txt(report, txt_destination)
-        self.write_html(report, html_destination)
-        if tsv_destination:
-            self.write_tsv(report, tsv_destination)
+        pivot_table.to_csv(output_path, sep="\t", na_rep="")
