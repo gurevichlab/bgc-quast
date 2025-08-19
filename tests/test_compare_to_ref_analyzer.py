@@ -7,15 +7,14 @@ import pytest
 from src.compare_to_ref_analyzer import (
     ReferenceBgc,
     Status,
+    compute_coverage,
     compute_reference_coverage,
-    compute_stats,
     determine_ref_bgc_status,
     get_asm_bgc_coords_on_ref,
     get_intersecting_bgcs_from_alignment,
 )
 from src.compare_to_ref_data import Intersection
 from src.genome_mining_result import AlignmentInfo, Bgc, GenomeMiningResult, QuastResult
-from src.report import BasicReport
 
 # ====================== Helper Create Functions ======================
 
@@ -442,11 +441,10 @@ def test_compute_reference_coverage_multiple_alignments_different_asm_seq():
     assert result_ref_bgc.intersecting_assembly_bgcs[1].assembly_bgc == asm_bgc2
 
 
-# ====================== Tests for compute_stats ======================
+# ====================== Tests for compute_coverage ======================
 
 
-def test_compute_stats():
-    basic_report = BasicReport()  # using actual type
+def test_compute_coverage():
     asm_bgc = create_bgc(sequence_id="asm_id", start=100, end=200)
     genome_mining_result = create_genome_mining_result(
         input_file="asm.fasta", input_file_label="asm_label", bgcs=[asm_bgc]
@@ -466,24 +464,21 @@ def test_compute_stats():
         reference_sequences={"ref_id": [alignment]}, input_file_label="asm_label"
     )
     quast_results = [quast_result]
-    report = compute_stats(
-        basic_report,
+    coverage_dict = compute_coverage(
         genome_mining_results,
         reference_genome_mining_result,
         quast_results,
     )
-    # The report should have one entry in ref_bgc_coverage keyed by input_file.
-    assert hasattr(report, "ref_bgc_coverage")
-    assert Path("asm.fasta") in report.ref_bgc_coverage
-    result_ref_bgcs = report.ref_bgc_coverage[Path("asm.fasta")]
+    # The coverage_dict should have one entry keyed by input_file.
+    assert Path("asm.fasta") in coverage_dict
+    result_ref_bgcs = coverage_dict[Path("asm.fasta")]
     assert isinstance(result_ref_bgcs, list)
     assert len(result_ref_bgcs) == 1
     status = result_ref_bgcs[0].status
     assert status == Status.COVERED
 
 
-def test_compute_stats_no_quast_result():
-    basic_report = BasicReport()
+def test_compute_coverage_no_quast_result():
     # Create a genome mining result with a label that does not match any QUAST result.
     asm_bgc = create_bgc(sequence_id="asm_id", start=100, end=200)
     genome_mining_result = create_genome_mining_result(
@@ -502,8 +497,7 @@ def test_compute_stats_no_quast_result():
     quast_results = [quast_result]
 
     with pytest.raises(ValueError) as excinfo:
-        compute_stats(
-            basic_report,
+        compute_coverage(
             genome_mining_results,
             reference_genome_mining_result,
             quast_results,

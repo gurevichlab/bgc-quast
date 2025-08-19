@@ -40,7 +40,9 @@ class ReportConfigManager:
 
     def __init__(self):
         self.config_path = Path.joinpath(
-            Path(__file__).parent.parent.parent.resolve(), "configs", "report_config.yaml"
+            Path(__file__).parent.parent.parent.resolve(),
+            "configs",
+            "report_config.yaml",
         )
         self._configs: Dict[str, ReportConfig] = {}
         self._load_configs()
@@ -93,7 +95,7 @@ class ReportConfigManager:
         if report_type not in self._configs:
             raise ValueError(f"Unknown report type: {report_type}")
         return self._configs[report_type]
-    
+
     def get_combined_config(self, report_types: List[str]) -> ReportConfig:
         """Get combined configuration for multiple report types."""
         combined_config = ReportConfig()
@@ -105,10 +107,14 @@ class ReportConfigManager:
             combined_config.grouping_dimensions.update(config.grouping_dimensions)
             combined_config.grouping_combinations.extend(config.grouping_combinations)
 
-        # Remove duplicates in metrics and grouping combinations
-        combined_config.metrics = list({m.name: m for m in combined_config.metrics}.values())
+        # Remove duplicates in metrics and grouping combinations.
+        combined_config.metrics = list(
+            {m.name: m for m in combined_config.metrics}.values()
+        )
         combined_config.grouping_combinations = list(
-            {tuple(comb): comb for comb in combined_config.grouping_combinations}.values()
+            {
+                tuple(comb): comb for comb in combined_config.grouping_combinations
+            }.values()
         )
         return combined_config
 

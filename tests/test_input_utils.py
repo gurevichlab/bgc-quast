@@ -1,13 +1,12 @@
 from pathlib import Path
 
 import pytest
-from src.config import Config
 from src.genome_mining_result import GenomeMiningResult
 from src.input_utils import (
     determine_running_mode,
     get_file_label_from_path,
 )
-from src.report import RunningMode
+from src.reporting.report_data import RunningMode
 
 SAMPLE_PATH_1 = Path("sample1.json")
 SAMPLE_PATH_2 = Path("sample2.json")

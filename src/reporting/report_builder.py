@@ -35,6 +35,11 @@ class ReportBuilder:
 
         Args:
             results: List of GenomeMiningResult objects
+            running_mode: Running mode of the report
+            (e.g., COMPARE_TO_REFERENCE, COMPARE_TOOLS, COMPARE_SAMPLES).
+            quast_results: Optional list of QuastResult objects for QUAST analysis.
+            reference_genome_mining_result: Optional GenomeMiningResult for reference
+            genome comparison.
 
         Returns:
             ReportData object with structured metrics

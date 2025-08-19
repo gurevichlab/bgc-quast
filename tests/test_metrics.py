@@ -1,143 +1,77 @@
 import pytest
 from src.genome_mining_result import Bgc
-from src.metrics import MetricsEngine
-
-# filepath: bgc-quast/src/test_metrics.py
+from src.reporting.metrics import GROUPING_REGISTRY, METRIC_REGISTRY
 
 
-def test_compute_group_by_completeness():
-    """Test grouping by completeness."""
-    bgcs = [
+@pytest.fixture
+def sample_bgcs():
+    return [
         Bgc(
-            bgc_id="id",
-            sequence_id="_",
-            completeness="Complete",
-            product_types=["PKS"],
+            bgc_id="bgc1",
+            sequence_id="seq1",
             start=0,
             end=100,
-        ),
-        Bgc(
-            bgc_id="id",
-            sequence_id="_",
-            completeness="Incomplete",
-            product_types=["NRPS"],
-            start=50,
-            end=150,
-        ),
-        Bgc(
-            bgc_id="id",
-            sequence_id="_",
             completeness="Complete",
+            product_types=["NRP"],
+        ),
+        Bgc(
+            bgc_id="bgc2",
+            sequence_id="seq2",
+            start=100,
+            end=200,
+            completeness="Incomplete",
             product_types=["PKS"],
+        ),
+        Bgc(
+            bgc_id="bgc3",
+            sequence_id="seq3",
             start=200,
             end=300,
+            completeness="Complete",
+            product_types=["NRP", "PKS"],
+        ),
+        Bgc(
+            bgc_id="bgc4",
+            sequence_id="seq4",
+            start=300,
+            end=400,
+            completeness="Unknown",
+            product_types=[],
         ),
     ]
-    engine = MetricsEngine(bgcs)
-    result = engine.compute(group_by=["completeness"])
-
-    assert len(result) == 2
-    assert result[("Complete",)]["total_bgc_count"] == 2
-    assert result[("Incomplete",)]["total_bgc_count"] == 1
-    assert result[("Complete",)]["mean_bgc_length"] == 100
-    assert result[("Incomplete",)]["mean_bgc_length"] == 100
 
 
-def test_compute_group_by_product_type():
-    """Test grouping by product type."""
-    bgcs = [
-        Bgc(
-            bgc_id="id",
-            sequence_id="_",
-            completeness="Complete",
-            product_types=["PKS"],
-            start=0,
-            end=100,
-        ),
-        Bgc(
-            bgc_id="id",
-            sequence_id="_",
-            completeness="Incomplete",
-            product_types=["NRPS"],
-            start=50,
-            end=150,
-        ),
-        Bgc(
-            bgc_id="id",
-            sequence_id="_",
-            completeness="Complete",
-            product_types=["PKS", "NRPS"],
-            start=200,
-            end=300,
-        ),
-    ]
-    engine = MetricsEngine(bgcs)
-    result = engine.compute(group_by=["product_type"])
-
-    assert len(result) == 3
-    assert result[("PKS",)]["total_bgc_count"] == 1
-    assert result[("NRPS",)]["total_bgc_count"] == 1
-    assert result[("Hybrid",)]["total_bgc_count"] == 1
+def test_total_bgc_count(sample_bgcs):
+    metric_func = METRIC_REGISTRY.get("total_bgc_count")
+    assert metric_func(sample_bgcs) == 4
 
 
-def test_compute_group_by_multiple_keys():
-    """Test grouping by multiple keys."""
-    bgcs = [
-        Bgc(
-            bgc_id="id",
-            sequence_id="_",
-            completeness="Complete",
-            product_types=["PKS"],
-            start=0,
-            end=100,
-        ),
-        Bgc(
-            bgc_id="id",
-            sequence_id="_",
-            completeness="Incomplete",
-            product_types=["NRPS"],
-            start=50,
-            end=150,
-        ),
-        Bgc(
-            bgc_id="id",
-            sequence_id="_",
-            completeness="Complete",
-            product_types=["PKS", "NRPS"],
-            start=200,
-            end=300,
-        ),
-    ]
-    engine = MetricsEngine(bgcs)
-    result = engine.compute(group_by=["completeness", "product_type"])
-
-    assert len(result) == 3
-    assert result[("Complete", "PKS")]["total_bgc_count"] == 1
-    assert result[("Incomplete", "NRPS")]["total_bgc_count"] == 1
-    assert result[("Complete", "Hybrid")]["total_bgc_count"] == 1
+def test_mean_bgc_length(sample_bgcs):
+    metric_func = METRIC_REGISTRY.get("mean_bgc_length")
+    assert metric_func(sample_bgcs) == 100.0
 
 
-def test_compute_empty_bgcs():
-    """Test compute with no BGCs."""
-    engine = MetricsEngine([])
-    result = engine.compute(group_by=["completeness"])
+def test_grouping_by_completeness(sample_bgcs):
+    grouping_func = GROUPING_REGISTRY.get("completeness")
+    assert grouping_func(sample_bgcs[0]) == "Complete"
+    assert grouping_func(sample_bgcs[1]) == "Incomplete"
+    assert grouping_func(sample_bgcs[2]) == "Complete"
+    assert grouping_func(sample_bgcs[3]) == "Unknown"
 
-    assert result == {}
+
+def test_grouping_by_product_type(sample_bgcs):
+    grouping_func = GROUPING_REGISTRY.get("product_type")
+    assert grouping_func(sample_bgcs[0]) == "NRP"
+    assert grouping_func(sample_bgcs[1]) == "PKS"
+    assert grouping_func(sample_bgcs[2]) == "Hybrid"
+    assert grouping_func(sample_bgcs[3]) == "Unknown"
 
 
-def test_compute_invalid_grouping_key():
-    """Test compute with an invalid grouping key."""
-    bgcs = [
-        Bgc(
-            bgc_id="id",
-            sequence_id="_",
-            completeness="Complete",
-            product_types=["PKS"],
-            start=0,
-            end=100,
-        ),
-    ]
-    engine = MetricsEngine(bgcs)
+def test_invalid_grouping_key():
+    with pytest.raises(ValueError, match="Unknown grouping key: invalid_key"):
+        GROUPING_REGISTRY.get("invalid_key")
 
-    with pytest.raises(ValueError, match="Invalid grouping keys: invalid_key"):
-        engine.compute(group_by=["invalid_key"])
+
+def test_invalid_metric_name():
+    with pytest.raises(ValueError, match="Unknown metric: invalid_metric"):
+        METRIC_REGISTRY.get("invalid_metric")

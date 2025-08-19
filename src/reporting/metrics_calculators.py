@@ -32,10 +32,6 @@ class BasicMetricsCalculator(MetricsCalculator):
         """
         Calculate metrics for all genome mining results.
 
-        Args:
-            metric_names: List of metric names to calculate
-            grouping_dimensions: List of grouping dimension names
-
         Returns:
             List of all calculated MetricValue objects
         """
@@ -149,10 +145,18 @@ class BasicMetricsCalculator(MetricsCalculator):
         Group BGCs by the specified grouping functions.
 
         Args:
-            grouping_funcs: Dictionary of grouping functions to apply.
+            bgcs: List of BGCs to group
+            grouping_funcs: Dictionary of grouping functions where keys are dimension 
+            names and values are functions that return the grouping value for a BGC.
 
         Returns:
-            Dictionary where keys are tuples of grouping values and values are lists of BGCs.
+            Dictionary where keys are tuples of grouping values and values are lists 
+            of BGCs.
+            Example:
+                {
+                    ("NRP", "complete"): [bgc1, bgc2],
+                    ("PKS", "incomplete"): [bgc3],
+                }
         """
 
         if not grouping_funcs:

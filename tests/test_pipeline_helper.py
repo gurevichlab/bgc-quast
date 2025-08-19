@@ -6,7 +6,7 @@ from src.genome_mining_parser import GenomeMiningResult, QuastResult
 from src.logger import Logger
 from src.option_parser import ValidationError
 from src.pipeline_helper import PipelineHelper
-from src.report import RunningMode
+from src.reporting.report_data import RunningMode
 
 # Test data paths
 TEST_DATA_DIR = Path(__file__).resolve().parent.parent / "test_data"
@@ -171,20 +171,25 @@ def test_parse_input_unknown_mode_raises_error(pipeline_helper):
         )
 
 
-def test_compute_stats_creates_basic_report(pipeline_helper):
-    """Test that compute_stats creates a BasicReport."""
+def test_compute_stats_creates_analysis_report(pipeline_helper):
+    """Test that compute_stats creates an ReportData report."""
     mock_genome_mining_result = MagicMock()
     pipeline_helper.assembly_genome_mining_results = [mock_genome_mining_result]
+    pipeline_helper.running_mode = RunningMode.COMPARE_TOOLS
+    pipeline_helper.quast_results = [MagicMock(spec=QuastResult)]
 
-    with patch(
-        "src.pipeline_helper.basic_analyzer.generate_basic_report"
-    ) as mock_generate_report:
+    with patch("src.pipeline_helper.ReportBuilder.build_report") as mock_build_report:
         mock_report = MagicMock()
-        mock_generate_report.return_value = mock_report
+        mock_build_report.return_value = mock_report
 
         pipeline_helper.compute_stats()
 
-        mock_generate_report.assert_called_once_with([mock_genome_mining_result])
+        mock_build_report.assert_called_once_with(
+            results=[mock_genome_mining_result],
+            running_mode=RunningMode.COMPARE_TOOLS,
+            quast_results=pipeline_helper.quast_results,
+            reference_genome_mining_result=None,
+        )
         assert pipeline_helper.analysis_report == mock_report
 
 
@@ -230,7 +235,9 @@ def test_parse_input_with_reference_genome_data(pipeline_helper):
     """Test parsing input with reference genome data."""
     with (
         patch("src.pipeline_helper.parse_input_mining_result_files") as mock_parse,
-        patch("src.pipeline_helper.parse_reference_genome_mining_result") as mock_ref_parse,
+        patch(
+            "src.pipeline_helper.parse_reference_genome_mining_result"
+        ) as mock_ref_parse,
         patch("src.pipeline_helper.input_utils.determine_running_mode") as mock_mode,
     ):
         pipeline_helper.args.reference_genome_data = Path("ref_genome.fasta")
