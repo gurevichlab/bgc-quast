@@ -32,6 +32,7 @@ def simple_data() -> ReportData:
             "metric_name": ["metric1", "metric2", "metric1", "metric2"],
             "value": [10, 20, 15, 25],
             "file_label": ["file1", "file1", "file2", "file2"],
+            "mining_tool": ["tool1", "tool1", "tool2", "tool2"],
         }
     )
     return ReportData(metrics_df=df, running_mode=RunningMode.UNKNOWN)
@@ -59,11 +60,14 @@ def grouped_data() -> ReportData:
             "metric_name": ["metric1", "metric1", "metric1", "metric1"],
             "value": [100, 200, 150, 250],
             "file_label": ["file1", "file1", "file2", "file2"],
+            "mining_tool": ["tool1", "tool1", "tool2", "tool2"],
             "type": ["A", "B", "A", "B"],
         }
     )
     # Add total rows
-    total_df = df.groupby(["metric_name", "file_label"], as_index=False)["value"].sum()
+    total_df = df.groupby(
+        ["metric_name", "file_label", "mining_tool"], as_index=False
+    )["value"].sum()
     total_df["type"] = pd.NA
 
     metrics_df = pd.concat([df, total_df], ignore_index=True)
@@ -79,11 +83,11 @@ class TestDataFrameTableBuilder:
         pivot_table = builder.build_pivot_table(simple_data)
 
         assert pivot_table.shape == (2, 2)
-        assert list(pivot_table.columns) == ["file1", "file2"]
+        assert list(pivot_table.columns) == [("file1", "tool1"), ("file2", "tool2")]
         assert "Metric 1 (total)" in pivot_table.index
         assert "Metric 2 (total)" in pivot_table.index
-        assert pivot_table.loc["Metric 1 (total)", "file1"] == 10
-        assert pivot_table.loc["Metric 2 (total)", "file2"] == 25
+        assert pivot_table.loc["Metric 1 (total)", ("file1", "tool1")] == 10
+        assert pivot_table.loc["Metric 2 (total)", ("file2", "tool2")] == 25
 
     def test_build_pivot_table_with_grouping(self, grouped_config, grouped_data):
         """Test building a pivot table with grouping."""
@@ -100,9 +104,9 @@ class TestDataFrameTableBuilder:
         assert pivot_table.index.tolist() == expected_index
 
         # Check values
-        assert pivot_table.loc["Metric 1 (A)", "file1"] == 100
-        assert pivot_table.loc["Metric 1 (B)", "file2"] == 250
-        assert pivot_table.loc["Metric 1 (total)", "file1"] == 300  # 100 + 200
+        assert pivot_table.loc["Metric 1 (A)", ("file1", "tool1")] == 100
+        assert pivot_table.loc["Metric 1 (B)", ("file2", "tool2")] == 250
+        assert pivot_table.loc["Metric 1 (total)", ("file1", "tool1")] == 300  # 100 + 200
 
 
 class TestReportFormatter:

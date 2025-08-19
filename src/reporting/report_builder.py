@@ -91,6 +91,11 @@ class ReportBuilder:
 
         # Create DataFrame.
         df = create_dataframe_from_metrics(metrics)
+
+        # Create a mapping from file_path to mining_tool
+        path_to_tool = {str(r.input_file): r.mining_tool for r in results}
+        df["mining_tool"] = df["file_path"].astype(str).map(path_to_tool)
+
         df["file_label"] = df["file_path"].apply(
             lambda x: input_utils.get_file_label_from_path(x)
         )

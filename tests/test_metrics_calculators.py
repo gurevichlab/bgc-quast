@@ -160,17 +160,19 @@ def test_group_bgcs(basic_calculator):
 def test_calculate_all_metrics_for_bgcs(basic_calculator):
     bgcs = basic_calculator.results[0].bgcs
     input_file = basic_calculator.results[0].input_file
+    mining_tool = basic_calculator.results[0].mining_tool
     metric_names = basic_calculator.metric_names
     grouping_dimensions = ["product_type", "completeness"]
 
     metrics = basic_calculator._calculate_all_metrics_for_bgcs(
-        bgcs, input_file, metric_names, grouping_dimensions
+        bgcs, input_file, mining_tool, metric_names, grouping_dimensions
     )
 
     assert len(metrics) == 6
     assert metrics[0].metric_name == "total_bgc_count"
     assert metrics[0].value == 1
     assert metrics[0].grouping == {"product_type": "NRP", "completeness": "Complete"}
+    assert metrics[0].mining_tool == "tool1"
 
 
 @pytest.fixture

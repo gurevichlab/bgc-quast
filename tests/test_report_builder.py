@@ -33,12 +33,14 @@ def mock_basic_metrics():
     return [
         MetricValue(
             file_path=Path("sample1.fasta"),
+            mining_tool="antiSMASH",
             metric_name="total_bgc_count",
             value=5,
             grouping={},
         ),
         MetricValue(
             file_path=Path("sample2.fasta"),
+            mining_tool="antiSMASH",
             metric_name="total_bgc_count",
             value=10,
             grouping={},
@@ -52,6 +54,7 @@ def mock_compare_to_ref_metrics():
     return [
         MetricValue(
             file_path=Path("sample1.fasta"),
+            mining_tool="antiSMASH",
             metric_name="completeness_metric",
             value=0.8,
             grouping={},
@@ -65,11 +68,13 @@ def mock_genome_mining_results():
     result1 = MagicMock(spec=GenomeMiningResult)
     result1.input_file = Path("sample1.fasta")
     result1.input_file_label = "sample1"
+    result1.mining_tool = "tool1"
     result1.bgcs = [MagicMock(spec=Bgc) for _ in range(5)]
 
     result2 = MagicMock(spec=GenomeMiningResult)
     result2.input_file = Path("sample2.fasta")
     result2.input_file_label = "sample2"
+    result2.mining_tool = "tool2"
     result2.bgcs = [MagicMock(spec=Bgc) for _ in range(10)]
 
     return [result1, result2]

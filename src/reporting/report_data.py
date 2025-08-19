@@ -43,6 +43,7 @@ class MetricValue:
 
     Attributes:
         file_path (Path): Path to the file associated with this metric.
+        mining_tool (str): The genome mining tool used.
         metric_name (str): Name of the metric.
         value (Any): The value of the metric.
         grouping (dict[str, str]): Additional grouping information as key-value pairs.
@@ -51,6 +52,7 @@ class MetricValue:
     """
 
     file_path: Path
+    mining_tool: str
     metric_name: str
     value: Any
     grouping: dict[str, str] = field(default_factory=dict)
@@ -59,12 +61,13 @@ class MetricValue:
         """Convert to a dictionary suitable for pandas DataFrame row."""
         row = {
             "file_path": self.file_path,
+            "mining_tool": self.mining_tool,
             "metric_name": self.metric_name,
             "value": f"{self.value:.3f}"
-                if not self.metric_name.endswith("count") and pd.notna(self.value)
-                else str(self.value)
-                if pd.notna(self.value)
-                else "",
+            if not self.metric_name.endswith("count") and pd.notna(self.value)
+            else str(self.value)
+            if pd.notna(self.value)
+            else "",
         }
         row.update(self.grouping)
         return row
@@ -73,7 +76,7 @@ class MetricValue:
 def create_dataframe_from_metrics(metric_values: list[MetricValue]) -> pd.DataFrame:
     """Create a pandas DataFrame from a list of MetricValue objects."""
     if not metric_values:
-        return pd.DataFrame(columns=["file_path", "metric_name", "value"])
+        return pd.DataFrame(columns=["file_path", "mining_tool", "metric_name", "value"])
 
     rows = [mv.to_series_row() for mv in metric_values]
     return pd.DataFrame(rows)

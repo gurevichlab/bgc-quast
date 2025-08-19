@@ -30,18 +30,29 @@ class DataFrameTableBuilder:
         # Always use file_label as columns
         pivot_table = df.pivot_table(
             index="row_label",
-            columns="file_label" if "file_label" in df.columns else None,
+            columns=["file_label", "mining_tool"]
+            if "file_label" in df.columns
+            else None,
             values="value",
             aggfunc="first",
             sort=False,
         )
+
+        pivot_table.index.name = None
 
         return pivot_table
 
     def _create_row_label_and_sort_key(self, row: pd.Series) -> tuple[str, tuple]:
         """Create hierarchical row labels and sort keys from metric names and grouping columns,
         respecting config order."""
-        exclude = {"metric_name", "value", "file_label", "row_label", "sort_key"}
+        exclude = {
+            "metric_name",
+            "value",
+            "file_label",
+            "row_label",
+            "sort_key",
+            "mining_tool",
+        }
 
         # Use grouping_combinations from config if present, else all grouping columns
         grouping_combinations = self.config.grouping_combinations

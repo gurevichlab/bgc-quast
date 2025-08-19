@@ -46,7 +46,11 @@ class BasicMetricsCalculator(MetricsCalculator):
             for result in self.results:
                 try:
                     metrics = self._calculate_all_metrics_for_bgcs(
-                        result.bgcs, result.input_file, metric_names, grouping_dims
+                        result.bgcs,
+                        result.input_file,
+                        result.mining_tool,
+                        metric_names,
+                        grouping_dims,
                     )
                     all_metrics.extend(metrics)
                     
@@ -62,6 +66,7 @@ class BasicMetricsCalculator(MetricsCalculator):
         self,
         bgcs: List[Bgc],
         input_file: Path,
+        mining_tool: str,
         metric_names: List[str],
         grouping_dimensions: List[str],
     ) -> List[MetricValue]:
@@ -71,6 +76,7 @@ class BasicMetricsCalculator(MetricsCalculator):
         Args:
             bgcs: List of BGCs to calculate metrics for
             input_file: Path to the input file containing corresponding Genome Result
+            mining_tool: Name of the mining tool
             metric_names: List of metric names to calculate
             grouping_dimensions: List of grouping dimension names
 
@@ -101,6 +107,7 @@ class BasicMetricsCalculator(MetricsCalculator):
                 results.append(
                     MetricValue(
                         file_path=input_file,
+                        mining_tool=mining_tool,
                         metric_name=metric_name,
                         value=value,
                         grouping=grouping_dict,
