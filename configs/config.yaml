@@ -10,3 +10,4 @@ product_yamls:
   deepbgc_product_mapping: "deepbgc_class_mapping.yaml"
 
 bgc_completeness_margin: 100
+allowed_gap_for_fragmented_recovery: 100

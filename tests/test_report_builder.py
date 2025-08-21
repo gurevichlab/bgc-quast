@@ -3,10 +3,19 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
+from src.config import Config
 from src.genome_mining_result import Bgc, GenomeMiningResult, QuastResult
 from src.reporting.report_builder import ReportBuilder
 from src.reporting.report_config import ReportConfig
 from src.reporting.report_data import MetricValue, ReportData, RunningMode
+
+
+@pytest.fixture
+def mock_config():
+    """Provides a mock Config object."""
+    config = MagicMock(spec=Config)
+    config.allowed_gap_for_fragmented_recovery = 100
+    return config
 
 
 @pytest.fixture
@@ -101,11 +110,11 @@ def mock_reference_result():
 def test_init(mock_config_manager):
     """Test that the ReportBuilder can be initialized correctly."""
     builder = ReportBuilder(mock_config_manager)
-    assert builder.config_manager == mock_config_manager
+    assert builder.report_config_manager == mock_config_manager
 
 
 def test_build_report_basic_mode(
-    mock_config_manager, mock_genome_mining_results, mock_basic_metrics
+    mock_config_manager, mock_genome_mining_results, mock_basic_metrics, mock_config
 ):
     """
     Test the 'basic_report' running mode.
@@ -142,7 +151,9 @@ def test_build_report_basic_mode(
         builder = ReportBuilder(mock_config_manager)
 
         report_data = builder.build_report(
-            results=mock_genome_mining_results, running_mode=RunningMode.UNKNOWN
+            config=mock_config,
+            results=mock_genome_mining_results,
+            running_mode=RunningMode.UNKNOWN,
         )
 
         assert isinstance(report_data, ReportData)
@@ -162,6 +173,7 @@ def test_build_report_compare_to_reference_mode(
     mock_reference_result,
     mock_basic_metrics,
     mock_compare_to_ref_metrics,
+    mock_config,
 ):
     """
     Test the 'compare_to_reference' running mode.
@@ -225,6 +237,7 @@ def test_build_report_compare_to_reference_mode(
 
         # Act: Call the method
         report_data = builder.build_report(
+            config=mock_config,
             results=mock_genome_mining_results,
             running_mode=RunningMode.COMPARE_TO_REFERENCE,
             quast_results=mock_quast_results,
@@ -245,7 +258,7 @@ def test_build_report_compare_to_reference_mode(
 
 
 def test_build_report_no_metrics_calculated(
-    mock_config_manager, mock_genome_mining_results
+    mock_config_manager, mock_genome_mining_results, mock_config
 ):
     """
     Test that a ValueError is raised when no metrics are calculated.
@@ -262,12 +275,14 @@ def test_build_report_no_metrics_calculated(
             ValueError, match="No metrics were calculated. Check your input data."
         ):
             builder.build_report(
-                results=mock_genome_mining_results, running_mode=RunningMode.UNKNOWN
+                config=mock_config,
+                results=mock_genome_mining_results,
+                running_mode=RunningMode.UNKNOWN,
             )
 
 
 def test_build_report_missing_basic_config(
-    mock_config_manager, mock_genome_mining_results
+    mock_config_manager, mock_genome_mining_results, mock_config
 ):
     """
     Test that a ValueError is raised when the basic_report config is not found.
@@ -282,5 +297,7 @@ def test_build_report_missing_basic_config(
         ValueError, match="No configuration found for running mode: basic_report"
     ):
         builder.build_report(
-            results=mock_genome_mining_results, running_mode=RunningMode.UNKNOWN
+            config=mock_config,
+            results=mock_genome_mining_results,
+            running_mode=RunningMode.UNKNOWN,
         )

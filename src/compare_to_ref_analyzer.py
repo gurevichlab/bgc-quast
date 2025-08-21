@@ -1,4 +1,3 @@
-from pathlib import Path
 from src.compare_to_ref_data import (
     Intersection,
     ReferenceBgc,
@@ -11,7 +10,8 @@ def compute_coverage(
     genome_mining_results: list[GenomeMiningResult],
     reference_genome_mining_result: GenomeMiningResult,
     quast_results: list[QuastResult],
-) -> dict[Path, list[ReferenceBgc]]:
+    allowed_gap: int,
+) -> list[tuple[GenomeMiningResult, list[ReferenceBgc]]]:
     """
     Compute reference BGC coverage for mining results.
 
@@ -24,12 +24,13 @@ def compute_coverage(
         reference_genome_mining_result (GenomeMiningResult): Reference genome mining
         result.
         quast_results (list): Parsed QUAST results.
+        allowed_gap (int): Allowed gap for fragmented recovery.
 
     Returns:
-        dict[Path, list[ReferenceBgc]]: Dictionary mapping input file paths to ReferenceBgc
+        list[tuple[Path, list[ReferenceBgc]]]: List of tuples mapping input genome mining results to ReferenceBgc
         objects with computed statistics.
     """
-    ref_bgc_coverage = {}
+    ref_bgc_coverage = []
 
     for genome_mining_result in genome_mining_results:
         corresponding_quast_result = next(
@@ -45,11 +46,15 @@ def compute_coverage(
                 f"No QUAST result found for genome mining result: "
                 f"{genome_mining_result.input_file_label}"
             )
-        ref_bgc_coverage[genome_mining_result.input_file] = (
-            compute_reference_coverage(
+        ref_bgc_coverage.append(
+            (
                 genome_mining_result,
-                corresponding_quast_result,
-                reference_genome_mining_result,
+                compute_reference_coverage(
+                    genome_mining_result,
+                    corresponding_quast_result,
+                    reference_genome_mining_result,
+                    allowed_gap=allowed_gap,
+                ),
             )
         )
 
@@ -60,6 +65,7 @@ def compute_reference_coverage(
     genome_mining_result: GenomeMiningResult,
     corresponding_quast_result: QuastResult,
     reference_genome_mining_result: GenomeMiningResult,
+    allowed_gap: int,
 ) -> list[ReferenceBgc]:
     """
     Compute the reference coverage for the given genome mining result and QUAST result.
@@ -79,6 +85,7 @@ def compute_reference_coverage(
         assembly.
         reference_genome_mining_result (GenomeMiningResult): Reference genome mining
         result.
+        allowed_gap (int): Allowed gap for fragmented recovery.
 
     Returns:
         list[ReferenceBgc]: List of ReferenceBgc objects representing the reference BGCs
@@ -114,56 +121,65 @@ def compute_reference_coverage(
             intersections, key=lambda x: x.start_in_ref
         )
         # Determine the status of the reference BGC based on intersections.
-        ref_bgc.status = determine_ref_bgc_status(ref_bgc)
+        ref_bgc.status = determine_ref_bgc_status(ref_bgc, allowed_gap)
         ref_bgcs.append(ref_bgc)
     return ref_bgcs
 
 
-def determine_ref_bgc_status(ref_bgc: ReferenceBgc) -> Status:
+def determine_ref_bgc_status(ref_bgc: ReferenceBgc, allowed_gap: int) -> Status:
     """
     Determine the status of the reference BGC based on its intersecting assembly BGCs.
 
     If there are no intersecting assembly BGCs, the status is MISSED.
     If there is at least one intersecting assembly BGC that fully covers the reference BGC,
-    the status is COVERED.
+    the status is FULLY_RECOVERED.
     If multiple intersecting assembly BGCs fully cover the reference BGC,
-    the status is COVERED_BY_FRAGMENTS.
+    the status is FRAGMENTED_RECOVERY.
     If there are intersecting assembly BGCs but none fully cover the reference BGC,
     the status is PARTIALLY_COVERED.
 
     Args:
         ref_bgc (ReferenceBgc): Reference BGC to determine status for.
+        allowed_gap (int): Allowed gap between assembly BGCs for fragmented recovery.
 
     Returns:
         Status: Status of the reference BGC.
     """
-    if len(ref_bgc.intersecting_assembly_bgcs) == 0:
+    if not ref_bgc.intersecting_assembly_bgcs:
         return Status.MISSED
 
-    # Find start and end of the continuous range.
+    # Check for FULLY_RECOVERED by a single BGC
+    for intersection in ref_bgc.intersecting_assembly_bgcs:
+        coverage = min(ref_bgc.end, intersection.end_in_ref) - max(
+            ref_bgc.start, intersection.start_in_ref
+        )
+        if coverage >= 0.95 * (ref_bgc.end - ref_bgc.start):
+            ref_bgc.main_covering_assembly_bgc = intersection.assembly_bgc
+            ref_bgc.recovered_product_types = intersection.assembly_bgc.product_types
+            return Status.FULLY_RECOVERED
+
+    # Check for FRAGMENTED_RECOVERY or PARTIALLY_RECOVERED
     # Note: this assumes that intersecting_assembly_bgcs are sorted by start_in_ref.
     min_start = ref_bgc.intersecting_assembly_bgcs[0].start_in_ref
     max_end = ref_bgc.intersecting_assembly_bgcs[0].end_in_ref
-    for intersection in ref_bgc.intersecting_assembly_bgcs:
-        # Check if the assembly BGC fully covers the reference BGC.
-        if (
-            intersection.start_in_ref <= ref_bgc.start
-            and intersection.end_in_ref >= ref_bgc.end
-        ):
-            return Status.COVERED
-
-        if intersection.start_in_ref > max_end + 1:
-            # If there is a gap between the current intersection and the previous one,
-            # update min_start and max_end for the covered range.
+    product_types = ref_bgc.intersecting_assembly_bgcs[0].assembly_bgc.product_types
+    for intersection in ref_bgc.intersecting_assembly_bgcs[1:]:
+        if intersection.start_in_ref > max_end + allowed_gap:
             min_start = intersection.start_in_ref
-            max_end = intersection.end_in_ref
-        else:
-            # Extend the range if the intersection overlaps.
-            max_end = max(max_end, intersection.end_in_ref)
+            product_types = intersection.assembly_bgc.product_types
+        max_end = max(max_end, intersection.end_in_ref)
 
-    if min_start <= ref_bgc.start and max_end >= ref_bgc.end:
-        return Status.COVERED_BY_FRAGMENTS
-    return Status.PARTIALLY_COVERED
+    total_coverage = min(ref_bgc.end, max_end) - max(ref_bgc.start, min_start)
+    coverage_percentage = total_coverage / (ref_bgc.end - ref_bgc.start)
+
+    if coverage_percentage >= 0.95:
+        ref_bgc.recovered_product_types = product_types
+        return Status.FRAGMENTED_RECOVERY
+    if 0.10 <= coverage_percentage < 0.95:
+        ref_bgc.recovered_product_types = product_types
+        return Status.PARTIALLY_RECOVERED
+
+    return Status.MISSED
 
 
 def get_intersecting_bgcs_from_alignment(

@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from pathlib import Path
-from typing import Callable, List
+from typing import Callable, Sequence
 
+from src.compare_to_ref_data import ReferenceBgc
 from src.genome_mining_result import Bgc, GenomeMiningResult
 from src.reporting.metrics import GROUPING_REGISTRY, METRIC_REGISTRY
 from src.reporting.report_config import ReportConfig
@@ -53,7 +54,7 @@ class BasicMetricsCalculator(MetricsCalculator):
                         grouping_dims,
                     )
                     all_metrics.extend(metrics)
-                    
+
                 except Exception as e:
                     print(
                         f"Warning: Error calculating metrics for {result.input_file}: {e}"
@@ -64,12 +65,12 @@ class BasicMetricsCalculator(MetricsCalculator):
 
     def _calculate_all_metrics_for_bgcs(
         self,
-        bgcs: List[Bgc],
+        bgcs: Sequence[Bgc],
         input_file: Path,
         mining_tool: str,
-        metric_names: List[str],
-        grouping_dimensions: List[str],
-    ) -> List[MetricValue]:
+        metric_names: list[str],
+        grouping_dimensions: list[str],
+    ) -> list[MetricValue]:
         """
         Calculate all requested metrics with specified groupings.
 
@@ -146,18 +147,18 @@ class BasicMetricsCalculator(MetricsCalculator):
         return combinations
 
     def _group_bgcs(
-        self, bgcs: list[Bgc], grouping_funcs: dict[str, Callable[[Bgc], str]]
+        self, bgcs: Sequence[Bgc], grouping_funcs: dict[str, Callable[[Bgc], str]]
     ) -> dict[tuple, list[Bgc]]:
         """
         Group BGCs by the specified grouping functions.
 
         Args:
             bgcs: List of BGCs to group
-            grouping_funcs: Dictionary of grouping functions where keys are dimension 
+            grouping_funcs: Dictionary of grouping functions where keys are dimension
             names and values are functions that return the grouping value for a BGC.
 
         Returns:
-            Dictionary where keys are tuples of grouping values and values are lists 
+            Dictionary where keys are tuples of grouping values and values are lists
             of BGCs.
             Example:
                 {
@@ -168,7 +169,7 @@ class BasicMetricsCalculator(MetricsCalculator):
 
         if not grouping_funcs:
             # No grouping - return all BGCs with empty tuple key
-            return {(): bgcs}
+            return {(): list(bgcs)}
 
         grouped = defaultdict(list)
 
@@ -187,11 +188,15 @@ class BasicMetricsCalculator(MetricsCalculator):
         return dict(grouped)
 
 
-class CompareToRefMetricsCalculator(MetricsCalculator):
+class CompareToRefMetricsCalculator(BasicMetricsCalculator):
     """Metrics calculator for comparing to a reference genome."""
 
-    def __init__(self, results: list[GenomeMiningResult], config: ReportConfig):
-        self.results = results
+    def __init__(
+        self,
+        results_with_ref_bgcs: list[tuple[GenomeMiningResult, list[ReferenceBgc]]],
+        config: ReportConfig,
+    ):
+        self.results_with_ref_bgcs = results_with_ref_bgcs
         self.config = config
 
     def calculate_metrics(self) -> list[MetricValue]:
@@ -201,6 +206,29 @@ class CompareToRefMetricsCalculator(MetricsCalculator):
         Returns:
             List of all calculated MetricValue objects
         """
-        # This method would implement the specific logic for comparing to a reference genome.
-        # For now, it returns an empty list as a placeholder.
-        return []
+        metric_names = [m.name for m in self.config.metrics]
+        all_metrics = []
+
+        # Generate all combinations of grouping dimensions
+        grouping_combinations = self._generate_grouping_combinations(self.config)
+
+        for grouping_dims in grouping_combinations:
+            # Calculate metrics for this grouping combination
+            for result, reference_bgcs in self.results_with_ref_bgcs:
+                try:
+                    metrics = self._calculate_all_metrics_for_bgcs(
+                        reference_bgcs,
+                        result.input_file,
+                        result.mining_tool,
+                        metric_names,
+                        grouping_dims,
+                    )
+                    all_metrics.extend(metrics)
+
+                except Exception as e:
+                    print(
+                        f"Warning: Error calculating metrics for {result.input_file}: {e}"
+                    )
+                    # Continue with other results
+
+        return all_metrics

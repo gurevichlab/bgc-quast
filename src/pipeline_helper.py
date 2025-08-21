@@ -163,6 +163,7 @@ class PipelineHelper:
         """
 
         analysis_report = ReportBuilder(ReportConfigManager()).build_report(
+            config=self.config,
             results=self.assembly_genome_mining_results,
             running_mode=self.running_mode,  # type: ignore
             quast_results=self.quast_results,
