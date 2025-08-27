@@ -7,7 +7,7 @@ from src.config import Config, load_config
 from src.genome_mining_parser import (
     InvalidInputException,
     get_completeness,
-    get_seq_length_map,
+    get_seq_data_map,
     parse_antismash_json,
     parse_deepbgc_json,
     parse_deepbgc_tsv,
@@ -17,7 +17,7 @@ from src.genome_mining_parser import (
     parse_quast_output_dir,
     parse_reference_genome_mining_result,
 )
-from src.genome_mining_result import AlignmentInfo
+from src.genome_mining_result import AlignmentInfo, ContigData
 from src.logger import Logger
 
 # Test data directory and constants
@@ -33,7 +33,10 @@ DEEPBGC_JSON_FILE = (
     TEST_DATA_DIR / "assembly_10_mining" / "deepBGC" / "deepBGC.antismash.json"
 )
 QUAST_DIR = TEST_DATA_DIR / "quast_out"
-SEQ_LENGTH_MAP = {"CONTIG_1": 50000, "CONTIG_2": 50000}
+SEQ_DATA_MAP = {
+    "CONTIG_1": ContigData(seq_len=50000),
+    "CONTIG_2": ContigData(seq_len=50000),
+}
 
 
 @pytest.fixture
@@ -43,7 +46,7 @@ def logger():
 
 def test_parse_antismash_json_gzipped():
     """Test parsing a gzipped antiSMASH JSON file."""
-    bgcs = parse_antismash_json(load_config(), ANTISMASH_FILE, SEQ_LENGTH_MAP)
+    bgcs = parse_antismash_json(load_config(), ANTISMASH_FILE, SEQ_DATA_MAP)
 
     # Verify we got some BGCs
     assert len(bgcs) == 6
@@ -84,7 +87,7 @@ def test_parse_antismash_json_invalid_format():
         f.write("invalid json content")
 
     with pytest.raises(InvalidInputException) as exc_info:
-        parse_antismash_json(load_config(), Path(invalid_file), SEQ_LENGTH_MAP)
+        parse_antismash_json(load_config(), Path(invalid_file), SEQ_DATA_MAP)
     assert "Failed to parse antiSMASH format" in str(exc_info.value)
 
     # Clean up
@@ -94,7 +97,7 @@ def test_parse_antismash_json_invalid_format():
 
 def test_parse_gecco_tsv():
     """Test parsing a GECCO TSV file."""
-    bgcs = parse_gecco_tsv(load_config(), GECCO_FILE, SEQ_LENGTH_MAP)
+    bgcs = parse_gecco_tsv(load_config(), GECCO_FILE, SEQ_DATA_MAP)
 
     # Verify we got some BGCs
     assert len(bgcs) == 6
@@ -122,7 +125,7 @@ def test_parse_gecco_tsv_invalid_format(tmp_path):
 
 def test_parse_deepbgc_tsv():
     """Test parsing a deepBGC TSV file."""
-    bgcs = parse_deepbgc_tsv(load_config(), DEEPBGC_TSV_FILE, SEQ_LENGTH_MAP)
+    bgcs = parse_deepbgc_tsv(load_config(), DEEPBGC_TSV_FILE, SEQ_DATA_MAP)
 
     # Verify we got some BGCs
     assert len(bgcs) == 40
@@ -150,7 +153,7 @@ def test_parse_deepbgc_tsv_invalid_format(tmp_path):
 
 def test_parse_deepbgc_json():
     """Test parsing a deepBGC JSON file."""
-    bgcs = parse_deepbgc_json(load_config(), DEEPBGC_JSON_FILE, SEQ_LENGTH_MAP)
+    bgcs = parse_deepbgc_json(load_config(), DEEPBGC_JSON_FILE, SEQ_DATA_MAP)
 
     # Verify we got some BGCs
     assert len(bgcs) == 40
@@ -281,11 +284,11 @@ def test_parse_input_mining_result_files_mixed_seq_length_sources(tmp_path, logg
     # Check seq length sources
     # file1: from genome_data
     r1 = next(r for r in results if r.input_file == antismash_file1)
-    assert r1.genome_data == {"contigA": 8}
+    assert r1.genome_data["contigA"].seq_len == 8  # type: ignore
 
     # file2: from antiSMASH JSON
     r2 = next(r for r in results if r.input_file == antismash_file2)
-    assert r2.genome_data == {"contigB": 6}
+    assert r2.genome_data["contigB"].seq_len == 6  # type: ignore
 
     # file3: None
     r3 = next(r for r in results if r.input_file == DEEPBGC_TSV_FILE)
@@ -326,8 +329,9 @@ def test_parse_genome_data_fasta(tmp_path):
     result = parse_genome_data([fasta_file])
     label = fasta_file.stem
     assert label in result
-    assert result[label]["contigA"] == 12
-    assert result[label]["contigB"] == 8
+    assert result[label]["contigA"].seq_len == 12
+    assert result[label]["contigB"].seq_len == 8
+    assert result[label]["contigA"].genes == []
 
 
 def test_parse_genome_data_gbff(tmp_path):
@@ -335,6 +339,9 @@ def test_parse_genome_data_gbff(tmp_path):
     gbff_content = """LOCUS       contigC              20 bp    DNA     linear   01-JAN-1980
 DEFINITION  dummy.
 ACCESSION   contigC
+FEATURES             Location/Qualifiers
+     gene            1..5
+     gene            10..15
 ORIGIN
         1 atgcatgcat gcatgcatgc
 //
@@ -350,8 +357,10 @@ ORIGIN
     result = parse_genome_data([gbff_file])
     label = gbff_file.stem
     assert label in result
-    assert result[label]["contigC"] == 20
-    assert result[label]["contigD"] == 10
+    assert result[label]["contigC"].seq_len == 20
+    assert result[label]["contigD"].seq_len == 10
+    assert result[label]["contigC"].genes == [(0, 5), (9, 15)]
+    assert result[label]["contigD"].genes == []
 
 
 def test_parse_genome_data_unsupported_extension(tmp_path):
@@ -362,29 +371,33 @@ def test_parse_genome_data_unsupported_extension(tmp_path):
     assert "Unsupported file extension" in str(exc_info.value)
 
 
-def test_get_seq_length_map_with_genome_seq_data_maps(tmp_path):
-    genome_seq_data_maps = {"foo": {"contig": 123}}
+def test_get_seq_data_map_with_genome_seq_data_maps(tmp_path):
+    genome_seq_data_maps = {"foo": {"contig": ContigData(seq_len=123)}}
     dummy_file = tmp_path / "foo.json"
     dummy_file.write_text(
-        json.dumps({"records": [{"id": "contig", "seq": {"data": "ATGC"}}]})
+        json.dumps(
+            {"records": [{"id": "contig", "seq": {"data": "ATGC"}, "features": []}]}
+        )
     )
-    result = get_seq_length_map(genome_seq_data_maps, dummy_file)
-    assert result == {"contig": 123}
+    result = get_seq_data_map(genome_seq_data_maps, dummy_file)
+    assert result["contig"].seq_len == 123  # type: ignore
 
 
-def test_get_seq_length_map_fallback_to_mining_result(tmp_path):
+def test_get_seq_data_map_fallback_to_mining_result(tmp_path):
     dummy_file = tmp_path / "foo.json"
     dummy_file.write_text(
-        json.dumps({"records": [{"id": "contig", "seq": {"data": "ATGC"}}]})
+        json.dumps(
+            {"records": [{"id": "contig", "seq": {"data": "ATGC"}, "features": []}]}
+        )
     )
-    result = get_seq_length_map({}, dummy_file)
-    assert result == {"contig": 4}
+    result = get_seq_data_map({}, dummy_file)
+    assert result["contig"].seq_len == 4  # type: ignore
 
 
-def test_get_seq_length_map_non_json_file(tmp_path):
+def test_get_seq_data_map_non_json_file(tmp_path):
     non_json_file = tmp_path / "bar.txt"
     non_json_file.write_text("not a json")
-    result = get_seq_length_map({}, non_json_file)
+    result = get_seq_data_map({}, non_json_file)
     assert result is None
 
 
@@ -394,16 +407,16 @@ class DummyConfig(Config):
 
 
 @pytest.mark.parametrize(
-    "seq_length_map,sequence_id,start,end,margin,expected",
+    "seq_data_map,sequence_id,start,end,margin,expected",
     [
-        ({"seq1": 1000}, "seq1", 10, 990, 10, "Complete"),
-        ({"seq1": 1000}, "seq1", 5, 990, 10, "Incomplete"),
-        ({"seq1": 1000}, "seq1", 10, 995, 10, "Incomplete"),
+        ({"seq1": ContigData(1000)}, "seq1", 10, 990, 10, "Complete"),
+        ({"seq1": ContigData(1000)}, "seq1", 5, 990, 10, "Incomplete"),
+        ({"seq1": ContigData(1000)}, "seq1", 10, 995, 10, "Incomplete"),
         ({}, "seq1", 10, 990, 10, "Unknown"),
-        ({"seq1": 1000}, "seq2", 10, 990, 10, "Unknown"),
+        ({"seq1": ContigData(1000)}, "seq2", 10, 990, 10, "Unknown"),
     ],
 )
-def test_get_completeness(seq_length_map, sequence_id, start, end, margin, expected):
+def test_get_completeness(seq_data_map, sequence_id, start, end, margin, expected):
     config = DummyConfig(margin)
-    result = get_completeness(config, seq_length_map, sequence_id, start, end)
+    result = get_completeness(config, seq_data_map, sequence_id, start, end)
     assert result == expected

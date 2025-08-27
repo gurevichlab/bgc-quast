@@ -1,5 +1,5 @@
 from statistics import mean
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, Iterable, Optional
 
 from src.genome_mining_result import Bgc
 from src.compare_to_ref_data import ReferenceBgc, Status
@@ -108,6 +108,21 @@ def mean_bgc_length(bgcs: Iterable[Bgc]) -> float:
 
     lengths = [bgc.end - bgc.start for bgc in bgc_list if bgc.end > bgc.start]
     return mean(lengths) if lengths else 0.0
+
+
+# Basic metric functions
+@metric("mean_gene_per_bgc")
+def mean_gene_per_bgc(bgcs: Iterable[Bgc]) -> Optional[float]:
+    """Calculate mean number of genes per BGC."""
+    bgc_list = list(bgcs)
+    if not bgc_list:
+        return 0.0
+
+    gene_counts = [bgc.gene_count for bgc in bgc_list]
+    if not any(gene_counts):
+        return None
+
+    return mean(gene_counts) if gene_counts else 0.0
 
 
 # Compare to reference metrics

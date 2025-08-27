@@ -104,16 +104,17 @@ class BasicMetricsCalculator(MetricsCalculator):
                 # Example: {"product_type": "NRP", "completeness": "complete"}.
                 # Empty dict for total grouping (no dimensions).
                 grouping_dict = dict(zip(grouping_dimensions, grouping_values))
-
-                results.append(
-                    MetricValue(
-                        file_path=input_file,
-                        mining_tool=mining_tool,
-                        metric_name=metric_name,
-                        value=value,
-                        grouping=grouping_dict,
+                
+                if value is not None:
+                    results.append(
+                        MetricValue(
+                            file_path=input_file,
+                            mining_tool=mining_tool,
+                            metric_name=metric_name,
+                            value=value,
+                            grouping=grouping_dict,
+                        )
                     )
-                )
 
         return results
 

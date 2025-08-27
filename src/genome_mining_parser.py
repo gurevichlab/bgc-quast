@@ -9,7 +9,13 @@ from Bio import SeqIO
 
 from . import input_utils
 from .config import Config
-from .genome_mining_result import AlignmentInfo, Bgc, GenomeMiningResult, QuastResult
+from .genome_mining_result import (
+    AlignmentInfo,
+    Bgc,
+    ContigData,
+    GenomeMiningResult,
+    QuastResult,
+)
 from .input_utils import (
     get_file_label_from_path,
     load_reverse_mapping,
@@ -25,8 +31,19 @@ class InvalidInputException(Exception):
     pass
 
 
+def _count_genes_in_bgc(bgc: Bgc, contig_data: Optional[ContigData]) -> int:
+    """Counts the number of genes in a BGC."""
+    if not contig_data:
+        return 0
+    count = 0
+    for gene_start, gene_end in contig_data.genes:
+        if bgc.start <= gene_start and gene_end <= bgc.end:
+            count += 1
+    return count
+
+
 def parse_antismash_json(
-    config: Config, file_path: Path, seq_length_map: Union[Dict[str, int], None]
+    config: Config, file_path: Path, seq_data_map: Union[Dict[str, ContigData], None]
 ) -> List[Bgc]:
     """Parse antiSMASH JSON format."""
     product_to_class = load_reverse_mapping(
@@ -64,7 +81,7 @@ def parse_antismash_json(
                         sequence_id + "." + qualifiers.get("region_number", ["1"])[0]
                     )
                     completeness = get_completeness(
-                        config, seq_length_map, sequence_id, start, end
+                        config, seq_data_map, sequence_id, start, end
                     )
                     bgc = Bgc(
                         bgc_id=bgc_id,
@@ -75,6 +92,10 @@ def parse_antismash_json(
                         product_types=mapped_products,
                         metadata=metadata,
                     )
+                    if seq_data_map and sequence_id in seq_data_map:
+                        bgc.gene_count = _count_genes_in_bgc(
+                            bgc, seq_data_map.get(sequence_id)
+                        )
                     bgcs.append(bgc)
         return bgcs
     except Exception as e:
@@ -82,7 +103,7 @@ def parse_antismash_json(
 
 
 def parse_gecco_tsv(
-    config: Config, file_path: Path, seq_length_map: Union[Dict[str, int], None]
+    config: Config, file_path: Path, seq_data_map: Union[Dict[str, ContigData], None]
 ) -> List[Bgc]:
     """Parse GECCO TSV format."""
     product_to_class = load_reverse_mapping(
@@ -134,7 +155,7 @@ def parse_gecco_tsv(
                 }
 
             completeness = get_completeness(
-                config, seq_length_map, sequence_id, start, end
+                config, seq_data_map, sequence_id, start, end
             )
 
             # Create the Bgc object
@@ -147,6 +168,8 @@ def parse_gecco_tsv(
                 product_types=mapped_product,
                 metadata=metadata,
             )
+            if seq_data_map and sequence_id in seq_data_map:
+                bgc.gene_count = _count_genes_in_bgc(bgc, seq_data_map.get(sequence_id))
 
             bgcs.append(bgc)
         return bgcs
@@ -155,7 +178,7 @@ def parse_gecco_tsv(
 
 
 def parse_deepbgc_tsv(
-    config: Config, file_path: Path, seq_length_map: Union[Dict[str, int], None]
+    config: Config, file_path: Path, seq_data_map: Union[Dict[str, ContigData], None]
 ) -> List[Bgc]:
     """Parse deepBGC TSV format."""
     product_to_class = load_reverse_mapping(
@@ -213,7 +236,7 @@ def parse_deepbgc_tsv(
                 }
 
             completeness = get_completeness(
-                config, seq_length_map, sequence_id, start, end
+                config, seq_data_map, sequence_id, start, end
             )
 
             # Create a Bgc object
@@ -226,6 +249,8 @@ def parse_deepbgc_tsv(
                 product_types=mapped_product,
                 metadata=metadata,
             )
+            if seq_data_map and sequence_id in seq_data_map:
+                bgc.gene_count = _count_genes_in_bgc(bgc, seq_data_map.get(sequence_id))
 
             bgcs.append(bgc)
         return bgcs
@@ -234,7 +259,7 @@ def parse_deepbgc_tsv(
 
 
 def parse_deepbgc_json(
-    config: Config, file_path: Path, seq_length_map: Union[Dict[str, int], None]
+    config: Config, file_path: Path, seq_data_map: Union[Dict[str, ContigData], None]
 ) -> List[Bgc]:
     """Parse deepBGC JSON format."""
     product_to_class = load_reverse_mapping(
@@ -272,7 +297,7 @@ def parse_deepbgc_json(
                 metadata = {}
                 metadata["product_details"] = product_class_raw
                 completeness = get_completeness(
-                    config, seq_length_map, sequence_id, start, end
+                    config, seq_data_map, sequence_id, start, end
                 )
 
                 bgc = Bgc(
@@ -284,6 +309,10 @@ def parse_deepbgc_json(
                     product_types=mapped_product,
                     metadata=metadata,
                 )
+                if seq_data_map and sequence_id in seq_data_map:
+                    bgc.gene_count = _count_genes_in_bgc(
+                        bgc, seq_data_map.get(sequence_id)
+                    )
 
                 bgcs.append(bgc)
         return bgcs
@@ -311,7 +340,7 @@ def parse_input_mining_result_files(
     """
 
     # Get genome sequence data.
-    genome_seq_data_maps: Dict[str, Dict[str, int]] = {}
+    genome_seq_data_maps: Dict[str, Dict[str, ContigData]] = {}
     if genome_data:
         try:
             genome_seq_data_maps = parse_genome_data(genome_data)
@@ -334,25 +363,25 @@ def parse_input_mining_result_files(
 
         # Get sequence length map for the current file.
         try:
-            seq_length_map = get_seq_length_map(genome_seq_data_maps, file_path)
+            seq_data_map = get_seq_data_map(genome_seq_data_maps, file_path)
         except Exception as e:
             log.warning(
                 f"Failed to get sequence length map for {file_path}  -- BGC"
                 f" completeness will not be calculated for this input. "
                 f"Problem occurred: {str(e)}"
             )
-            seq_length_map = None
+            seq_data_map = None
 
         for parser, tool_name in parsers.items():
             try:
-                bgcs = parser(config, file_path, seq_length_map)
+                bgcs = parser(config, file_path, seq_data_map)
                 results.append(
                     GenomeMiningResult(
                         input_file=file_path.resolve(),
                         input_file_label=get_file_label_from_path(file_path),
                         mining_tool=tool_name,
                         bgcs=bgcs,
-                        genome_data=seq_length_map,
+                        genome_data=seq_data_map,
                     )
                 )
                 break  # If parsing succeeded, move to next file
@@ -368,9 +397,9 @@ def parse_input_mining_result_files(
     return results
 
 
-def get_seq_length_map(
-    genome_seq_data_maps: Dict[str, Dict[str, int]], file_path: Path
-) -> Optional[Dict[str, int]]:
+def get_seq_data_map(
+    genome_seq_data_maps: Dict[str, Dict[str, ContigData]], file_path: Path
+) -> Optional[Dict[str, ContigData]]:
     """
     Get sequence length map for a given file path.
 
@@ -382,18 +411,18 @@ def get_seq_length_map(
     Returns:
         Sequence length map for the given file path, or None if not found
     """
-    seq_length_map: Optional[Dict[str, int]] = None
+    seq_data_map: Optional[Dict[str, ContigData]] = None
 
     if genome_seq_data_maps is not None:
-        seq_length_map = genome_seq_data_maps.get(
+        seq_data_map = genome_seq_data_maps.get(
             get_file_label_from_path(file_path), None
         )
 
     # If genome_seq_data_maps is None, try to get the sequence length map from the file
     # directly.
-    if seq_length_map is None:
-        seq_length_map = get_genome_data_from_mining_result(file_path)
-    return seq_length_map
+    if seq_data_map is None:
+        seq_data_map = get_genome_data_from_mining_result(file_path)
+    return seq_data_map
 
 
 def parse_reference_genome_mining_result(
@@ -480,7 +509,7 @@ def parse_quast_output_dir(quast_output_dir: Path) -> List[QuastResult]:
         raise InvalidInputException(f"Failed to parse QUAST output directory: {str(e)}")
 
 
-def parse_genome_data(file_paths: List[Path]) -> Dict[str, Dict[str, int]]:
+def parse_genome_data(file_paths: List[Path]) -> Dict[str, Dict[str, ContigData]]:
     """
     Parse genome data from FASTA or GBFF files, including gzipped files.
 
@@ -491,24 +520,31 @@ def parse_genome_data(file_paths: List[Path]) -> Dict[str, Dict[str, int]]:
         Dictionary mapping file label to a dict mapping sequence name to sequence
         length.
     """
-    result: Dict[str, Dict[str, int]] = {}
+    result: Dict[str, Dict[str, ContigData]] = {}
     for file_path in file_paths:
         label = get_file_label_from_path(file_path)
-        contigs: Dict[str, int] = {}
+        contigs: Dict[str, ContigData] = {}
 
         base_extension = input_utils.get_base_extension(file_path)
         if base_extension in [".fa", ".fasta", ".fna"]:
             try:
                 with open_file(file_path) as handle:
                     for record in SeqIO.parse(handle, "fasta"):
-                        contigs[record.id] = len(record.seq)
+                        contigs[record.id] = ContigData(seq_len=len(record.seq))
             except Exception as e:
                 raise Exception(f"Error parsing FASTA file {file_path}: {str(e)}")
         elif base_extension in [".gb", ".gbff", ".gbk"]:
             try:
                 with open_file(file_path) as handle:
                     for record in SeqIO.parse(handle, "genbank"):
-                        contigs[record.id] = len(record.seq)
+                        genes = [
+                            (int(f.location.start), int(f.location.end))
+                            for f in record.features
+                            if f.type in ["gene", "CDS"]
+                        ]
+                        contigs[record.id] = ContigData(
+                            seq_len=len(record.seq), genes=genes
+                        )
             except Exception as e:
                 raise Exception(f"Error parsing GenBank file {file_path}: {str(e)}")
         else:
@@ -520,7 +556,7 @@ def parse_genome_data(file_paths: List[Path]) -> Dict[str, Dict[str, int]]:
 
 def get_genome_data_from_mining_result(
     file_path: Path,
-) -> Optional[Dict[str, int]]:
+) -> Optional[Dict[str, ContigData]]:
     """
     Parse genome data from the input file if it's an antiSMASH JSON.
     The function extracts sequences (contigs) from the 'records' and computes their
@@ -539,11 +575,20 @@ def get_genome_data_from_mining_result(
     try:
         data = input_utils.get_json_from_file(file_path)
         records = data.get("records", [])
-        contigs = {
-            record["id"]: len(record["seq"]["data"])
-            for record in records
-            if "id" in record and "seq" in record and "data" in record["seq"]
-        }
+        contigs = {}
+        for record in records:
+            if "id" in record and "seq" in record and "data" in record["seq"]:
+                genes = [
+                    (
+                        int(f["location"].split("[")[1].split(":")[0]),
+                        int(f["location"].split(":")[1].split("]")[0]),
+                    )
+                    for f in record.get("features", [])
+                    if f.get("type") == "gene"
+                ]
+                contigs[record["id"]] = ContigData(
+                    seq_len=len(record["seq"]["data"]), genes=genes
+                )
         return contigs if contigs else None
     except (json.JSONDecodeError, TypeError, AttributeError, KeyError):
         return None
@@ -551,7 +596,7 @@ def get_genome_data_from_mining_result(
 
 def get_completeness(
     config: Config,
-    seq_length_map: Union[dict[str, int], None],
+    seq_data_map: Union[dict[str, ContigData], None],
     sequence_id: str,
     start: int,
     end: int,
@@ -561,7 +606,7 @@ def get_completeness(
 
     Args:
         config (Config): The configuration object containing completeness margin.
-        seq_length_map (dict): A dictionary mapping sequence IDs to their lengths.
+        seq_data_map (dict): A dictionary mapping sequence IDs to their lengths.
         sequence_id (str): The ID of the sequence to check.
         start (int): The start position of the BGC in the sequence.
         end (int): The end position of the BGC in the sequence.
@@ -569,10 +614,10 @@ def get_completeness(
     Returns:
         str: "Complete", "Incomplete", or "Unknown" based on the BGC's completeness.
     """
-    if seq_length_map and sequence_id in seq_length_map:
+    if seq_data_map and sequence_id in seq_data_map:
         completeness = (
             "Complete"
-            if end + config.bgc_completeness_margin <= seq_length_map[sequence_id]
+            if end + config.bgc_completeness_margin <= seq_data_map[sequence_id].seq_len
             and start >= config.bgc_completeness_margin
             else "Incomplete"
         )
