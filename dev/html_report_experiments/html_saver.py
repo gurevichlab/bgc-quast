@@ -28,6 +28,7 @@ def main():
 
     data_json = json.dumps(read_tsv_as_json('report.tsv'))
 
+
     html_filled = html_template.replace('{{ style_css }}', style_css)\
                                .replace('{{ script_js }}', script_js)\
                                .replace('{{ report_json }}', data_json)

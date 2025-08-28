@@ -48,6 +48,7 @@ function heatMapOneRow(cells, values, direction = 'more_is_better') {
     const topInner = q3 + 1.5 * iqr;
     const topOuter = q3 + 3 * iqr;
 
+
     // Set up the color settings (hues/brightness)
     const YELLOW = 60, PURPLE = 280;
     const MID_BRT = 100, MIN_BRT = 75, INNER_BRT = 65, OUTER_BRT = 55;
