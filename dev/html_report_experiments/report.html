@@ -419,11 +419,13 @@ function buildTable(data) {
 // ======= Bar Chart Builder =======
 // --- product colors (modifiable) ---
 const productColors = {
-    'NRP': '#2e8b57',
+    'NRPS': '#2e8b57',
     'PKS': '#f4a460',
     'RiPP': '#4169e1',
     'Hybrid': '#b0c4de',
     'Terpene': '#800080',
+    'Saccharide': '#f0c107',
+    'Alkaloid': '#dda0dd',
     'Other': '#c7c2c1'
 };
 
@@ -509,24 +511,39 @@ function getRowByLabel(data, label) {
 
 // Return all product types that exist in the table (excluding 'total')
 function detectTypes(data) {
-    // matches: "# BGC (<Type>)"
-    const types = new Set();
-    for (const r of data) {
-        const m = /^#\s*(?:complete|incomplete\s+)?BGC\s*\((.+)\)\s*$/i.exec(r[0]);
-        if (m) {
-            const type = m[1].trim();
-            if (type.toLowerCase() !== 'total') types.add(type);
-        }
-    }
-    // Product types
-    const preferred = ['NRP', 'PKS', 'RiPP', 'Hybrid', 'Terpene'];
-    const detected = Array.from(types);
-    const ordered = [
-        ...preferred.filter(t => detected.includes(t)),
-        ...detected.filter(t => !preferred.includes(t))
-    ];
-    return ordered.length ? ordered : ['Other'];
+  const types = new Set();
+
+  for (const r of data) {
+    const s = String(r[0] ?? '');
+    // match labels that start with "# BGCs ( ... )"
+    const m = /^#\s*BGCs?\s*\(\s*([^)]+)\s*\)\s*$/i.exec(s);
+    if (!m) continue;
+
+    // inside is: "NRPS" or "NRPS, Complete" or "Complete" etc.
+    const inside = m[1].trim();
+
+    // take only the part before the first comma (the product)
+    const [typeRaw] = inside.split(',', 1);
+    const type = (typeRaw || '').trim();
+    if (!type) continue;
+
+    // skip non-product tokens that appear as totals
+    const lc = type.toLowerCase();
+    if (lc === 'total' || lc === 'complete' || lc === 'incomplete') continue;
+
+    types.add(type);
+  }
+
+  // Preferred order + fallback to 'Other' if nothing detected
+  const preferred = ['NRPS','PKS','RiPP','Terpene','Saccharide','Alkaloid','Hybrid'];
+  const detected = Array.from(types);
+  const ordered = [
+    ...preferred.filter(t => detected.includes(t)),
+    ...detected.filter(t => !preferred.includes(t))
+  ];
+  return ordered.length ? ordered : ['Other'];
 }
+
 
 function buildBarPlotDynamic(data) {
     // labels are Assembly+Tool as before
@@ -542,11 +559,11 @@ function buildBarPlotDynamic(data) {
     let datasets = [];
 
     if (mode === 'total') {
-        const row = getRowByLabel(data, '# BGC (total)');
+        const row = getRowByLabel(data, '# BGCs (total)');
         if (row) {
             const counts = row.slice(1).map(v => parseInt(v, 10));
             datasets.push({
-                label: '# BGC (total)',
+                label: '# BGCs (total)',
                 data: counts,
                 backgroundColor: '#322b7a'
             });
@@ -561,8 +578,8 @@ function buildBarPlotDynamic(data) {
 
             for (const type of types) {
                 const baseColor = productColors[type] || productColors['Other'];
-                const rowComplete = getRowByLabel(data, `# complete BGC (${type})`);
-                const rowIncomplete = getRowByLabel(data, `# incomplete BGC (${type})`);
+                const rowComplete = getRowByLabel(data, `# BGCs (${type}, Complete)`);
+                const rowIncomplete = getRowByLabel(data, `# BGCs (${type}, Incomplete)`);
 
                 if (statuses.includes('complete') && rowComplete) {
                     datasets.push({
@@ -581,8 +598,8 @@ function buildBarPlotDynamic(data) {
             }
         } else if (byCompleteness) {
             // stacks are complete vs incomplete (total)
-            const rowComplete = getRowByLabel(data, '# complete BGC (total)');
-            const rowIncomplete = getRowByLabel(data, '# incomplete BGC (total)');
+            const rowComplete = getRowByLabel(data, '# BGCs (Complete)');
+            const rowIncomplete = getRowByLabel(data, '# BGCs (Incomplete)');
             const statuses = selectedStatusesFromUI();
 
             if (statuses.includes('complete') && rowComplete) {
@@ -604,7 +621,7 @@ function buildBarPlotDynamic(data) {
             const allTypes = detectTypes(data);
             const types = selectedTypesFromUI(allTypes);
             for (const type of types) {
-                const row = getRowByLabel(data, `# BGC (${type})`);
+                const row = getRowByLabel(data, `# BGCs (${type})`);
                 if (row) {
                     datasets.push({
                         label: type,
@@ -616,11 +633,11 @@ function buildBarPlotDynamic(data) {
         } else {
             // fallback: if user selected "Show by" but no boxes,
             // just show the total to avoid an empty chart.
-            const row = getRowByLabel(data, '# BGC (total)');
+            const row = getRowByLabel(data, '# BGCs (total)');
             if (row) {
                 const counts = row.slice(1).map(v => parseInt(v, 10));
                 datasets.push({
-                    label: '# BGC (total)',
+                    label: '# BGCs (total)',
                     data: counts,
                     backgroundColor: '#322b7a'
                 });
