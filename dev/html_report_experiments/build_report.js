@@ -121,8 +121,13 @@ function buildTable(data) {
         // Hide extended rows by default (only show "total" by default)
         const label = String(rowData[0] ?? '').toLowerCase();
         const isTotal = label.includes('(total)');
-        const isGenomeTool = label === 'mining_tool';
-        if (!isTotal && !isGenomeTool) {
+        const isMiningTool = label === 'mining_tool';
+        const isCompTotal =
+            label === '# bgcs (complete)' ||
+            label === '# bgcs (incomplete)' ||
+            label === 'mean bgc length (complete)' ||
+            label === 'mean bgc length (incomplete)';
+        if (!isTotal && !isMiningTool && !isCompTotal) {
             row.classList.add('extended-row');
         }
 
