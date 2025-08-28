@@ -121,7 +121,7 @@ function buildTable(data) {
         // Hide extended rows by default (only show "total" by default)
         const label = String(rowData[0] ?? '').toLowerCase();
         const isTotal = label.includes('(total)');
-        const isGenomeTool = label === 'genome mining tool';
+        const isGenomeTool = label === 'mining_tool';
         if (!isTotal && !isGenomeTool) {
             row.classList.add('extended-row');
         }
@@ -133,7 +133,9 @@ function buildTable(data) {
         // Build each cell in the row
         data[i].forEach((cell, j) => {
             const td = document.createElement(j === 0 ? 'th' : 'td');
-            td.textContent = cell;
+            td.textContent = (j === 0 && String(cell).toLowerCase() === 'mining_tool')
+                ? 'Genome Mining Tool'
+                : cell;
 
             // Only collect numeric values for heatmap
             if (j > 0) {
