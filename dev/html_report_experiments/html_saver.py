@@ -2,9 +2,20 @@ import json
 
 
 def read_tsv_as_json(path):
+    rows = []
     with open(path, 'r', encoding='utf-8') as f:
-        lines = [line.strip().split('\t') for line in f if line.strip()]
-    return lines
+        for line in f:
+            if not line.strip():
+                continue
+            parts = line.rstrip('\r\n').split('\t')
+
+            for j in range(1, len(parts)):  # skip first column (labels)
+                if parts[j].strip() == "":
+                    parts[j] = "0"
+
+            rows.append(parts)
+    return rows
+
 
 
 def main():
