@@ -128,7 +128,7 @@ def test_determine_status_missed():
     # Create a reference BGC with no intersections.
     ref_bgc = create_reference_bgc(start=100, end=200)
     # Assuming intersecting_assembly_bgcs defaults empty.
-    status = determine_ref_bgc_status(ref_bgc)
+    status = determine_ref_bgc_status(ref_bgc, allowed_gap=100)
     assert status == Status.MISSED
 
 
@@ -142,8 +142,8 @@ def test_determine_status_covered():
     ref_bgc = create_reference_bgc(
         start=100, end=200, intersecting_assembly_bgcs=[intersection]
     )
-    status = determine_ref_bgc_status(ref_bgc)
-    assert status == Status.COVERED
+    status = determine_ref_bgc_status(ref_bgc, allowed_gap=100)
+    assert status == Status.FULLY_RECOVERED
 
 
 def test_determine_status_partly_covered():
@@ -156,8 +156,8 @@ def test_determine_status_partly_covered():
     ref_bgc = create_reference_bgc(
         start=100, end=200, intersecting_assembly_bgcs=[intersection]
     )
-    status = determine_ref_bgc_status(ref_bgc)
-    assert status == Status.PARTIALLY_COVERED
+    status = determine_ref_bgc_status(ref_bgc, allowed_gap=100)
+    assert status == Status.PARTIALLY_RECOVERED
 
 
 def test_determine_status_partly_covered_non_contiguous_intersections():
@@ -176,8 +176,8 @@ def test_determine_status_partly_covered_non_contiguous_intersections():
     ref_bgc = create_reference_bgc(
         start=100, end=200, intersecting_assembly_bgcs=[intersection1, intersection2]
     )
-    status = determine_ref_bgc_status(ref_bgc)
-    assert status == Status.PARTIALLY_COVERED
+    status = determine_ref_bgc_status(ref_bgc, allowed_gap=1)
+    assert status == Status.PARTIALLY_RECOVERED
 
 
 def test_determine_status_covered_by_fragments():
@@ -195,8 +195,8 @@ def test_determine_status_covered_by_fragments():
     ref_bgc = create_reference_bgc(
         start=100, end=200, intersecting_assembly_bgcs=[intersection1, intersection2]
     )
-    status = determine_ref_bgc_status(ref_bgc)
-    assert status == Status.COVERED_BY_FRAGMENTS
+    status = determine_ref_bgc_status(ref_bgc, allowed_gap=100)
+    assert status == Status.FRAGMENTED_RECOVERY
 
 
 def test_determine_status_covered_by_fragments_extra_intersections():
@@ -222,8 +222,8 @@ def test_determine_status_covered_by_fragments_extra_intersections():
         end=200,
         intersecting_assembly_bgcs=[intersection1, intersection2, intersection3],
     )
-    status = determine_ref_bgc_status(ref_bgc)
-    assert status == Status.COVERED_BY_FRAGMENTS
+    status = determine_ref_bgc_status(ref_bgc, allowed_gap=100)
+    assert status == Status.FRAGMENTED_RECOVERY
 
 
 # ====================== Tests for map_coordinates ======================
@@ -310,13 +310,16 @@ def test_compute_reference_coverage_no_intersections():
     # QUAST result with no alignments for the reference.
     quast_result = create_quast_result(reference_sequences={})
     reference_bgcs = compute_reference_coverage(
-        genome_mining_result, quast_result, reference_genome_mining_result
+        genome_mining_result,
+        quast_result,
+        reference_genome_mining_result,
+        allowed_gap=100,
     )
     # With no alignment, the ReferenceBgc's intersecting_assembly_bgcs remains empty.
     assert len(reference_bgcs) == 1
     result_ref_bgc = reference_bgcs[0]
     assert result_ref_bgc.intersecting_assembly_bgcs == []
-    status = determine_ref_bgc_status(result_ref_bgc)
+    status = determine_ref_bgc_status(result_ref_bgc, allowed_gap=100)
     assert status == Status.MISSED
 
 
@@ -335,12 +338,15 @@ def test_compute_reference_coverage_fully_covered():
     )
     quast_result = create_quast_result(reference_sequences={"ref_id": [alignment]})
     reference_bgcs = compute_reference_coverage(
-        genome_mining_result, quast_result, reference_genome_mining_result
+        genome_mining_result,
+        quast_result,
+        reference_genome_mining_result,
+        allowed_gap=100,
     )
     assert len(reference_bgcs) == 1
     result_ref_bgc = reference_bgcs[0]
     assert len(result_ref_bgc.intersecting_assembly_bgcs) == 1
-    assert result_ref_bgc.status == Status.COVERED
+    assert result_ref_bgc.status == Status.FULLY_RECOVERED
 
 
 def test_compute_reference_coverage_covered_by_fragments_with_gap_closed():
@@ -368,13 +374,16 @@ def test_compute_reference_coverage_covered_by_fragments_with_gap_closed():
     quast_result = create_quast_result(reference_sequences={"ref_id": [alignment]})
 
     reference_bgcs = compute_reference_coverage(
-        genome_mining_result, quast_result, reference_genome_mining_result
+        genome_mining_result,
+        quast_result,
+        reference_genome_mining_result,
+        allowed_gap=100,
     )
     assert len(reference_bgcs) == 1
     result_ref_bgc = reference_bgcs[0]
     # The union of the two intersections covers the reference even though neither does
     # individually.
-    assert result_ref_bgc.status == Status.COVERED_BY_FRAGMENTS
+    assert result_ref_bgc.status == Status.FRAGMENTED_RECOVERY
     assert result_ref_bgc.intersecting_assembly_bgcs[0].start_in_ref == 80
     assert result_ref_bgc.intersecting_assembly_bgcs[0].end_in_ref == 180
     assert result_ref_bgc.intersecting_assembly_bgcs[0].reversed is False
@@ -422,13 +431,16 @@ def test_compute_reference_coverage_multiple_alignments_different_asm_seq():
     )
 
     reference_bgcs = compute_reference_coverage(
-        genome_mining_result, quast_result, reference_genome_mining_result
+        genome_mining_result,
+        quast_result,
+        reference_genome_mining_result,
+        allowed_gap=100,
     )
     assert len(reference_bgcs) == 1
     result_ref_bgc = reference_bgcs[0]
     # The intersections from both alignments should merge and be recognized as covering
     # fragments.
-    assert result_ref_bgc.status == Status.COVERED_BY_FRAGMENTS
+    assert result_ref_bgc.status == Status.FRAGMENTED_RECOVERY
     assert len(result_ref_bgc.intersecting_assembly_bgcs) == 2
     assert result_ref_bgc.intersecting_assembly_bgcs[0].start_in_ref == 80
     assert result_ref_bgc.intersecting_assembly_bgcs[0].end_in_ref == 180
@@ -464,18 +476,18 @@ def test_compute_coverage():
         reference_sequences={"ref_id": [alignment]}, input_file_label="asm_label"
     )
     quast_results = [quast_result]
-    coverage_dict = compute_coverage(
+    coverage_list = compute_coverage(
         genome_mining_results,
         reference_genome_mining_result,
         quast_results,
+        allowed_gap=100,
     )
-    # The coverage_dict should have one entry keyed by input_file.
-    assert Path("asm.fasta") in coverage_dict
-    result_ref_bgcs = coverage_dict[Path("asm.fasta")]
-    assert isinstance(result_ref_bgcs, list)
-    assert len(result_ref_bgcs) == 1
-    status = result_ref_bgcs[0].status
-    assert status == Status.COVERED
+    # The coverage_list should have one entry keyed by input_file.
+    ref_coverage = coverage_list[0][1]
+    assert isinstance(coverage_list, list)
+    assert len(coverage_list) == 1
+    status = ref_coverage[0].status
+    assert status == Status.FULLY_RECOVERED
 
 
 def test_compute_coverage_no_quast_result():
@@ -501,5 +513,6 @@ def test_compute_coverage_no_quast_result():
             genome_mining_results,
             reference_genome_mining_result,
             quast_results,
+            allowed_gap=100,
         )
     assert "No QUAST result found" in str(excinfo.value)

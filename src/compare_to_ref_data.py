@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Optional
 
 from src.genome_mining_result import Bgc
 
@@ -25,9 +26,9 @@ class Intersection:
 # Reference BGC status enum.
 class Status(Enum):
     MISSED = 0
-    PARTIALLY_COVERED = 1
-    COVERED = 2
-    COVERED_BY_FRAGMENTS = 3
+    FRAGMENTED_RECOVERY = 1
+    PARTIALLY_RECOVERED = 2
+    FULLY_RECOVERED = 3
 
 
 @dataclass
@@ -39,10 +40,16 @@ class ReferenceBgc(Bgc):
         status (Status): The status of the BGC.
         intersecting_assembly_bgcs (list[Intersection]): assembly BGCs that intersect
         with this BGC.
+        main_covering_assembly_bgc (Optional[Bgc]): The main covering assembly BGC for
+        this reference BGC.
+        recovered_product_types (list[str]): The recovered product types for this
+        reference BGC.
     """
 
     status: Status = Status.MISSED
     intersecting_assembly_bgcs: list[Intersection] = field(default_factory=list)
+    main_covering_assembly_bgc: Optional[Bgc] = None
+    recovered_product_types: list[str] = field(default_factory=list)
 
     @classmethod
     def from_bgc(cls, bgc: Bgc) -> "ReferenceBgc":

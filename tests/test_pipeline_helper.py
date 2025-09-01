@@ -185,6 +185,7 @@ def test_compute_stats_creates_analysis_report(pipeline_helper):
         pipeline_helper.compute_stats()
 
         mock_build_report.assert_called_once_with(
+            config=pipeline_helper.config,
             results=[mock_genome_mining_result],
             running_mode=RunningMode.COMPARE_TOOLS,
             quast_results=pipeline_helper.quast_results,

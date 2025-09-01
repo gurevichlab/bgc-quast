@@ -13,7 +13,8 @@ basic_report:
   grouping_dimensions:
     product_type:
       include_total: true
-      order: ["total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid", "Hybrid"]
+      order: ["total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid",
+       "Hybrid"]
     completeness:
       include_total: true
       order: ["total", "Complete", "Incomplete", "Unknown"]
@@ -23,32 +24,33 @@ basic_report:
 
 compare_to_reference:
   metrics:
-    - name: "fully_recovered_bgcs"
+    - name: "fully_recovered_bgcs_count"
       display_name: "Fully recovered BGCs"
-      description: "Reference BGCs where >95% of the region is covered by at least one assembly BGC with the same product type"
-    - name: "partially_recovered_bgcs"
+      description: "Reference BGCs where >95% of the region is covered by at least one
+       assembly BGC with the same product type"
+    - name: "partially_recovered_bgcs_count"
       display_name: "Partially recovered BGCs"
-      description: "Reference BGCs where 10-95% of the region is covered by assembly BGCs"
-    - name: "missed_bgcs"
+      description: "Reference BGCs where 10-95% of the region is covered by assembly
+       BGCs"
+    - name: "missed_bgcs_count"
       display_name: "Missed BGCs"
       description: "Reference BGCs with <10% coverage by any assembly BGC"
-    - name: "fragmented_recovery"
-      display_name: "Fragmented recovery"
+    - name: "fragmented_recovery_count"
+      display_name: "Fragmented BGCs"
       description: "Reference BGCs recovered by multiple disjoint assembly BGCs"
-    - name: "misclassified_product_type"
+    - name: "misclassified_product_type_count"
       display_name: "Misclassified product type"
-      description: "Recovered reference BGCs predicted with a wrong product type in the assembly"
+      description: "Recovered reference BGCs predicted with a wrong product type in
+       the assembly"
     - name: "recovery_rate"
       display_name: "Recovery rate"
       description: "Percentage of reference BGCs that are fully or partially recovered"
-    - name: "mean_coverage"
-      display_name: "Mean coverage"
-      description: "Average coverage of reference BGCs by assembly BGCs"
-      
+    
   grouping_dimensions:
     product_type:
       include_total: true
-      order: ["total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid", "Hybrid"]
+      order: ["total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid",
+       "Hybrid"]
     completeness:
       include_total: true
       order: ["total", "Complete", "Incomplete", "Unknown"]
@@ -77,7 +79,8 @@ compare_tools:
   grouping_dimensions:
     product_type:
       include_total: true
-      order: ["total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid", "Hybrid"]
+      order: ["total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid",
+       "Hybrid"]
     tool:
       include_total: false
       order: ["antiSMASH", "GECCO", "DeepBGC", "BiG-SCAPE"]
@@ -107,7 +110,8 @@ compare_samples:
   grouping_dimensions:
     product_type:
       include_total: true
-      order: ["total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid", "Hybrid"]
+      order: ["total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid",
+       "Hybrid"]
     sample_group:
       include_total: true
       order: ["total", "group_A", "group_B", "group_C"]

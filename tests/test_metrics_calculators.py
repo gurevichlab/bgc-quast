@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from src.compare_to_ref_data import ReferenceBgc, Status
 from src.genome_mining_result import Bgc, GenomeMiningResult
 from src.reporting.metrics_calculators import (
     BasicMetricsCalculator,
@@ -79,19 +80,28 @@ def test_calculate_metrics(basic_calculator):
     # Check values for ungrouped metrics
     ungrouped = [m for m in metrics if m.grouping == {}]
     assert len(ungrouped) == 2
-    total_bgc_count_metric = next(m for m in ungrouped if m.metric_name == "total_bgc_count")
-    mean_bgc_length_metric = next(m for m in ungrouped if m.metric_name == "mean_bgc_length")
+    total_bgc_count_metric = next(
+        m for m in ungrouped if m.metric_name == "total_bgc_count"
+    )
+    mean_bgc_length_metric = next(
+        m for m in ungrouped if m.metric_name == "mean_bgc_length"
+    )
     assert total_bgc_count_metric.value == 3
     assert mean_bgc_length_metric.value == pytest.approx((100 + 100 + 100) / 3)
 
     # Check grouped metrics for product_type and completeness
     nrp_complete = [
-        m for m in metrics
+        m
+        for m in metrics
         if m.grouping == {"product_type": "NRP", "completeness": "Complete"}
     ]
     assert len(nrp_complete) == 2
-    assert any(m.metric_name == "total_bgc_count" and m.value == 1 for m in nrp_complete)
-    assert any(m.metric_name == "mean_bgc_length" and m.value == 100 for m in nrp_complete)
+    assert any(
+        m.metric_name == "total_bgc_count" and m.value == 1 for m in nrp_complete
+    )
+    assert any(
+        m.metric_name == "mean_bgc_length" and m.value == 100 for m in nrp_complete
+    )
 
 
 def test_empty_bgcs():
@@ -177,24 +187,108 @@ def test_calculate_all_metrics_for_bgcs(basic_calculator):
 
 @pytest.fixture
 def compare_to_ref_calculator():
-    results = [
-        GenomeMiningResult(
-            input_file=Path("test_file_1"),
-            input_file_label="label3",
-            mining_tool="tool3",
-            bgcs=[],
+    assembly_bgcs = []
+    result = GenomeMiningResult(
+        input_file=Path("test_file_1"),
+        input_file_label="label1",
+        mining_tool="tool1",
+        bgcs=assembly_bgcs,
+    )
+
+    ref_bgcs = [
+        ReferenceBgc(
+            bgc_id="bgc1_ref",
+            sequence_id="ref_seq1",
+            start=0,
+            end=100,
+            completeness="Complete",
+            product_types=["NRP"],
+            status=Status.FULLY_RECOVERED,
+            recovered_product_types=["NRP"],
+        ),
+        ReferenceBgc(
+            bgc_id="bgc2_ref",
+            sequence_id="ref_seq1",
+            start=1000,
+            end=1100,
+            completeness="Complete",
+            product_types=["PKS"],
+            status=Status.MISSED,
+            recovered_product_types=[],
+        ),
+        ReferenceBgc(
+            bgc_id="bgc3_ref",
+            sequence_id="ref_seq2",
+            start=2000,
+            end=2100,
+            completeness="Incomplete",
+            product_types=["Hybrid"],
+            status=Status.PARTIALLY_RECOVERED,
+            recovered_product_types=["Hybrid"],
         ),
     ]
 
+    results_with_ref_bgcs = [(result, ref_bgcs)]
+
     config = ReportConfig(
-        metrics=[],
-        grouping_dimensions={},
-        grouping_combinations=[],
+        metrics=[
+            MetricConfig(
+                name="fully_recovered_bgcs_count",
+                display_name="Fully Recovered BGCs",
+            ),
+            MetricConfig(name="recovery_rate", display_name="Recovery Rate"),
+        ],
+        grouping_dimensions={
+            "completeness": GroupingDimensionConfig(),
+            "product_type": GroupingDimensionConfig(),
+        },
+        grouping_combinations=[["completeness", "product_type"]],
     )
 
-    return CompareToRefMetricsCalculator(results, config)
+    return CompareToRefMetricsCalculator(results_with_ref_bgcs, config)
 
 
-def test_calculate_metrics_compare_to_ref(compare_to_ref_calculator):
+def test_compare_to_ref_calculate_metrics(compare_to_ref_calculator):
     metrics = compare_to_ref_calculator.calculate_metrics()
-    assert metrics == []
+
+    assert len(metrics) == 18
+
+    metric_names = {m.metric_name for m in metrics}
+    assert "fully_recovered_bgcs_count" in metric_names
+    assert "recovery_rate" in metric_names
+
+    ungrouped = [m for m in metrics if m.grouping == {}]
+    assert len(ungrouped) == 2
+    fully_recovered_metric = next(
+        m for m in ungrouped if m.metric_name == "fully_recovered_bgcs_count"
+    )
+    recovery_rate_metric = next(
+        m for m in ungrouped if m.metric_name == "recovery_rate"
+    )
+    assert fully_recovered_metric.value == 1
+    assert recovery_rate_metric.value == pytest.approx(2 / 3)
+
+    incomplete_group = [
+        m for m in metrics if m.grouping.get("completeness") == "Incomplete"
+    ]
+    assert len(incomplete_group) == 4
+    assert any(
+        m.metric_name == "fully_recovered_bgcs_count" and m.value == 0
+        for m in incomplete_group
+    )
+    assert any(
+        m.metric_name == "recovery_rate" and m.value == 1.0 for m in incomplete_group
+    )
+
+    complete_pks = [
+        m
+        for m in metrics
+        if m.grouping.get("completeness") == "Complete"
+        and m.grouping.get("product_type") == "PKS"
+    ]
+    assert len(complete_pks) == 2
+    assert any(
+        m.metric_name == "fully_recovered_bgcs_count" and m.value == 0
+        for m in complete_pks
+    )
+    assert any(m.metric_name == "recovery_rate" and m.value == 0 for m in complete_pks)

@@ -4,6 +4,7 @@ from typing import List, Optional
 
 import src.compare_to_ref_analyzer as compare_to_ref_analyzer
 import src.input_utils as input_utils
+from src.config import Config
 from src.genome_mining_result import GenomeMiningResult, QuastResult
 from src.reporting.metrics_calculators import (
     BasicMetricsCalculator,
@@ -21,10 +22,11 @@ class ReportBuilder:
     """Builds structured reports from genome mining results."""
 
     def __init__(self, config_manager: ReportConfigManager):
-        self.config_manager = config_manager
+        self.report_config_manager = config_manager
 
     def build_report(
         self,
+        config: Config,
         results: List[GenomeMiningResult],
         running_mode: RunningMode,
         quast_results: Optional[list[QuastResult]] = None,
@@ -34,6 +36,7 @@ class ReportBuilder:
         Build a report from genome mining results.
 
         Args:
+            config: Config of the run.
             results: List of GenomeMiningResult objects
             running_mode: Running mode of the report
             (e.g., COMPARE_TO_REFERENCE, COMPARE_TOOLS, COMPARE_SAMPLES).
@@ -44,13 +47,13 @@ class ReportBuilder:
         Returns:
             ReportData object with structured metrics
         """
-        config = self.config_manager.get_config("basic_report")
-        if not config:
+        report_config = self.report_config_manager.get_config("basic_report")
+        if not report_config:
             raise ValueError("No configuration found for running mode: basic_report")
 
         basic_metrics_calculator = BasicMetricsCalculator(
             results=results,
-            config=config,
+            config=report_config,
         )
         metrics = basic_metrics_calculator.calculate_metrics()
         if not metrics:
@@ -62,20 +65,21 @@ class ReportBuilder:
         }
 
         if running_mode == RunningMode.COMPARE_TO_REFERENCE:
-            reference_bgcs = compare_to_ref_analyzer.compute_coverage(
-                results,
-                reference_genome_mining_result,  # type: ignore
-                quast_results,  # type: ignore
-            )
-
-            mode_config = self.config_manager.get_config("compare_to_reference")
+            mode_config = self.report_config_manager.get_config("compare_to_reference")
             if not mode_config:
                 raise ValueError(
                     "No configuration found for running mode: compare_to_reference"
                 )
+            
+            reference_bgcs = compare_to_ref_analyzer.compute_coverage(
+                results,
+                reference_genome_mining_result,  # type: ignore
+                quast_results,  # type: ignore
+                config.allowed_gap_for_fragmented_recovery
+            )
 
             mode_metrics_calculator = CompareToRefMetricsCalculator(
-                results=results,
+                results_with_ref_bgcs=reference_bgcs,
                 config=mode_config,
             )
             metrics.extend(mode_metrics_calculator.calculate_metrics())
