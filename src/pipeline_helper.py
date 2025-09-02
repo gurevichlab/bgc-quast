@@ -187,6 +187,7 @@ class PipelineHelper:
             self.analysis_report,
             self.config.output_config.report,
             self.config.output_config.html_report,
+            self.config.output_config.tsv_report,
         )
 
         self.log.info("RESULTS:")
@@ -196,6 +197,10 @@ class PipelineHelper:
         )
         self.log.info(
             f"HTML report is saved to {self.config.output_config.html_report}",
+            indent=1,
+        )
+        self.log.info(
+            f"TSV report is saved to {self.config.output_config.tsv_report}",
             indent=1,
         )
 

@@ -20,6 +20,7 @@ class OutputConfig:
         self.symlink_to_latest = self.output_dir / Path("latest")
         self.report = self.output_dir / Path("report.txt")
         self.html_report = self.output_dir / Path("report.html")
+        self.tsv_report = self.output_dir / Path("report.tsv")
 
 
 @dataclass
