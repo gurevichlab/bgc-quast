@@ -116,8 +116,8 @@ def determine_running_mode(
         )
     )
     if reference_genome_mining_result is not None:
-        if different_file_labels:
-            # Different file labels are not allowed for the COMPARE_TO_REFERENCE mode.
+        if different_mining_tools:
+            # Different mining tools are not allowed for the COMPARE_TO_REFERENCE mode.
             return RunningMode.UNKNOWN
         return RunningMode.COMPARE_TO_REFERENCE
     elif different_file_labels and different_mining_tools:
