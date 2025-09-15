@@ -17,6 +17,7 @@ class Bgc:
         completeness (Literal["Complete", "Incomplete", "Unknown"]): Whether the BGC is complete (Complete, Incomplete, Unknown).
         product_types (list): The product types of the BGC.
         metadata (dict): The metadata of the BGC, e.g. tool-specific metadata.
+        gene_count (int): The number of genes in the BGC.
     """
 
     bgc_id: str
@@ -26,6 +27,7 @@ class Bgc:
     completeness: Literal["Complete", "Incomplete", "Unknown"] = "Unknown"
     product_types: List[str] = field(default_factory=list)
     metadata: Optional[Dict] = None
+    gene_count: int = 0
 
 
 @dataclass
@@ -39,15 +41,29 @@ class GenomeMiningResult:
         input_file_label (str): The input file label.
         mining_tool (str): The mining tool name.
         bgcs (list): The BGCs.
-        genome_data (Optional[Dict[str, int]]): Optional mapping of sequence IDs to
-        their lengths. Could be extended in the future to include more genome data.
+        genome_data (Optional[Dict[str, "ContigData"]]): Optional mapping of sequence 
+        IDs to their lengths. Could be extended in the future to include more genome
+        data.
     """
 
     input_file: Path
     input_file_label: str
     mining_tool: str
     bgcs: List[Bgc] = field(default_factory=list)
-    genome_data: Optional[Dict[str, int]] = None
+    genome_data: Optional[Dict[str, "ContigData"]] = None
+
+
+@dataclass
+class ContigData:
+    """
+    Class for contig data.
+    Attributes:
+        seq_len (int): The length of the contig.
+        genes (List[tuple[int, int]]): A list of gene start and end positions.
+    """
+
+    seq_len: int
+    genes: List[tuple[int, int]] = field(default_factory=list)
 
 
 @dataclass

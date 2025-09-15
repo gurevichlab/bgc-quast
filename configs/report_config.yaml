@@ -9,7 +9,10 @@ basic_report:
     - name: "mean_bgc_length"
       display_name: "Mean BGC length"
       description: "Average length of BGCs in base pairs"
-      
+    - name: "mean_gene_per_bgc"
+      display_name: "Mean genes per BGC"
+      description: "Average number of genes per BGC"
+
   grouping_dimensions:
     product_type:
       include_total: true
