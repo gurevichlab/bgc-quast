@@ -88,6 +88,17 @@ def add_advanced_arguments(parser: argparse.ArgumentParser):
         type=Path,
     )
 
+    advanced_input_group.add_argument(
+        "--overlap-threshold", "--thr",
+        dest="compare_tools_overlap_threshold",
+        type=float,
+        default=None,  # None means "use Config’s default (0.90)"
+        metavar="FLOAT",
+        help=("Overlap threshold in [0,1] for Compare-Tools uniqueness "
+              "(directional coverage |A∩B|/|A|). "
+              "If omitted, defaults to the run config value (0.90)."),
+    )
+
 
 def build_cmdline_args_parser(default_cfg: Config) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -124,3 +135,7 @@ def validate(expr, msg=""):
 def validate_arguments(args: CommandLineArgs):
     if None:  # TODO if applicable
         raise ValidationError("something is wrong!")
+    thr = getattr(args, "compare_tools_overlap_threshold", None)
+    if thr is not None:
+        validate(0.0 <= thr <= 1.0,
+                 "--compare-tools-overlap-threshold must be between 0 and 1")
