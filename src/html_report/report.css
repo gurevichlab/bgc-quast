@@ -1,0 +1,158 @@
+/* Entire page layout using Flexbox */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #EDF2F4;
+    font-family: Arial, sans-serif;
+}
+
+/* New wrapper to flexibly contain header, layout, and footer */
+#main {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px;
+}
+
+/* Growable content area: table and plot */
+#reportLayout {
+    display: flex;
+    gap: 0px;
+    flex: 1; /* Takes up remaining vertical space */
+}
+
+#reportLayout > div {
+    flex: 1;
+}
+
+/* Header */
+:root {
+  /* pick your color here */
+  --accent: #050752;
+  --bar-text: #ffffff; /* title text color */
+}
+
+.page-header {
+  background: var(--accent);
+  color: var(--bar-text);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin-left: -10px;   /* match #main { padding: 10px } */
+  margin-right: -10px;
+  margin-top: -10px;
+  margin-bottom: 12px;
+}
+
+.page-header h1 {
+  margin: 10px;
+  font-weight: 600;
+  font-size: 32px;
+  letter-spacing: 0.2px;
+  color: inherit;
+}
+
+
+/* Table styling (unchanged) */
+
+table {
+    width: 80%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    border: 1px solid #878686;
+    padding: 8px;
+    text-align: left;
+}
+
+td {
+    background-color: #f8f9fa;
+}
+
+th {
+    background-color: #bdd1db;
+}
+
+/* Table style - rows */
+.extended-row {
+    display: none;
+}
+
+.extended-btn-wrapper {
+    margin-top: 10px;
+}
+
+
+/*Heatmap style*/
+.heatmap-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.heatmap-legend-labels {
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Barplot */
+.plot-and-controls {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  /* Prevent accidental wrapping below the canvas */
+  flex-wrap: nowrap;
+  margin-top: 150px;
+}
+
+.plot-and-controls .chart-wrap {
+  flex: 1 1 720px;   /* <- initial width; grows/shrinks with the layout */
+  min-width: 480px;  /* <- optional floor so it never gets too small */
+  display: block;
+}
+
+.plot-and-controls .chart-wrap canvas {
+  display: block;
+  width: 100% !important;
+  height: auto !important; /* keeps aspect ratio unless you later fix height */
+}
+
+.barplot-controls {
+  /* Keep controls in a narrow column on the right */
+  flex: 0 0 240px;         /* ~240px fixed column */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.barplot-controls fieldset {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.barplot-controls fieldset label {
+  display: block;
+  margin: 4px 0;
+}
+
+.barplot-controls legend {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+
+/* Sticky footer */
+#footer {
+    border-top: 1px solid #333;
+    padding-top: 0px;
+    font-size: 15px;
+    text-align: left;
+}
+

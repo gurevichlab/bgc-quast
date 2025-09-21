@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BGC-QUAST Report</title>
+    <style>
+    {{ style_css }}
+    </style>
+</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<body>
+<div id="main"> <!-- Wrapper -->
+    <!-- Header with accent stripe + title -->
+    <header class="page-header">
+        <h1>BGC-QUAST Report</h1>
+    </header>
+
+
+    <!-- Two-column layout: left - table+heatmap, right - plot+controls -->
+    <div id="reportLayout">
+        <div>
+            <div class="heatmap-controls">
+                <!-- Gradient legend -->
+                <div id="heatmapLegend">
+                    <canvas id="gradientHeatmap" width="300" height="10"></canvas>
+                    <div class="heatmap-legend-labels">
+                        <span>Smallest</span>
+                        <span>Median</span>
+                        <span>Largest</span>
+                    </div>
+                </div>
+
+                <!-- Heatmap toggle checkbox -->
+                <label>
+                    <input type="checkbox" id="heatmapToggle" checked> Show heatmap
+                </label>
+
+
+            </div>
+
+            <div id="reportTableContainer"></div>
+            <div class="extended-btn-wrapper">
+                <button id="toggleExtendedBtn">Show Extended Report</button>
+            </div>
+        </div>
+
+        <!-- The barplot -->
+        <div>
+            <div class="plot-and-controls">
+                <div class="chart-wrap">
+                    <canvas id="bgcBarPlot"></canvas>
+                </div>
+
+                <div class="barplot-controls">
+                    <div class="barplot-mode">
+                        <label><input type="radio" name="barMode" value="total" id="barModeTotal" checked> Total</label>
+                        <label><input type="radio" name="barMode" value="showby" id="barModeShowBy"> Show by:</label>
+                    </div>
+
+                    <!-- Show-by group (completeness + type) -->
+                    <fieldset id="showByGroup">
+                        <label><input type="checkbox" id="byCompleteness"> by completeness</label>
+                        <label><input type="checkbox" id="byType"> by type</label>
+                    </fieldset>
+
+                    <fieldset id="completenessFilterGroup">
+                        <legend>Completeness</legend>
+                        <label><input type="checkbox" id="status_complete" data-status="complete" checked> Complete</label>
+                        <label><input type="checkbox" id="status_incomplete" data-status="incomplete" checked> Incomplete</label>
+                    </fieldset>
+
+                    <!-- Dynamic product filters (NRP/PKS/RiPP/...) -->
+                    <fieldset id="typeFilterGroup">
+                        <legend>Products</legend>
+                        <!-- JS fills in checkboxes here -->
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer">
+        <p>GitHub Project Page:<br>
+            <a href="https://github.com/gurevichlab/bgc-quast">https://github.com/gurevichlab/bgc-quast</a>
+        </p>
+    </div>
+</div>
+
+    <!-- Data injected by Python -->
+    <script>
+        const reportData = {{ report_json }};
+    </script>
+    <script>
+    {{ script_js }}
+    </script>
+</body>
+</html>
+
