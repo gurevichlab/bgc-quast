@@ -3,12 +3,14 @@
 from typing import List, Optional
 
 import src.compare_to_ref_analyzer as compare_to_ref_analyzer
+from src.compare_tools_analyzer import compute_uniqueness
 import src.input_utils as input_utils
 from src.config import Config
 from src.genome_mining_result import GenomeMiningResult, QuastResult
 from src.reporting.metrics_calculators import (
     BasicMetricsCalculator,
     CompareToRefMetricsCalculator,
+    CompareToolsMetricsCalculator
 )
 from src.reporting.report_config import ReportConfigManager
 from src.reporting.report_data import (
@@ -87,8 +89,23 @@ class ReportBuilder:
             metadata.update({"reference_bgcs": reference_bgcs})
 
         elif running_mode == RunningMode.COMPARE_TOOLS:
-            # TODO: Implement tool comparison metrics if needed.
-            ...
+            mode_config = self.report_config_manager.get_config("compare_tools")
+            if not mode_config:
+                raise ValueError("No configuration found for running mode: compare_tools")
+
+            results_with_unique_nonunique, meta = compute_uniqueness(results,
+                                                                     overlap_threshold=config.compare_tools_overlap_threshold)
+
+            mode_metrics_calculator = CompareToolsMetricsCalculator(
+                results_with_unique_nonunique_bgcs=results_with_unique_nonunique,
+                config=mode_config,
+            )
+            metrics.extend(mode_metrics_calculator.calculate_metrics())
+
+            metadata.update({"compare_tools_overlap_threshold": 0.90,  # documented for transparency
+                             "totals_by_tool": meta.get("totals_by_tool", {}),
+                             "pairwise_by_tool": meta.get("pairwise_by_tool", {})})
+
         elif running_mode == RunningMode.COMPARE_SAMPLES:
             # TODO: Implement sample comparison metrics if needed.
             ...
