@@ -233,3 +233,66 @@ class CompareToRefMetricsCalculator(BasicMetricsCalculator):
                     # Continue with other results
 
         return all_metrics
+
+
+class CompareToolsMetricsCalculator(BasicMetricsCalculator):
+    """Metrics calculator for Compare-Tools mode.
+
+    Expects:
+        results_with_unique_nonunique_bgcs: list aligned to input order:
+            (GenomeMiningResult, [Bgc unique], [Bgc non-unique])
+
+    Emits (as configured in ReportConfig.metrics):
+      - "unique_bgcs"
+      - "unique_recovery_rate"
+    """
+
+    def __init__(
+        self,
+        results_with_unique_nonunique_bgcs: list[tuple[GenomeMiningResult, list[Bgc], list[Bgc]]],
+        config: ReportConfig,
+    ):
+        self.results_with_unique_nonunique_bgcs = results_with_unique_nonunique_bgcs
+        self.config = config
+
+    def calculate_metrics(self) -> list[MetricValue]:
+        """
+        Calculate metrics for Compare-Tools mode.
+
+        Returns:
+            List of MetricValue objects
+        """
+        metric_names = [m.name for m in self.config.metrics]
+        all_metrics: list[MetricValue] = []
+
+        # Generate all combinations of grouping dimensions (same as CompareToRef)
+        grouping_combinations = self._generate_grouping_combinations(self.config)
+
+        for grouping_dims in grouping_combinations:
+            # Calculate metrics for this grouping combination
+            for result, unique_bgcs, _non_unique_bgcs in self.results_with_unique_nonunique_bgcs:
+                try:
+                    # Mark each BGC with a transient `is_unique` flag
+                    unique_ids = {id(b) for b in unique_bgcs}
+                    for b in result.bgcs:
+                        b.is_unique = (id(b) in unique_ids)
+
+                    # Delegate metric calculation exactly like CompareToRef
+                    metrics = self._calculate_all_metrics_for_bgcs(
+                        result.bgcs,
+                        result.input_file,
+                        result.mining_tool,
+                        metric_names,        # e.g., ["unique_bgcs", "uniZWQque_recovery_rate"]
+                        grouping_dims,
+                    )
+                    all_metrics.extend(metrics)
+
+                except Exception as e:
+                    print(
+                        f"Warning: Error calculating metrics for {result.input_file}: {e}"
+                    )
+                    # Continue with other results
+
+        return all_metrics
+
+
