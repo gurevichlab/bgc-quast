@@ -89,7 +89,7 @@ def add_advanced_arguments(parser: argparse.ArgumentParser):
     )
 
     advanced_input_group.add_argument(
-        "--overlap-threshold", "--thr",
+        "--overlap-threshold", "-thr",
         dest="compare_tools_overlap_threshold",
         type=float,
         default=None,  # None means "use Config’s default (0.90)"
