@@ -67,7 +67,7 @@ compare_tools:
       display_name: "Unique BGCs"
       description: "Number of BGCs found by only one tool"
     - name: "unique_recovery_rate"
-      display_name: "Recovery rate"
+      display_name: "Unique recovery rate"
       description: "Percentage of unique BGCs"
 
   grouping_dimensions:
