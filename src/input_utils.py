@@ -115,6 +115,7 @@ def determine_running_mode(
             result.input_file_label for result in assembly_genome_mining_results
         )
     )
+
     if reference_genome_mining_result is not None:
         if different_mining_tools:
             # Different mining tools are not allowed for the COMPARE_TO_REFERENCE mode.
@@ -151,7 +152,14 @@ def get_file_label_from_path(file_path: Path) -> str:
         file_path = file_path.with_suffix(
             ""
         )  # Remove compression suffix for label extraction
-    return file_path.with_suffix("").name  # Remove an extension
+
+    file_path = file_path.with_suffix("")
+
+    # TEMPORARY FIX: strip tool/aux markers from the end (e.g., '.antismash', '.clusters')
+    while file_path.suffix in (".antismash", ".clusters"):
+        file_path = file_path.with_suffix("")
+
+    return file_path.name  # Remove an extension
 
 
 def get_base_extension(file_path: Path) -> str:

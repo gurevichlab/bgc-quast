@@ -63,30 +63,23 @@ compare_to_reference:
 
 compare_tools:
   metrics:
-    - name: "total_bgc_count"
-      display_name: "# BGCs"
-      description: "Total number of BGCs identified by each tool"
-    - name: "mean_bgc_length"
-      display_name: "Mean BGC length"
-      description: "Average length of BGCs identified by each tool"
-    - name: "shared_bgcs"
-      display_name: "Shared BGCs"
-      description: "Number of BGCs found by multiple tools"
     - name: "unique_bgcs"
       display_name: "Unique BGCs"
       description: "Number of BGCs found by only one tool"
-    - name: "tool_agreement"
-      display_name: "Tool agreement"
-      description: "Percentage of BGCs where tools agree"
-      
+    - name: "unique_recovery_rate"
+      display_name: "Unique recovery rate"
+      description: "Percentage of unique BGCs"
+
   grouping_dimensions:
     product_type:
       include_total: true
       order: ["total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid",
        "Hybrid"]
-    tool:
-      include_total: false
-      order: ["antiSMASH", "GECCO", "DeepBGC", "BiG-SCAPE"]
+    completeness:
+      include_total: true
+      order: [ "total", "Complete", "Incomplete", "Unknown" ]
+
+      grouping_combinations: [ [ "product_type", "completeness" ] ]
   
 
 compare_samples:

@@ -204,4 +204,8 @@ class PipelineHelper:
             indent=1,
         )
 
+        if self.running_mode == RunningMode.COMPARE_TOOLS:
+            venn_dir = self.config.output_config.output_dir / "venn_overlaps"
+            self.log.info(f"Venn diagrams are saved to {venn_dir}", indent=1)
+
         self.log.finish()  # TODO: Create a separate method for this and "cleaning up"

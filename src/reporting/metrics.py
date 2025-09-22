@@ -189,3 +189,25 @@ def recovery_rate(bgcs: Iterable[ReferenceBgc]) -> float:
         and any(x in bgc.product_types for x in bgc.recovered_product_types)
     )
     return recovered / total
+
+
+# Compare tools metrics
+@metric("unique_bgcs")
+def unique_bgcs_metric(bgcs: Iterable[Bgc]) -> int:
+    """Count unique BGCs (expects each BGC to have a boolean `is_unique` attribute)."""
+    items = list(bgcs)
+    return sum(1 for b in items if getattr(b, "is_unique", False))
+
+
+@metric("unique_recovery_rate")
+def unique_recovery_rate_metric(bgcs: Iterable[Bgc]) -> float:
+    """
+    unique_recovery_rate = (# unique) / (total in the group)
+    Returns 0.0 when the group is empty.
+    """
+    items = list(bgcs)
+    total = len(items)
+    if total == 0:
+        return 0.0
+    unique = sum(1 for b in items if getattr(b, "is_unique", False))
+    return unique / total
