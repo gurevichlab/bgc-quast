@@ -1,0 +1,38 @@
+file_label	assembly_1	assembly_2	assembly_3
+mining_tool	antiSMASH	antiSMASH	antiSMASH
+# BGCs (total)	21	18	17
+# BGCs (NRPS)	4	4	4
+# BGCs (PKS)	7	6	5
+# BGCs (RiPP)	2	2	2
+# BGCs (Terpene)	6	4	4
+# BGCs (Hybrid)	2	2	2
+# BGCs (Complete)	7	18	17
+# BGCs (Incomplete)	14		
+# BGCs (NRPS, Complete)	1	4	4
+# BGCs (NRPS, Incomplete)	3		
+# BGCs (PKS, Complete)	2	6	5
+# BGCs (PKS, Incomplete)	5		
+# BGCs (RiPP, Complete)	1	2	2
+# BGCs (RiPP, Incomplete)	1		
+# BGCs (Terpene, Complete)	3	4	4
+# BGCs (Terpene, Incomplete)	3		
+# BGCs (Hybrid, Complete)		2	2
+# BGCs (Hybrid, Incomplete)	2		
+Mean BGC length (total)	27969.333	43161.611	43387.235
+Mean BGC length (NRPS)	34506.000	43878.500	43878.500
+Mean BGC length (PKS)	33981.714	53844.667	56932.800
+Mean BGC length (RiPP)	14315.000	16746.500	16746.500
+Mean BGC length (Terpene)	16405.167	27285.250	27055.000
+Mean BGC length (Hybrid)	42199.500	67846.500	67846.000
+Mean BGC length (Complete)	31810.000	43161.611	43387.235
+Mean BGC length (Incomplete)	26049.000		
+Mean BGC length (NRPS, Complete)	43507.000	43878.500	43878.500
+Mean BGC length (NRPS, Incomplete)	31505.667		
+Mean BGC length (PKS, Complete)	46280.500	53844.667	56932.800
+Mean BGC length (PKS, Incomplete)	29062.200		
+Mean BGC length (RiPP, Complete)	22695.000	16746.500	16746.500
+Mean BGC length (RiPP, Incomplete)	5935.000		
+Mean BGC length (Terpene, Complete)	21302.333	27285.250	27055.000
+Mean BGC length (Terpene, Incomplete)	11508.000		
+Mean BGC length (Hybrid, Complete)		67846.500	67846.000
+Mean BGC length (Hybrid, Incomplete)	42199.500		

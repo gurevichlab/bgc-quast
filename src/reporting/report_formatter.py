@@ -163,29 +163,44 @@ class ReportFormatter:
 
     def write_html(self, data: ReportData, output_path: Path) -> None:
         """Format and save report as HTML with basic styling."""
+        import json
+        import math
+
+        asset_dir = Path(__file__).resolve().parent.parent / "html_report"
         pivot_table = self.table_builder.build_pivot_table(data)
 
-        # Create HTML with basic styling
-        html_content = f"""
-<!DOCTYPE html>
-<html>
-<head>
-    <title>BGC-QUAST Report</title>
-    <style>
-        body {{ font-family: Arial, sans-serif; margin: 20px; }}
-        table {{ border-collapse: collapse; width: 100%; }}
-        th, td {{ border: 1px solid #ddd; padding: 8px; text-align: right; }}
-        th {{ background-color: #f2f2f2; font-weight: bold; }}
-        .metric-header {{ text-align: left; font-weight: bold; }}
-    </style>
-</head>
-<body>
-    <h1>BGC-QUAST Report</h1>
-    {pivot_table.to_html(classes="report-table", na_rep="")}
-</body>
-</html>
-"""
-        output_path.write_text(html_content, encoding="utf-8")
+        file_labels = ["file_label"]
+        mining_tools = ["mining_tool"]
+        for file_label, mining_tool in pivot_table.columns:
+            file_labels.append(str(file_label))
+            mining_tools.append(str(mining_tool))
+
+        # 2) Build rows array (convert blanks/NaN to "0" for numeric cells)
+        rows = [file_labels, mining_tools]
+        for idx, row in pivot_table.iterrows():
+            out = [str(idx)]
+            for v in row.tolist():
+                if v is None or (isinstance(v, float) and math.isnan(v)):
+                    out.append("0")
+                else:
+                    out.append(str(v))
+            rows.append(out)
+
+        # 3) Load the assets and inject JSON
+        template = (asset_dir / "report_template.html").read_text(encoding="utf-8")
+        style_css = (asset_dir / "report.css").read_text(encoding="utf-8")
+        script_js = (asset_dir / "build_report.js").read_text(encoding="utf-8")
+
+        data_json = json.dumps(rows, ensure_ascii=False)
+        html_filled = (
+            template
+            .replace("{{ style_css }}", style_css)
+            .replace("{{ script_js }}", script_js)
+            .replace("{{ report_json }}", data_json)
+        )
+
+        # 4) Write final HTML
+        output_path.write_text(html_filled, encoding="utf-8")
 
     def write_tsv(self, data: ReportData, output_path: Path) -> None:
         """Format and save report as TSV."""

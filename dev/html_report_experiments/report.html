@@ -1,4 +1,256 @@
-// =======  Compute the median of a numeric array =======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BGC-QUAST Report</title>
+    <style>
+    /* Entire page layout using Flexbox */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #EDF2F4;
+    font-family: Arial, sans-serif;
+}
+
+/* New wrapper to flexibly contain header, layout, and footer */
+#main {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px;
+}
+
+/* Growable content area: table and plot */
+#reportLayout {
+    display: flex;
+    gap: 0px;
+    flex: 1; /* Takes up remaining vertical space */
+}
+
+#reportLayout > div {
+    flex: 1;
+}
+
+/* Header */
+:root {
+  /* pick your color here */
+  --accent: #050752;
+  --bar-text: #ffffff; /* title text color */
+}
+
+.page-header {
+  background: var(--accent);
+  color: var(--bar-text);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin-left: -10px;   /* match #main { padding: 10px } */
+  margin-right: -10px;
+  margin-top: -10px;
+  margin-bottom: 12px;
+}
+
+.page-header h1 {
+  margin: 10px;
+  font-weight: 600;
+  font-size: 32px;
+  letter-spacing: 0.2px;
+  color: inherit;
+}
+
+
+/* Table styling (unchanged) */
+
+table {
+    width: 80%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    border: 1px solid #878686;
+    padding: 8px;
+    text-align: left;
+}
+
+td {
+    background-color: #f8f9fa;
+}
+
+th {
+    background-color: #bdd1db;
+}
+
+/* Table style - rows */
+.extended-row {
+    display: none;
+}
+
+.extended-btn-wrapper {
+    margin-top: 10px;
+}
+
+
+/*Heatmap style*/
+.heatmap-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.heatmap-legend-labels {
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Barplot */
+.plot-and-controls {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  /* Prevent accidental wrapping below the canvas */
+  flex-wrap: nowrap;
+  margin-top: 150px;
+}
+
+.plot-and-controls .chart-wrap {
+  flex: 1 1 720px;   /* <- initial width; grows/shrinks with the layout */
+  min-width: 480px;  /* <- optional floor so it never gets too small */
+  display: block;
+}
+
+.plot-and-controls .chart-wrap canvas {
+  display: block;
+  width: 100% !important;
+  height: auto !important; /* keeps aspect ratio unless you later fix height */
+}
+
+.barplot-controls {
+  /* Keep controls in a narrow column on the right */
+  flex: 0 0 240px;         /* ~240px fixed column */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.barplot-controls fieldset {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.barplot-controls fieldset label {
+  display: block;
+  margin: 4px 0;
+}
+
+.barplot-controls legend {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+
+/* Sticky footer */
+#footer {
+    border-top: 1px solid #333;
+    padding-top: 0px;
+    font-size: 15px;
+    text-align: left;
+}
+
+
+    </style>
+</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<body>
+<div id="main"> <!-- Wrapper -->
+    <!-- Header with accent stripe + title -->
+    <header class="page-header">
+        <h1>BGC-QUAST Report</h1>
+    </header>
+
+
+    <!-- Two-column layout: left - table+heatmap, right - plot+controls -->
+    <div id="reportLayout">
+        <div>
+            <div class="heatmap-controls">
+                <!-- Gradient legend -->
+                <div id="heatmapLegend">
+                    <canvas id="gradientHeatmap" width="300" height="10"></canvas>
+                    <div class="heatmap-legend-labels">
+                        <span>Smallest</span>
+                        <span>Median</span>
+                        <span>Largest</span>
+                    </div>
+                </div>
+
+                <!-- Heatmap toggle checkbox -->
+                <label>
+                    <input type="checkbox" id="heatmapToggle" checked> Show heatmap
+                </label>
+
+
+            </div>
+
+            <div id="reportTableContainer"></div>
+            <div class="extended-btn-wrapper">
+                <button id="toggleExtendedBtn">Show Extended Report</button>
+            </div>
+        </div>
+
+        <!-- The barplot -->
+        <div>
+            <div class="plot-and-controls">
+                <div class="chart-wrap">
+                    <canvas id="bgcBarPlot"></canvas>
+                </div>
+
+                <div class="barplot-controls">
+                    <div class="barplot-mode">
+                        <label><input type="radio" name="barMode" value="total" id="barModeTotal" checked> Total</label>
+                        <label><input type="radio" name="barMode" value="showby" id="barModeShowBy"> Show by:</label>
+                    </div>
+
+                    <!-- Show-by group (completeness + type) -->
+                    <fieldset id="showByGroup">
+                        <label><input type="checkbox" id="byCompleteness"> by completeness</label>
+                        <label><input type="checkbox" id="byType"> by type</label>
+                    </fieldset>
+
+                    <fieldset id="completenessFilterGroup">
+                        <legend>Completeness</legend>
+                        <label><input type="checkbox" id="status_complete" data-status="complete" checked> Complete</label>
+                        <label><input type="checkbox" id="status_incomplete" data-status="incomplete" checked> Incomplete</label>
+                    </fieldset>
+
+                    <!-- Dynamic product filters (NRP/PKS/RiPP/...) -->
+                    <fieldset id="typeFilterGroup">
+                        <legend>Products</legend>
+                        <!-- JS fills in checkboxes here -->
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer">
+        <p>GitHub Project Page:<br>
+            <a href="https://github.com/gurevichlab/bgc-quast">https://github.com/gurevichlab/bgc-quast</a>
+        </p>
+    </div>
+</div>
+
+    <!-- Data injected by Python -->
+    <script>
+        const reportData = [["file_label", "assembly_1", "assembly_2", "assembly_3"], ["mining_tool", "antiSMASH", "antiSMASH", "antiSMASH"], ["# BGCs (total)", "21", "18", "17"], ["# BGCs (NRPS)", "4", "4", "4"], ["# BGCs (PKS)", "7", "6", "5"], ["# BGCs (RiPP)", "2", "2", "2"], ["# BGCs (Terpene)", "6", "4", "4"], ["# BGCs (Hybrid)", "2", "2", "2"], ["# BGCs (Complete)", "7", "18", "17"], ["# BGCs (Incomplete)", "14", "0", "0"], ["# BGCs (NRPS, Complete)", "1", "4", "4"], ["# BGCs (NRPS, Incomplete)", "3", "0", "0"], ["# BGCs (PKS, Complete)", "2", "6", "5"], ["# BGCs (PKS, Incomplete)", "5", "0", "0"], ["# BGCs (RiPP, Complete)", "1", "2", "2"], ["# BGCs (RiPP, Incomplete)", "1", "0", "0"], ["# BGCs (Terpene, Complete)", "3", "4", "4"], ["# BGCs (Terpene, Incomplete)", "3", "0", "0"], ["# BGCs (Hybrid, Complete)", "0", "2", "2"], ["# BGCs (Hybrid, Incomplete)", "2", "0", "0"], ["Mean BGC length (total)", "27969.333", "43161.611", "43387.235"], ["Mean BGC length (NRPS)", "34506.000", "43878.500", "43878.500"], ["Mean BGC length (PKS)", "33981.714", "53844.667", "56932.800"], ["Mean BGC length (RiPP)", "14315.000", "16746.500", "16746.500"], ["Mean BGC length (Terpene)", "16405.167", "27285.250", "27055.000"], ["Mean BGC length (Hybrid)", "42199.500", "67846.500", "67846.000"], ["Mean BGC length (Complete)", "31810.000", "43161.611", "43387.235"], ["Mean BGC length (Incomplete)", "26049.000", "0", "0"], ["Mean BGC length (NRPS, Complete)", "43507.000", "43878.500", "43878.500"], ["Mean BGC length (NRPS, Incomplete)", "31505.667", "0", "0"], ["Mean BGC length (PKS, Complete)", "46280.500", "53844.667", "56932.800"], ["Mean BGC length (PKS, Incomplete)", "29062.200", "0", "0"], ["Mean BGC length (RiPP, Complete)", "22695.000", "16746.500", "16746.500"], ["Mean BGC length (RiPP, Incomplete)", "5935.000", "0", "0"], ["Mean BGC length (Terpene, Complete)", "21302.333", "27285.250", "27055.000"], ["Mean BGC length (Terpene, Incomplete)", "11508.000", "0", "0"], ["Mean BGC length (Hybrid, Complete)", "0", "67846.500", "67846.000"], ["Mean BGC length (Hybrid, Incomplete)", "42199.500", "0", "0"]];
+    </script>
+    <script>
+    // =======  Compute the median of a numeric array =======
 function getMedian(arr) {
     const mid = Math.floor(arr.length / 2); // Calculate the middle index of the array
     return arr.length % 2 === 0
@@ -509,3 +761,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 });
+
+    </script>
+</body>
+</html>
+

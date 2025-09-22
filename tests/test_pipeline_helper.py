@@ -210,6 +210,10 @@ def test_write_results_logs_results(pipeline_helper):
             f"HTML report is saved to {pipeline_helper.config.output_config.html_report}",
             indent=1,
         )
+        pipeline_helper.log.info.assert_any_call(
+            f"TSV report is saved to {pipeline_helper.config.output_config.tsv_report}",
+            indent=1,
+        )
 
 
 def test_parse_input_with_genome_data(pipeline_helper):
