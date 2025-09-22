@@ -17,7 +17,7 @@ of BGC prediction results from multiple tools and datasets.
 ## Requirements
 
 - Python 3
-- `pyyaml` Python package
+- `pyyaml`, `pandas`, `matplotlib` and `matplotlib-venn` Python packages
 
 ---
 
