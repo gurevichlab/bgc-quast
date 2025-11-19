@@ -14,7 +14,7 @@ class Bgc:
         sequence_id (str): The BGC sequence id.
         start (int): The start position of the BGC.
         end (int): The end position of the BGC.
-        completeness (Literal["Complete", "Incomplete", "Unknown"]): Whether the BGC is complete (Complete, Incomplete, Unknown).
+        completeness (Literal["Complete", "Incomplete", "Unknown completeness"]): Whether the BGC is complete (Complete, Incomplete, Unknown completeness).
         product_types (list): The product types of the BGC.
         metadata (dict): The metadata of the BGC, e.g. tool-specific metadata.
         gene_count (int): The number of genes in the BGC.
@@ -24,7 +24,7 @@ class Bgc:
     sequence_id: str
     start: int = 0
     end: int = 0
-    completeness: Literal["Complete", "Incomplete", "Unknown"] = "Unknown"
+    completeness: Literal["Complete", "Incomplete", "Unknown completeness"] = "Unknown completeness"
     product_types: List[str] = field(default_factory=list)
     metadata: Optional[Dict] = None
     gene_count: int = 0

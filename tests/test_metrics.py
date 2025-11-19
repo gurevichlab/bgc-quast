@@ -35,7 +35,7 @@ def sample_bgcs():
             sequence_id="seq4",
             start=300,
             end=400,
-            completeness="Unknown",
+            completeness="Unknown completeness",
             product_types=[],
         ),
     ]
@@ -56,7 +56,7 @@ def test_grouping_by_completeness(sample_bgcs):
     assert grouping_func(sample_bgcs[0]) == "Complete"
     assert grouping_func(sample_bgcs[1]) == "Incomplete"
     assert grouping_func(sample_bgcs[2]) == "Complete"
-    assert grouping_func(sample_bgcs[3]) == "Unknown"
+    assert grouping_func(sample_bgcs[3]) == "Unknown completeness"
 
 
 def test_grouping_by_product_type(sample_bgcs):
@@ -64,7 +64,7 @@ def test_grouping_by_product_type(sample_bgcs):
     assert grouping_func(sample_bgcs[0]) == "NRP"
     assert grouping_func(sample_bgcs[1]) == "PKS"
     assert grouping_func(sample_bgcs[2]) == "Hybrid"
-    assert grouping_func(sample_bgcs[3]) == "Unknown"
+    assert grouping_func(sample_bgcs[3]) == "Unknown product"
 
 
 def test_invalid_grouping_key():

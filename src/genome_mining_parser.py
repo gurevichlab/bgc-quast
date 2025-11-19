@@ -72,7 +72,7 @@ def parse_antismash_json(
 
                     # Get a list of products and classes
                     # TODO: checkme
-                    products_raw = qualifiers.get("product", ["Unknown"])
+                    products_raw = qualifiers.get("product", ["Unknown product"])
                     mapped_products = map_products(products_raw, product_to_class)
                     # TODO: extend metadata if needed, e.g., with feature content
                     metadata = {"product_details": products_raw}
@@ -140,7 +140,7 @@ def parse_gecco_tsv(
 
             # Build metadata
             metadata = {}
-            if "Unknown" in mapped_product:
+            if "Unknown product" in mapped_product:
                 # Find the class with max probability
                 max_col = str(row[product_probability_cols].idxmax())
                 max_val = row[max_col]
@@ -191,7 +191,7 @@ def parse_deepbgc_tsv(
             raise InvalidInputException("Not deepBGC TSV - product_class is missing")
 
         # Replace NaN in the product_class
-        df["product_class"] = df["product_class"].fillna("Unknown")
+        df["product_class"] = df["product_class"].fillna("Unknown product")
 
         # Initialize the counter of BGCs within the sequence_id
         sequence_id_counter = defaultdict(int)
@@ -223,7 +223,7 @@ def parse_deepbgc_tsv(
 
             # Build metadata
             metadata = {}
-            if "Unknown" in mapped_product:
+            if "Unknown product" in mapped_product:
                 # Find the class with max probability
                 max_col = str(row[product_probability_cols].idxmax())
                 max_val = row[max_col]
@@ -283,13 +283,13 @@ def parse_deepbgc_json(
 
                 # Get a list of products and classes
                 product_class_raw = subregion.get("details", {}).get(
-                    "product_class", "Unknown"
+                    "product_class", "Unknown product"
                 )
                 products = product_class_raw.split("-")
                 products_raw = [p.strip() for p in products if p.strip()]
 
                 if "no confident class" in [p for p in products_raw]:
-                    mapped_product = ["Unknown"]
+                    mapped_product = ["Unknown product"]
                 else:
                     mapped_product = map_products(products_raw, product_to_class)
 
@@ -600,7 +600,7 @@ def get_completeness(
     sequence_id: str,
     start: int,
     end: int,
-) -> Literal["Complete", "Incomplete", "Unknown"]:
+) -> Literal["Complete", "Incomplete", "Unknown completeness"]:
     """
     Get the completeness status of a BGC based on the corresponding sequence length.
 
@@ -612,7 +612,7 @@ def get_completeness(
         end (int): The end position of the BGC in the sequence.
 
     Returns:
-        str: "Complete", "Incomplete", or "Unknown" based on the BGC's completeness.
+        str: "Complete", "Incomplete", or "Unknown completeness" based on the BGC's completeness.
     """
     if seq_data_map and sequence_id in seq_data_map:
         completeness = (
@@ -622,5 +622,5 @@ def get_completeness(
             else "Incomplete"
         )
     else:
-        completeness = "Unknown"
+        completeness = "Unknown completeness"
     return completeness
