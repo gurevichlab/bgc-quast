@@ -73,7 +73,7 @@ class ReportBuilder:
                 raise ValueError(
                     "No configuration found for running mode: compare_to_reference"
                 )
-            
+
             reference_bgcs = compare_to_ref_analyzer.compute_coverage(
                 results,
                 reference_genome_mining_result,  # type: ignore
@@ -86,6 +86,14 @@ class ReportBuilder:
                 config=mode_config,
             )
             metrics.extend(mode_metrics_calculator.calculate_metrics())
+
+            # Add reference as a third column for basic metrics only
+            if reference_genome_mining_result is not None:
+                ref_basic_calc = BasicMetricsCalculator(
+                    results=[reference_genome_mining_result],
+                    config=report_config,
+                )
+                metrics.extend(ref_basic_calc.calculate_metrics())
 
             metadata.update({"reference_bgcs": reference_bgcs})
 
@@ -125,9 +133,15 @@ class ReportBuilder:
 
         # Create DataFrame.
         df = create_dataframe_from_metrics(metrics)
-
         # Create a mapping from file_path to mining_tool
         path_to_tool = {str(r.input_file): r.mining_tool for r in results}
+
+        # Add a mapping for reference as well
+        if reference_genome_mining_result is not None:
+            path_to_tool[str(reference_genome_mining_result.input_file)] = (
+                reference_genome_mining_result.mining_tool
+            )
+
         df["mining_tool"] = df["file_path"].astype(str).map(path_to_tool)
 
         df["file_label"] = df["file_path"].apply(
