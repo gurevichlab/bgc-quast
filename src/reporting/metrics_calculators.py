@@ -265,7 +265,7 @@ class CompareToolsMetricsCalculator(BasicMetricsCalculator):
         metric_names = [m.name for m in self.config.metrics]
         all_metrics: list[MetricValue] = []
 
-        # Generate all combinations of grouping dimensions (same as CompareToRef)
+        # Generate all combinations of grouping dimensions
         grouping_combinations = self._generate_grouping_combinations(self.config)
 
         for grouping_dims in grouping_combinations:
@@ -277,12 +277,12 @@ class CompareToolsMetricsCalculator(BasicMetricsCalculator):
                     for b in result.bgcs:
                         b.is_unique = (id(b) in unique_ids)
 
-                    # Delegate metric calculation exactly like CompareToRef
+
                     metrics = self._calculate_all_metrics_for_bgcs(
                         result.bgcs,
                         result.input_file,
                         result.mining_tool,
-                        metric_names,        # e.g., ["unique_bgcs", "uniZWQque_recovery_rate"]
+                        metric_names,
                         grouping_dims,
                     )
                     all_metrics.extend(metrics)
@@ -291,7 +291,6 @@ class CompareToolsMetricsCalculator(BasicMetricsCalculator):
                     print(
                         f"Warning: Error calculating metrics for {result.input_file}: {e}"
                     )
-                    # Continue with other results
 
         return all_metrics
 
