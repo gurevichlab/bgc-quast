@@ -1,4 +1,12 @@
-// =======  Compute the median of a numeric array =======
+/* ---------------------------------------------------------------------------
+ * HEATMAP UTILITIES
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Compute the median of a sorted numeric array
+ * @param {number[]} arr
+ *  @returns {number}
+ */
 function getMedian(arr) {
     const mid = Math.floor(arr.length / 2); // Calculate the middle index of the array
     return arr.length % 2 === 0
@@ -6,12 +14,21 @@ function getMedian(arr) {
         : arr[mid];
 }
 
-// ======= Convert hue + lightness to HSL color string =======
+/**
+ * Convert hue + lightness to an HSL color string.
+ * @param {number} hue
+ * @param {number} [lightness=92]
+ * @returns {string}
+ */
 function getColor(hue, lightness = 92) {
     return `hsl(${hue}, 80%, ${lightness}%)`;
 }
 
-// ======= Draw the heatmap legend above the table =======
+/**
+ * Draw the heatmap legend (smallest → median → largest) above the table.
+ * @param {number} lowHue
+ * @param {number} topHue
+ */
 function drawHeatmapLegend(lowHue, topHue) {
     const canvas = document.getElementById('gradientHeatmap');
     const ctx = canvas.getContext('2d');
@@ -30,7 +47,12 @@ function drawHeatmapLegend(lowHue, topHue) {
     ctx.fillRect(0, 0, width, height);
 }
 
-// ======= Apply background color to cells based on stats =======
+/**
+ * Apply background color to cells in a single row based on outliers/statistics.
+ * @param {HTMLTableCellElement[]} cells
+ * @param {number[]} values
+ * @param {'more_is_better'|'less_is_better'} [direction='more_is_better']
+ */
 function heatMapOneRow(cells, values, direction = 'more_is_better') {
     // Skip if too few values or all are the same (no variation to color)
     if (values.length < 2 || new Set(values).size === 1) return;
@@ -97,8 +119,21 @@ function heatMapOneRow(cells, values, direction = 'more_is_better') {
     }
 }
 
+/**
+ * Global store to re-apply/remove heatmap colors when toggling the heatmap.
+ * Each entry: { cells: HTMLTableCellElement[], values: number[] }
+ */
 const allNumericCells = [];
-// ======= Table Builder =======
+
+
+/* ---------------------------------------------------------------------------
+ * TABLE BUILDER (main report table + extended rows)
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Build the main report table and insert it into #reportTableContainer.
+ * @param {Array[]} data - 2D array representing the report pivot table.
+ */
 function buildTable(data) {
     allNumericCells.length = 0;
     const container = document.getElementById('reportTableContainer');
@@ -126,8 +161,10 @@ function buildTable(data) {
         const isCompTotal =
             label === '# bgcs (complete)' ||
             label === '# bgcs (incomplete)' ||
+            label === '# bgcs (unknown completeness)' ||
             label === 'mean bgc length (complete)' ||
-            label === 'mean bgc length (incomplete)';
+            label === 'mean bgc length (incomplete)' ||
+            label === 'mean bgc length (unknown completeness)';
         if (!isTotal && !isMiningTool && !isCompTotal) {
             row.classList.add('extended-row');
         }
@@ -165,7 +202,10 @@ function buildTable(data) {
     container.appendChild(table);
 }
 
-// ======= Bar Chart Builder =======
+/* ---------------------------------------------------------------------------
+ * BAR CHART BUILDER (Chart.js) – totals / by type / by completeness
+ * ------------------------------------------------------------------------- */
+
 // --- product colors (modifiable) ---
 const productColors = {
     'NRPS': '#2e8b57',
@@ -178,7 +218,12 @@ const productColors = {
     'Other': '#c7c2c1'
 };
 
-// Lighten a hex color toward white by "factor" (0..1)
+/**
+ * Lighten a HEX color toward white by a factor in [0, 1].
+ * @param {string} hex
+ * @param {number} [factor=0.5]
+ * @returns {string}
+ */
 function lighten(hex, factor = 0.5) {
     const num = parseInt(hex.slice(1), 16);
     let r = (num >> 16) & 0xff;
@@ -190,7 +235,10 @@ function lighten(hex, factor = 0.5) {
     return `rgb(${r}, ${g}, ${b})`;
 }
 
-// Build the product checkboxes from data (NRP/PKS/RiPP/...)
+/**
+ * Build the dynamic product checkboxes (NRPS/PKS/RiPP/...) in #typeFilterGroup.
+ * @param {string[]} types
+ */
 function renderTypeFilters(types) {
     const group = document.getElementById('typeFilterGroup');
     if (!group) return;
@@ -216,7 +264,12 @@ function renderTypeFilters(types) {
     group.appendChild(frag);
 }
 
-// Which product checkboxes are ON
+/**
+ * Return which product types are currently selected in the UI.
+ * Missing checkboxes default to "on".
+ * @param {string[]} allTypes
+ * @returns {string[]}
+ */
 function selectedTypesFromUI(allTypes) {
     return allTypes.filter(t => {
         const el = document.getElementById(`type_${t.replace(/\W+/g, '_')}`);
@@ -224,16 +277,22 @@ function selectedTypesFromUI(allTypes) {
     });
 }
 
-// Which completeness statuses are ON
+/**
+ * Return completeness statuses that are currently selected in the UI.
+ * @returns {('complete'|'incomplete'|'unknown completeness')[]}
+ */
 function selectedStatusesFromUI() {
   const on = [];
   if (document.getElementById('status_complete')?.checked)   on.push('complete');
   if (document.getElementById('status_incomplete')?.checked) on.push('incomplete');
+  if (document.getElementById('status_unknown')?.checked) on.push('unknown completeness');
   // If none selected, return empty array (chart will show nothing for completeness parts)
   return on;
 }
 
-// Enable/disable controls depending on mode
+/**
+ * Enable/disable controls depending on bar chart mode and "show by" choices.
+ */
 function syncShowByDisabled() {
     const isTotal   = document.getElementById('barModeTotal').checked;
     const showBy    = document.getElementById('barModeShowBy').checked;
@@ -250,15 +309,25 @@ function syncShowByDisabled() {
     if (completenessFilterGroup) completenessFilterGroup.disabled = isTotal || !showBy || !byCompOn;
 }
 
+/** Keep an empty variable so we can update/destroy the chart cleanly. */
+let bgcChart = null;
 
-let bgcChart = null; // keep a reference so we can update/destroy cleanly
-
-// --- Read data rows by label ---
+/**
+ * Find a row in the data by its label (first column).
+ * @param {Array[]} data
+ * @param {string} label
+ * @returns {Array|null}
+ */
 function getRowByLabel(data, label) {
     return data.find(r => r[0] === label) || null;
 }
 
-// Return all product types that exist in the table (excluding 'total')
+/**
+ * Return all product types that exist in the table (excluding "total"/pure
+ * completeness rows). Types are parsed from labels like "# BGCs (NRPS, Complete)".
+ * @param {Array[]} data
+ * @returns {string[]}
+ */
 function detectTypes(data) {
   const types = new Set();
 
@@ -278,7 +347,7 @@ function detectTypes(data) {
 
     // skip non-product tokens that appear as totals
     const lc = type.toLowerCase();
-    if (lc === 'total' || lc === 'complete' || lc === 'incomplete') continue;
+    if (lc === 'total' || lc === 'complete' || lc === 'incomplete' || lc === 'unknown completeness') continue;
 
     types.add(type);
   }
@@ -293,7 +362,10 @@ function detectTypes(data) {
   return ordered.length ? ordered : ['Other'];
 }
 
-
+/**
+ * Build or rebuild the bar plot based on the current UI state.
+ * @param {Array[]} data
+ */
 function buildBarPlotDynamic(data) {
     // labels are Assembly+Tool as before
     const tools = data[1].slice(1);
@@ -329,6 +401,7 @@ function buildBarPlotDynamic(data) {
                 const baseColor = productColors[type] || productColors['Other'];
                 const rowComplete = getRowByLabel(data, `# BGCs (${type}, Complete)`);
                 const rowIncomplete = getRowByLabel(data, `# BGCs (${type}, Incomplete)`);
+                const rowUnknown    = getRowByLabel(data, `# BGCs (${type}, Unknown completeness)`);
 
                 if (statuses.includes('complete') && rowComplete) {
                     datasets.push({
@@ -344,11 +417,19 @@ function buildBarPlotDynamic(data) {
                         backgroundColor: lighten(baseColor, 0.45) // lighter shade
                     });
                 }
+                if (statuses.includes('unknown completeness') && rowUnknown) {
+                    datasets.push({
+                        label: `${type} unknown completeness`,
+                        data: rowUnknown.slice(1).map(v => parseInt(v, 10)),
+                        backgroundColor: lighten(baseColor, 0.75) // even lighter shade
+                    });
+                }
             }
         } else if (byCompleteness) {
             // stacks are complete vs incomplete (total)
             const rowComplete = getRowByLabel(data, '# BGCs (Complete)');
             const rowIncomplete = getRowByLabel(data, '# BGCs (Incomplete)');
+            const rowUnknown    = getRowByLabel(data, '# BGCs (Unknown completeness)');
             const statuses = selectedStatusesFromUI();
 
             if (statuses.includes('complete') && rowComplete) {
@@ -365,6 +446,14 @@ function buildBarPlotDynamic(data) {
                     backgroundColor: '#ccca3d'
                 });
             }
+            if (statuses.includes('unknown completeness') && rowUnknown) {
+                datasets.push({
+                    label: 'Unknown completeness',
+                    data: rowUnknown.slice(1).map(v => parseInt(v, 10)),
+                    backgroundColor: '#999999'
+                });
+            }
+
         } else if (byType) {
             // stacks are by type (totals per type)
             const allTypes = detectTypes(data);
@@ -427,13 +516,15 @@ function buildBarPlotDynamic(data) {
 }
 
 
-// ======= Setup on Page Load =======
+/* ---------------------------------------------------------------------------
+ * PAGE INITIALIZATION & EVENT WIRING
+ * ------------------------------------------------------------------------- */
 document.addEventListener('DOMContentLoaded', () => {
     buildTable(reportData);
     renderTypeFilters(detectTypes(reportData));
     buildBarPlotDynamic(reportData);
 
-    // Toggle visibility of extended report rows
+    // Extended report toggle visibility (show/hide extra rows)
     const toggleBtn = document.getElementById('toggleExtendedBtn');
     toggleBtn.addEventListener('click', () => {
         const extendedRows = document.querySelectorAll('.extended-row');
@@ -447,6 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleBtn.textContent = isHidden ? 'Hide Extended Report' : 'Show Extended Report';
     });
 
+    // Heatmap toggle
     const heatmapToggle = document.getElementById('heatmapToggle');
     heatmapToggle.addEventListener('change', () => {
         const show = heatmapToggle.checked;
@@ -462,8 +554,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Bar plot controls listeners ===
-    // Radios & "by ..." checkboxes: sync disabled state + rebuild
+    // Bar plot controls listeners
+    // "Show by" controls: radio buttons & "by ..." checkboxes
     ['barModeTotal','barModeShowBy','byCompleteness','byType'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('change', () => {
@@ -472,7 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Delegate product checkbox changes to the fieldset
+    // Product type checkbox changes
     const typeGroup = document.getElementById('typeFilterGroup');
     if (typeGroup) {
         typeGroup.addEventListener('change', (e) => {
@@ -482,7 +574,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Add the event listener for complete/incomplete
+    // Completeness checkbox changes
     const compGroup = document.getElementById('completenessFilterGroup');
     if (compGroup) {
         compGroup.addEventListener('change', (e) => {
@@ -494,15 +586,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize disabled/enabled state on first load
     syncShowByDisabled();
-
-    // document.getElementById('barModeTotal').addEventListener('change', syncShowByDisabled);
-    // document.getElementById('barModeShowBy').addEventListener('change', syncShowByDisabled);
-    // syncShowByDisabled();
-    // // Re-render when the Show by checkboxes change
-    // ['byCompleteness','byType'].forEach(id => {
-    //     const el = document.getElementById(id);
-    //     if (el) el.addEventListener('change', () => buildBarPlotDynamic(reportData));
-    // });
 
     // Draw heatmap gradient
     drawHeatmapLegend(60, 280);  // yellow to purple
