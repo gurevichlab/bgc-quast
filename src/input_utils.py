@@ -158,7 +158,7 @@ def get_file_label_from_path(file_path: Path) -> str:
 
     # TEMPORARY FIX: strip tool/aux markers from the end (e.g., '.antismash', '.clusters')
     # TODO: re-write the mechanism for mode choosing
-    temp_markers = {".antismash", ".clusters"}
+    temp_markers = {".antismash", ".clusters", ".bgc"}
     bio_suffixes = {".fasta", ".fa", ".fna", ".fastq", ".fq"}
 
     while file_path.suffix in temp_markers:
