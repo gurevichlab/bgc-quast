@@ -17,6 +17,7 @@ class DataFrameTableBuilder:
         """
         Build a pivot table from ReportData using metrics as rows, files as columns, and grouping dimensions.
         """
+
         df = data.metrics_df.copy()
 
         # Create hierarchical row labels and sort keys
@@ -166,6 +167,8 @@ class ReportFormatter:
         import json
         import math
 
+        mode = data.running_mode.value
+
         asset_dir = Path(__file__).resolve().parent.parent / "html_report"
         pivot_table = self.table_builder.build_pivot_table(data)
 
@@ -197,6 +200,7 @@ class ReportFormatter:
             .replace("{{ style_css }}", style_css)
             .replace("{{ script_js }}", script_js)
             .replace("{{ report_json }}", data_json)
+            .replace("{{ report_mode }}", mode)
         )
 
         # 4) Write final HTML
