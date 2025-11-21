@@ -28,7 +28,6 @@ html, body {
 
 /* Header */
 :root {
-  /* pick your color here */
   --accent: #050752;
   --bar-text: #ffffff; /* title text color */
 }
@@ -55,7 +54,6 @@ html, body {
 
 
 /* Table styling (unchanged) */
-
 table {
     width: 80%;
     border-collapse: collapse;
@@ -86,7 +84,7 @@ th {
 }
 
 
-/*Heatmap style*/
+/*Heatmap */
 .heatmap-controls {
     display: flex;
     align-items: center;
