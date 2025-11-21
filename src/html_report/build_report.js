@@ -265,6 +265,43 @@ function renderTypeFilters(types) {
 }
 
 /**
+ * Build the dynamic completeness checkboxes (Complete/Incomplete/Unknown completeness)
+ * based only on what appears in the table.
+ * @param {string[]} statuses
+ */
+function renderCompletenessFilters(statuses) {
+    const group = document.getElementById('completenessFilterGroup');
+    if (!group) return;
+
+    // Preserve the <legend>
+    const legend = group.querySelector('legend');
+    group.innerHTML = '';
+    if (legend) group.appendChild(legend);
+
+    const frag = document.createDocumentFragment();
+    statuses.forEach(status => {
+        const id = `status_${status}`;
+        const label = document.createElement('label');
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = id;
+        input.checked = true; // default ON
+        label.appendChild(input);
+        // Capitalize
+        let niceLabel;
+        if (status === 'unknown completeness') {
+            niceLabel = 'Unknown completeness';
+        } else {
+            niceLabel = status.charAt(0).toUpperCase() + status.slice(1);
+}
+        label.append(` ${niceLabel}`);
+        frag.appendChild(label);
+    });
+
+    group.appendChild(frag);
+}
+
+/**
  * Return which product types are currently selected in the UI.
  * Missing checkboxes default to "on".
  * @param {string[]} allTypes
@@ -333,7 +370,7 @@ function detectTypes(data) {
 
   for (const r of data) {
     const s = String(r[0] ?? '');
-    // match labels that start with "# BGCs ( ... )"
+    // Match labels that start with "# BGCs ( ... )"
     const m = /^#\s*BGCs?\s*\(\s*([^)]+)\s*\)\s*$/i.exec(s);
     if (!m) continue;
 
@@ -361,6 +398,47 @@ function detectTypes(data) {
   ];
   return ordered.length ? ordered : ['Other'];
 }
+
+/**
+ * Detect which completeness statuses exist in the table.
+ * Looks for rows like "# BGCs (Complete)" or "# BGCs (Type, Unknown completeness)".
+ * @param {Array[]} data
+ * @returns {string[]}
+ */
+function detectCompleteness(data) {
+    const allowed = ['complete', 'incomplete', 'unknown completeness'];
+    const set = new Set();
+
+    data.forEach(row => {
+        const label = String(row[0] || '').trim();
+
+        // total rows, e.g. "# BGCs (Unknown completeness)"
+        let m = /^#\s*BGCs\s*\(\s*([^)]+)\s*\)$/i.exec(label);
+        if (m) {
+            const inside = m[1]
+                .split(',')
+                .map(s => s.trim().toLowerCase());
+
+            inside.forEach(v => {
+                if (allowed.includes(v)) {
+                    set.add(v);
+                }
+            });
+        }
+
+        // typed rows, e.g. "# BGCs (NRPS, Unknown completeness)"
+        m = /^#\s*BGCs\s*\(\s*([^,]+),\s*([^)]+)\)$/i.exec(label);
+        if (m) {
+            const status = m[2].trim().toLowerCase();
+            if (allowed.includes(status)) {
+                set.add(status);
+            }
+        }
+    });
+
+    return Array.from(set);
+}
+
 
 /**
  * Build or rebuild the bar plot based on the current UI state.
@@ -522,6 +600,7 @@ function buildBarPlotDynamic(data) {
 document.addEventListener('DOMContentLoaded', () => {
     buildTable(reportData);
     renderTypeFilters(detectTypes(reportData));
+    renderCompletenessFilters(detectCompleteness(reportData));
     buildBarPlotDynamic(reportData);
 
     // Extended report toggle visibility (show/hide extra rows)
