@@ -49,6 +49,13 @@
         <div>
             <div class="plot-and-controls">
                 <div class="chart-wrap">
+                    <div class="metric-tabs">
+                        <button class="metric-tab active" data-metric="bgcs">Overview</button>
+                        <button class="metric-tab" data-metric="fully">Fully recovered BGCs</button>
+                        <button class="metric-tab" data-metric="partial">Partially recovered BGCs</button>
+                        <button class="metric-tab" data-metric="missed">Missed BGCs</button>
+                    </div>
+
                     <canvas id="bgcBarPlot"></canvas>
                 </div>
 
@@ -93,6 +100,7 @@
     <!-- Data injected by Python -->
     <script>
         const reportData = {{ report_json }};
+        const reportMode = "{{ report_mode }}";
     </script>
     <script>
     {{ script_js }}

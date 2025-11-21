@@ -129,6 +129,7 @@ const allNumericCells = [];
 /* ---------------------------------------------------------------------------
  * TABLE BUILDER (main report table + extended rows)
  * ------------------------------------------------------------------------- */
+const isReferenceMode = (typeof reportMode !== 'undefined' && reportMode === "compare_to_reference");
 
 /**
  * Build the main report table and insert it into #reportTableContainer.
@@ -184,8 +185,20 @@ function buildTable(data) {
             if (j > 0) {
                 const num = parseFloat(cell);
                 if (!isNaN(num)) {
-                    numericCells.push(td);
-                    numericValues.push(num);
+                    // Special handling for reference-column cells in Reference mode
+                    const isLastCol = (j === rowData.length - 1);
+                    const rowLabel = String(rowData[0] ?? '');
+                    const isBGCRow = rowLabel.startsWith('# BGCs');
+                    const isMeanRow = rowLabel.startsWith('Mean BGC length');
+
+                    if (isReferenceMode && isLastCol && !isBGCRow && !isMeanRow) {
+                        // Fake reference value (0 from NaN)
+                        td.textContent = '';
+                        td.classList.add('ref-empty');
+                    } else {
+                        numericCells.push(td);
+                        numericValues.push(num);
+                    }
                 }
             }
 
@@ -440,14 +453,37 @@ function detectCompleteness(data) {
 }
 
 
+// Which metric are we plotting (# BGCs, Fully recovered, etc.)
+const METRIC_BASE = {
+    bgcs:   '# BGCs',                 // existing behaviour
+    fully:  'Fully recovered BGCs',
+    partial:'Partially recovered BGCs',
+    missed: 'Missed BGCs'
+};
+
+let currentMetricKey = 'bgcs';
+
+function metricLabel(base, inside) {
+    // e.g. base="# BGCs", inside="total"
+    return `${base} (${inside})`;
+}
+
+
 /**
  * Build or rebuild the bar plot based on the current UI state.
  * @param {Array[]} data
  */
 function buildBarPlotDynamic(data) {
-    // labels are Assembly+Tool as before
-    const tools = data[1].slice(1);
-    const assemblies = data[0].slice(1);
+    const metricBase = METRIC_BASE[currentMetricKey] || METRIC_BASE.bgcs;
+
+    // In COMPARE_TO_REFERENCE, drop the last (reference) column from the plot for all tabs except Overview (totals)
+    const hideReferenceForThisMetric =
+        isReferenceMode && currentMetricKey !== 'bgcs';
+    const colEnd = hideReferenceForThisMetric ? -1 : undefined;
+
+    // labels are Assembly+Tool
+    const tools = data[1].slice(1, colEnd);
+    const assemblies = data[0].slice(1, colEnd);
     const labels = tools.map((tool, i) => `${tool}\n${assemblies[i]}`);
 
     // read UI
@@ -458,9 +494,9 @@ function buildBarPlotDynamic(data) {
     let datasets = [];
 
     if (mode === 'total') {
-        const row = getRowByLabel(data, '# BGCs (total)');
+        const row = getRowByLabel(data, metricLabel(metricBase, 'total'));
         if (row) {
-            const counts = row.slice(1).map(v => parseInt(v, 10));
+            const counts = row.slice(1, colEnd).map(v => parseInt(v, 10));
             datasets.push({
                 label: '# BGCs (total)',
                 data: counts,
@@ -477,57 +513,59 @@ function buildBarPlotDynamic(data) {
 
             for (const type of types) {
                 const baseColor = productColors[type] || productColors['Other'];
-                const rowComplete = getRowByLabel(data, `# BGCs (${type}, Complete)`);
-                const rowIncomplete = getRowByLabel(data, `# BGCs (${type}, Incomplete)`);
-                const rowUnknown    = getRowByLabel(data, `# BGCs (${type}, Unknown completeness)`);
+                // const rowComplete = getRowByLabel(data, `# BGCs (${type}, Complete)`);
+                const rowComplete = getRowByLabel(data, metricLabel(metricBase, `${type}, Complete`));
+                const rowIncomplete = getRowByLabel(data, metricLabel(metricBase, `${type}, Incomplete`));
+                const rowUnknown    = getRowByLabel(data, metricLabel(metricBase, `${type}, Unknown completeness`));
 
                 if (statuses.includes('complete') && rowComplete) {
                     datasets.push({
                         label: `${type} complete`,
-                        data: rowComplete.slice(1).map(v => parseInt(v, 10)),
+                        data: rowComplete.slice(1, colEnd).map(v => parseInt(v, 10)),
                         backgroundColor: baseColor
                     });
                 }
                 if (statuses.includes('incomplete') && rowIncomplete) {
                     datasets.push({
                         label: `${type} incomplete`,
-                        data: rowIncomplete.slice(1).map(v => parseInt(v, 10)),
+                        data: rowIncomplete.slice(1, colEnd).map(v => parseInt(v, 10)),
                         backgroundColor: lighten(baseColor, 0.45) // lighter shade
                     });
                 }
                 if (statuses.includes('unknown completeness') && rowUnknown) {
                     datasets.push({
                         label: `${type} unknown completeness`,
-                        data: rowUnknown.slice(1).map(v => parseInt(v, 10)),
+                        data: rowUnknown.slice(1, colEnd).map(v => parseInt(v, 10)),
                         backgroundColor: lighten(baseColor, 0.75) // even lighter shade
                     });
                 }
             }
         } else if (byCompleteness) {
             // stacks are complete vs incomplete (total)
-            const rowComplete = getRowByLabel(data, '# BGCs (Complete)');
-            const rowIncomplete = getRowByLabel(data, '# BGCs (Incomplete)');
-            const rowUnknown    = getRowByLabel(data, '# BGCs (Unknown completeness)');
+            // const rowComplete = getRowByLabel(data, '# BGCs (Complete)');
+            const rowComplete   = getRowByLabel(data, metricLabel(metricBase, 'Complete'));
+            const rowIncomplete = getRowByLabel(data, metricLabel(metricBase, 'Incomplete'));
+            const rowUnknown    = getRowByLabel(data, metricLabel(metricBase, 'Unknown completeness'));
             const statuses = selectedStatusesFromUI();
 
             if (statuses.includes('complete') && rowComplete) {
                 datasets.push({
                     label: 'Complete',
-                    data: rowComplete.slice(1).map(v => parseInt(v, 10)),
+                    data: rowComplete.slice(1, colEnd).map(v => parseInt(v, 10)),
                     backgroundColor: '#578c18'
                 });
             }
             if (statuses.includes('incomplete') && rowIncomplete) {
                 datasets.push({
                     label: 'Incomplete',
-                    data: rowIncomplete.slice(1).map(v => parseInt(v, 10)),
+                    data: rowIncomplete.slice(1, colEnd).map(v => parseInt(v, 10)),
                     backgroundColor: '#ccca3d'
                 });
             }
             if (statuses.includes('unknown completeness') && rowUnknown) {
                 datasets.push({
                     label: 'Unknown completeness',
-                    data: rowUnknown.slice(1).map(v => parseInt(v, 10)),
+                    data: rowUnknown.slice(1, colEnd).map(v => parseInt(v, 10)),
                     backgroundColor: '#999999'
                 });
             }
@@ -537,11 +575,11 @@ function buildBarPlotDynamic(data) {
             const allTypes = detectTypes(data);
             const types = selectedTypesFromUI(allTypes);
             for (const type of types) {
-                const row = getRowByLabel(data, `# BGCs (${type})`);
+                const row = getRowByLabel(data, metricLabel(metricBase, type));
                 if (row) {
                     datasets.push({
                         label: type,
-                        data: row.slice(1).map(v => parseInt(v, 10)),
+                        data: row.slice(1, colEnd).map(v => parseInt(v, 10)),
                         backgroundColor: productColors[type] || productColors['Other']
                     });
                 }
@@ -551,7 +589,7 @@ function buildBarPlotDynamic(data) {
             // just show the total to avoid an empty chart.
             const row = getRowByLabel(data, '# BGCs (total)');
             if (row) {
-                const counts = row.slice(1).map(v => parseInt(v, 10));
+                const counts = row.slice(1, colEnd).map(v => parseInt(v, 10));
                 datasets.push({
                     label: '# BGCs (total)',
                     data: counts,
@@ -630,6 +668,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     cell.style.color = '';
                 });
             }
+        });
+    });
+
+    // Metric tabs (BGCs / fully / partial / missed)
+    const metricTabs = document.querySelectorAll('.metric-tab');
+    metricTabs.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const key = btn.dataset.metric;
+            if (!METRIC_BASE[key]) return;
+
+            currentMetricKey = key;
+
+            metricTabs.forEach(b => b.classList.toggle('active', b === btn));
+            buildBarPlotDynamic(reportData);
         });
     });
 

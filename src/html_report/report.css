@@ -74,6 +74,12 @@ th {
     background-color: #bdd1db;
 }
 
+/* Reference mode: cells that should look like "no column" */
+td.ref-empty {
+    border: none;
+    background-color: inherit;
+}
+
 /* Table style - rows */
 .extended-row {
     display: none;
@@ -106,6 +112,28 @@ th {
   /* Prevent accidental wrapping below the canvas */
   flex-wrap: nowrap;
   margin-top: 150px;
+}
+
+.metric-tabs {
+    /* Styling of the tabs */
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.metric-tab {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid #ccc;
+    background: #f7f7f7;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.metric-tab.active {
+    background: #322b7a;
+    color: white;
+    border-color: #322b7a;
 }
 
 .plot-and-controls .chart-wrap {
