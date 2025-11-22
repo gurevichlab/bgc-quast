@@ -54,6 +54,12 @@
                         <button class="metric-tab" data-metric="fully">Fully recovered BGCs</button>
                         <button class="metric-tab" data-metric="partial">Partially recovered BGCs</button>
                         <button class="metric-tab" data-metric="missed">Missed BGCs</button>
+                        <button class="metric-tab" data-metric="unique">Unique BGCs</button>
+                        <button class="metric-tab" data-metric="pyplots">BGC overlap plots</button>
+                    </div>
+
+                    <div id="pythonPlotsPanel" style="display:none">
+                        <!-- Python can inject <img src="..."> elements here -->
                     </div>
 
                     <canvas id="bgcBarPlot"></canvas>
@@ -75,9 +81,6 @@
                     <fieldset id="completenessFilterGroup">
                         <legend>Completeness</legend>
                         <!-- JS fills in checkboxes here -->
-<!--                        <label><input type="checkbox" id="status_complete" data-status="complete" checked> Complete</label>-->
-<!--                        <label><input type="checkbox" id="status_incomplete" data-status="incomplete" checked> Incomplete</label>-->
-<!--                        <label><input type="checkbox" id="status_unknown" data-status="unknown completeness" checked> Unknown completeness</label>-->
                     </fieldset>
 
                     <!-- Dynamic product filters (NRP/PKS/RiPP/...) -->

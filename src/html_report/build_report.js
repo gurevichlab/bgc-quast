@@ -191,11 +191,16 @@ function buildTable(data) {
                     const isBGCRow = rowLabel.startsWith('# BGCs');
                     const isMeanRow = rowLabel.startsWith('Mean BGC length');
 
-                    if (isReferenceMode && isLastCol && !isBGCRow && !isMeanRow) {
-                        // Fake reference value (0 from NaN)
-                        td.textContent = '';
-                        td.classList.add('ref-empty');
+                    if (isReferenceMode && isLastCol) {
+                        // Don't include the reference column value in numericCells/values (remove it from the heatmap)
+                        // - For non-BGC/Mean rows, also hide the 0 and make the cell visually empty.
+                        if (!isBGCRow && !isMeanRow) {
+                            td.textContent = '';
+                            td.classList.add('ref-empty');  // optional, for styling
+                        }
+                        // BGC / Mean rows keep their text, but are still excluded from heatmap.
                     } else {
+                        // Normal data cell → use it for heatmap
                         numericCells.push(td);
                         numericValues.push(num);
                     }
@@ -293,7 +298,7 @@ function renderCompletenessFilters(statuses) {
 
     const frag = document.createDocumentFragment();
     statuses.forEach(status => {
-        const id = `status_${status}`;
+        const id = 'status_' + status.replace(/\s+/g, '_');
         const label = document.createElement('label');
         const input = document.createElement('input');
         input.type = 'checkbox';
@@ -335,7 +340,7 @@ function selectedStatusesFromUI() {
   const on = [];
   if (document.getElementById('status_complete')?.checked)   on.push('complete');
   if (document.getElementById('status_incomplete')?.checked) on.push('incomplete');
-  if (document.getElementById('status_unknown')?.checked) on.push('unknown completeness');
+  if (document.getElementById('status_unknown_completeness')?.checked) on.push('unknown completeness');
   // If none selected, return empty array (chart will show nothing for completeness parts)
   return on;
 }
@@ -452,13 +457,21 @@ function detectCompleteness(data) {
     return Array.from(set);
 }
 
+// Which metric labels exist for each running mode
+const METRIC_TABS_BY_MODE = {
+    compare_to_reference: ['bgcs', 'fully', 'partial', 'missed'],
+    compare_tools:        ['bgcs', 'unique', 'pyplots'],
+    compare_samples:      ['bgcs']  // Overview only
+};
 
 // Which metric are we plotting (# BGCs, Fully recovered, etc.)
 const METRIC_BASE = {
     bgcs:   '# BGCs',                 // existing behaviour
     fully:  'Fully recovered BGCs',
     partial:'Partially recovered BGCs',
-    missed: 'Missed BGCs'
+    missed: 'Missed BGCs',
+    unique: "Unique BGCs",
+    // pyplots: no metricBase → handled specially
 };
 
 let currentMetricKey = 'bgcs';
@@ -474,7 +487,12 @@ function metricLabel(base, inside) {
  * @param {Array[]} data
  */
 function buildBarPlotDynamic(data) {
-    const metricBase = METRIC_BASE[currentMetricKey] || METRIC_BASE.bgcs;
+    // If the current tab does not use a bar chart (e.g. "pyplots"), do nothing
+    if (!METRIC_BASE[currentMetricKey]) {
+        return;
+    }
+
+    const metricBase = METRIC_BASE[currentMetricKey];
 
     // In COMPARE_TO_REFERENCE, drop the last (reference) column from the plot for all tabs except Overview (totals)
     const hideReferenceForThisMetric =
@@ -498,7 +516,7 @@ function buildBarPlotDynamic(data) {
         if (row) {
             const counts = row.slice(1, colEnd).map(v => parseInt(v, 10));
             datasets.push({
-                label: '# BGCs (total)',
+                label: metricLabel(metricBase, 'total'),
                 data: counts,
                 backgroundColor: '#322b7a'
             });
@@ -542,7 +560,6 @@ function buildBarPlotDynamic(data) {
             }
         } else if (byCompleteness) {
             // stacks are complete vs incomplete (total)
-            // const rowComplete = getRowByLabel(data, '# BGCs (Complete)');
             const rowComplete   = getRowByLabel(data, metricLabel(metricBase, 'Complete'));
             const rowIncomplete = getRowByLabel(data, metricLabel(metricBase, 'Incomplete'));
             const rowUnknown    = getRowByLabel(data, metricLabel(metricBase, 'Unknown completeness'));
@@ -586,12 +603,12 @@ function buildBarPlotDynamic(data) {
             }
         } else {
             // fallback: if user selected "Show by" but no boxes,
-            // just show the total to avoid an empty chart.
-            const row = getRowByLabel(data, '# BGCs (total)');
+            // just show the *current metric* total to avoid an empty chart.
+            const row = getRowByLabel(data, metricLabel(metricBase, 'total'));
             if (row) {
                 const counts = row.slice(1, colEnd).map(v => parseInt(v, 10));
                 datasets.push({
-                    label: '# BGCs (total)',
+                    label: metricLabel(metricBase, 'total'),
                     data: counts,
                     backgroundColor: '#322b7a'
                 });
@@ -671,19 +688,59 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Metric tabs (BGCs / fully / partial / missed)
-    const metricTabs = document.querySelectorAll('.metric-tab');
-    metricTabs.forEach(btn => {
+
+    // Metric tabs: which ones are visible depends on running mode
+    const allMetricTabs = Array.from(document.querySelectorAll('.metric-tab'));
+    const mode = (typeof reportMode === 'string') ? reportMode : 'compare_samples';
+    const allowedKeys = METRIC_TABS_BY_MODE[mode] || ['bgcs'];
+
+    // Show/hide buttons according to mode
+    allMetricTabs.forEach(btn => {
+        const key = btn.dataset.metric;
+        const visible = allowedKeys.includes(key);
+        btn.style.display = visible ? '' : 'none';
+    });
+
+    // The default active tab is always "Overview"
+    currentMetricKey = 'bgcs';
+    const overviewBtn = allMetricTabs.find(b => b.dataset.metric === 'bgcs');
+    if (overviewBtn) {
+        allMetricTabs.forEach(b => b.classList.toggle('active', b === overviewBtn));
+    }
+
+    // Click handling (bar chart vs python plots)
+    allMetricTabs.forEach(btn => {
         btn.addEventListener('click', () => {
             const key = btn.dataset.metric;
-            if (!METRIC_BASE[key]) return;
+            if (!allowedKeys.includes(key)) return;
 
             currentMetricKey = key;
 
-            metricTabs.forEach(b => b.classList.toggle('active', b === btn));
-            buildBarPlotDynamic(reportData);
+            allMetricTabs.forEach(b => b.classList.toggle('active', b === btn));
+
+            const chartCanvas = document.getElementById('bgcBarPlot');
+            const pythonPanel = document.getElementById('pythonPlotsPanel');
+
+            if (key === 'pyplots') {
+                // Show python-generated PNGs, hide bar chart
+                if (chartCanvas) chartCanvas.style.display = 'none';
+                if (pythonPanel) pythonPanel.style.display = 'block';
+
+                // Optional: destroy existing chart
+                if (bgcChart) {
+                    bgcChart.destroy();
+                    bgcChart = null;
+                }
+            } else {
+                // Show bar chart, hide python PNGs
+                if (chartCanvas) chartCanvas.style.display = 'block';
+                if (pythonPanel) pythonPanel.style.display = 'none';
+
+                buildBarPlotDynamic(reportData);
+            }
         });
     });
+
 
     // Bar plot controls listeners
     // "Show by" controls: radio buttons & "by ..." checkboxes
