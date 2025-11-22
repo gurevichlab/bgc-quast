@@ -42,6 +42,10 @@ html, body {
   margin-right: -10px;
   margin-top: -10px;
   margin-bottom: 12px;
+
+  display: flex;                  /* lay out children in a row */
+  justify-content: space-between; /* title to the left, rest to the right */
+  align-items: center;            /* vertical centering */
 }
 
 .page-header h1 {
@@ -50,6 +54,25 @@ html, body {
   font-size: 32px;
   letter-spacing: 0.2px;
   color: inherit;
+}
+
+.github-link a {
+  color: var(--bar-text);
+  text-decoration: none;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 10px;
+}
+
+.github-link a:hover {
+  text-decoration: underline;
+}
+
+.github-icon {
+  width: 24px;
+  height: 24px;
 }
 
 
@@ -187,14 +210,5 @@ td.ref-empty {
 .barplot-controls legend {
   font-weight: 600;
   font-size: 13px;
-}
-
-
-/* Sticky footer */
-#footer {
-    border-top: 1px solid #333;
-    padding-top: 0px;
-    font-size: 15px;
-    text-align: left;
 }
 

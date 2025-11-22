@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 import json
 import math
+import base64
 from src.reporting.report_config import ReportConfig
 from src.reporting.report_data import ReportData
 
@@ -166,10 +167,14 @@ class ReportFormatter:
 
     def write_html(self, data: ReportData, output_path: Path) -> None:
         """Format and save report as HTML with basic styling."""
+        def file_to_base64(path):
+            with open(path, "rb") as f:
+                encoded = base64.b64encode(f.read()).decode("utf-8")
+            return encoded
+
         # Save the running mode information
         mode = data.running_mode.value
 
-        asset_dir = Path(__file__).resolve().parent.parent / "html_report"
         pivot_table = self.table_builder.build_pivot_table(data)
 
         file_labels = ["file_label"]
@@ -204,6 +209,12 @@ class ReportFormatter:
         python_plots_json = json.dumps(python_plots, ensure_ascii=False)
 
         # Load the assets and inject JSON
+        asset_dir = Path(__file__).resolve().parent.parent / "html_report"
+        logo_path = asset_dir / "github-mark-white.svg"
+        logo_b64 = file_to_base64(logo_path)
+        logo_mime = "image/svg+xml"
+        logo_data_uri = f"data:{logo_mime};base64,{logo_b64}"
+
         template = (asset_dir / "report_template.html").read_text(encoding="utf-8")
         style_css = (asset_dir / "report.css").read_text(encoding="utf-8")
         script_js = (asset_dir / "build_report.js").read_text(encoding="utf-8")
@@ -216,6 +227,7 @@ class ReportFormatter:
             .replace("{{ report_json }}", data_json)
             .replace("{{ report_mode }}", mode)
             .replace("{{ python_plots }}", python_plots_json)
+            .replace("{{ github_logo }}", logo_data_uri)
         )
 
         # Write final HTML
