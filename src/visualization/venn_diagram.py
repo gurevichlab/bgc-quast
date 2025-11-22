@@ -83,7 +83,7 @@ def plot_pairwise_venn_from_meta(
 
     if save_path is not None:
         save_path.parent.mkdir(parents=True, exist_ok=True)
-        plt.savefig(save_path)
+        plt.savefig(save_path, format=save_path.suffix.lstrip("."), bbox_inches="tight", dpi=600)
         plt.close()
         return save_path
     else:

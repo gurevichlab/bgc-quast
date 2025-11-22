@@ -167,6 +167,7 @@ class ReportFormatter:
         import json
         import math
 
+        # Save the running mode information
         mode = data.running_mode.value
 
         asset_dir = Path(__file__).resolve().parent.parent / "html_report"
@@ -178,7 +179,7 @@ class ReportFormatter:
             file_labels.append(str(file_label))
             mining_tools.append(str(mining_tool))
 
-        # 2) Build rows array (convert blanks/NaN to "0" for numeric cells)
+        # Build rows array (convert blanks/NaN to "0" for numeric cells)
         rows = [file_labels, mining_tools]
         for idx, row in pivot_table.iterrows():
             out = [str(idx)]
@@ -189,7 +190,21 @@ class ReportFormatter:
                     out.append(str(v))
             rows.append(out)
 
-        # 3) Load the assets and inject JSON
+        # Collect plots for compare_tools mode ---
+        python_plots = []
+        if data.running_mode.name == "COMPARE_TOOLS":
+            # adjust the directory to wherever you write your PNGs
+            plots_dir = output_path.parent / "venn_overlaps"
+            if plots_dir.exists():
+                python_plots = [
+                    # store paths relative to the HTML file location
+                    str(p.relative_to(output_path.parent))
+                    for p in sorted(plots_dir.glob("*.png"))
+                ]
+
+        python_plots_json = json.dumps(python_plots, ensure_ascii=False)
+
+        # Load the assets and inject JSON
         template = (asset_dir / "report_template.html").read_text(encoding="utf-8")
         style_css = (asset_dir / "report.css").read_text(encoding="utf-8")
         script_js = (asset_dir / "build_report.js").read_text(encoding="utf-8")
@@ -201,9 +216,10 @@ class ReportFormatter:
             .replace("{{ script_js }}", script_js)
             .replace("{{ report_json }}", data_json)
             .replace("{{ report_mode }}", mode)
+            .replace("{{ python_plots }}", python_plots_json)
         )
 
-        # 4) Write final HTML
+        # Write final HTML
         output_path.write_text(html_filled, encoding="utf-8")
 
     def write_tsv(self, data: ReportData, output_path: Path) -> None:

@@ -136,6 +136,22 @@ td.ref-empty {
     border-color: #322b7a;
 }
 
+/* Venn diagrams */
+#pythonPlotsPanel {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.python-plot {
+    max-width: 35%;
+    height: auto;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: white;
+}
+
 .plot-and-controls .chart-wrap {
   flex: 1 1 720px;   /* <- initial width; grows/shrinks with the layout */
   min-width: 480px;  /* <- optional floor so it never gets too small */

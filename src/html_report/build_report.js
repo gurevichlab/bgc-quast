@@ -694,6 +694,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const mode = (typeof reportMode === 'string') ? reportMode : 'compare_samples';
     const allowedKeys = METRIC_TABS_BY_MODE[mode] || ['bgcs'];
 
+    // Populate pythonPlotsPanel (compare_tools mode only)
+    if (mode === 'compare_tools') {
+        const pythonPanel = document.getElementById('pythonPlotsPanel');
+        if (pythonPanel && Array.isArray(pythonPlots)) {
+            if (pythonPlots.length > 0) {
+                pythonPlots.forEach(src => {
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.classList.add('python-plot');
+                    pythonPanel.appendChild(img);
+                });
+            } else {
+                // Optional: message when no PNGs found
+                const msg = document.createElement('p');
+                msg.textContent = 'No additional plots available.';
+                pythonPanel.appendChild(msg);
+            }
+        }
+    }
+
     // Show/hide buttons according to mode
     allMetricTabs.forEach(btn => {
         const key = btn.dataset.metric;
@@ -720,11 +740,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const chartCanvas = document.getElementById('bgcBarPlot');
             const pythonPanel = document.getElementById('pythonPlotsPanel');
+            const controls    = document.querySelector('.barplot-controls');
 
             if (key === 'pyplots') {
                 // Show python-generated PNGs, hide bar chart
                 if (chartCanvas) chartCanvas.style.display = 'none';
                 if (pythonPanel) pythonPanel.style.display = 'block';
+                if (controls)    controls.style.display    = 'none';
 
                 // Optional: destroy existing chart
                 if (bgcChart) {
@@ -735,6 +757,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Show bar chart, hide python PNGs
                 if (chartCanvas) chartCanvas.style.display = 'block';
                 if (pythonPanel) pythonPanel.style.display = 'none';
+                if (controls)    controls.style.display    = '';
 
                 buildBarPlotDynamic(reportData);
             }
