@@ -3,6 +3,8 @@
 from pathlib import Path
 
 import pandas as pd
+import json
+import math
 from src.reporting.report_config import ReportConfig
 from src.reporting.report_data import ReportData
 
@@ -164,9 +166,6 @@ class ReportFormatter:
 
     def write_html(self, data: ReportData, output_path: Path) -> None:
         """Format and save report as HTML with basic styling."""
-        import json
-        import math
-
         # Save the running mode information
         mode = data.running_mode.value
 
