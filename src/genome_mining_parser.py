@@ -351,8 +351,8 @@ def parse_input_mining_result_files(
     parsers = {
         parse_antismash_json: "antiSMASH",
         parse_gecco_tsv: "GECCO",
-        parse_deepbgc_tsv: "deepBGC TSV",
-        parse_deepbgc_json: "deepBGC JSON",
+        parse_deepbgc_tsv: "deepBGC",
+        parse_deepbgc_json: "deepBGC",
     }
 
     results = []
