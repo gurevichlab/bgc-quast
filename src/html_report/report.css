@@ -28,12 +28,16 @@ html, body {
 
 /* Header */
 :root {
-  --accent: #050752;
+  /*--accent: #050752;*/
   --bar-text: #ffffff; /* title text color */
 }
 
 .page-header {
-  background: var(--accent);
+  background: linear-gradient(
+  90deg,
+  #322b7a 0%,
+  #515151 100%
+  );
   color: var(--bar-text);
   border: none;
   border-radius: 0;
@@ -54,6 +58,7 @@ html, body {
   font-size: 32px;
   letter-spacing: 0.2px;
   color: inherit;
+  text-shadow: 3px 3px 4px rgba(0,0,0,0.6);
 }
 
 .github-link a {
