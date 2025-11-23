@@ -13,22 +13,35 @@ html, body {
     flex-direction: column;
     height: 100%;
     padding: 10px;
+    font-size: 14px;
 }
 
-/* Growable content area: table and plot */
+/* Content area: table and plot */
 #reportLayout {
     display: flex;
-    gap: 0px;
-    flex: 1; /* Takes up remaining vertical space */
+    gap: 100px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+#reportLayout.extended-locked {
+    flex-wrap: nowrap;  /* case when the plot always stays on the right */
 }
 
 #reportLayout > div {
     flex: 1;
 }
 
+#reportLayout > div:first-child {
+    flex: 0 0 700px;   /* left column ~ table */
+}
+
+#reportLayout > div:last-child {
+    flex: 0 0 1000px;   /* right column ~ plot (doesn't grow/shrink with the page change) + controls */
+}
+
 /* Header */
 :root {
-  /*--accent: #050752;*/
   --bar-text: #ffffff; /* title text color */
 }
 
@@ -49,7 +62,7 @@ html, body {
 
   display: flex;                  /* lay out children in a row */
   justify-content: space-between; /* title to the left, rest to the right */
-  align-items: center;            /* vertical centering */
+  align-items: center;
 }
 
 .page-header h1 {
@@ -83,9 +96,10 @@ html, body {
 
 /* Table styling (unchanged) */
 table {
-    width: 80%;
+    width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
+    font-size: 14px;
 }
 
 th, td {
@@ -99,7 +113,7 @@ td {
 }
 
 th {
-    background-color: #bdd1db;
+    background-color: #d9dfec;
 }
 
 /* Reference mode: cells that should look like "no column" */
@@ -117,6 +131,33 @@ td.ref-empty {
     margin-top: 10px;
 }
 
+#toggleExtendedBtn {
+  padding: 6px 14px;
+  border-radius: 999px;        /* bacilli-shaped */
+  border: none;
+  background: #322b7a;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  transition: background 0.15s ease, transform 0.1s ease,
+              box-shadow 0.15s ease;
+}
+
+#toggleExtendedBtn:hover {
+  background: #3d3495;
+  transform: translateY(-1px); /* lift up a bit */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+}
+
+#toggleExtendedBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+#toggleExtendedBtn.is-collapsed {
+  background: #6c757d;
+}
 
 /*Heatmap */
 .heatmap-controls {
@@ -133,68 +174,124 @@ td.ref-empty {
 }
 
 /* Barplot */
+
 .plot-and-controls {
-  display: flex;
+  flex: 0 0 420px;
+  min-width: 380px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;  /* chart column | controls column */
+  column-gap: 24px;
   align-items: flex-start;
-  gap: 16px;
-  /* Prevent accidental wrapping below the canvas */
-  flex-wrap: nowrap;
-  margin-top: 150px;
+  margin-top: 40px;
+  grid-auto-rows: auto;
 }
 
 .metric-tabs {
-    /* Styling of the tabs */
     display: flex;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
 }
 
+/* Base tab look */
 .metric-tab {
-    padding: 0.25rem 0.75rem;
+    padding: 6px 14px;
     border-radius: 999px;
     border: 1px solid #ccc;
     background: #f7f7f7;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 14px;
+    transition: background 0.15s ease,
+                transform 0.1s ease,
+                box-shadow 0.15s ease,
+                border-color 0.15s ease;
 }
 
+/* Hover effect */
+.metric-tab:hover {
+    background: #f5f3ff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.20);
+    border-color: #bbb;
+}
+
+/* Active tab (selected) */
 .metric-tab.active {
     background: #322b7a;
     color: white;
     border-color: #322b7a;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+}
+
+/* Clicked/pressed state */
+.metric-tab:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+
+
+/* Legend + canvas row inside the chart-wrap */
+.plot-flex-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0px;
+}
+
+/* Left column: legend */
+.plot-legend-column {
+    flex: 0 0 190px;
+    font-size: 13px;
+    color: #696969;
+    margin-top: 40px;
+}
+
+.plot-legend-swatch {
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    border: 1px solid #696969;
+    display: inline-block;
+}
+
+
+#bgcLegend {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Right column: chart takes remaining width */
+.plot-flex-row canvas {
+    flex: 1 1 auto;
+    width: 100% !important;
+    height: auto !important;
 }
 
 /* Venn diagrams */
 #pythonPlotsPanel {
-    margin-top: 10px;
+    margin-top: 16px;
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-wrap: wrap;    /* allow multiple per row */
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.plot-and-controls.pyplots-mode {
+    grid-template-columns: 1fr;  /* no right column reserved */
 }
 
 .python-plot {
-    max-width: 35%;
+    flex: 1 1 calc(33% - 20px);
+    max-width: calc(33% - 20px);     /* at most 3 per row */
     height: auto;
     border: 1px solid #ccc;
     border-radius: 4px;
     background: white;
 }
 
-.plot-and-controls .chart-wrap {
-  flex: 1 1 720px;   /* <- initial width; grows/shrinks with the layout */
-  min-width: 480px;  /* <- optional floor so it never gets too small */
-  display: block;
-}
-
-.plot-and-controls .chart-wrap canvas {
-  display: block;
-  width: 100% !important;
-  height: auto !important; /* keeps aspect ratio unless you later fix height */
-}
-
+/* Barplot control buttons */
 .barplot-controls {
-  /* Keep controls in a narrow column on the right */
-  flex: 0 0 240px;         /* ~240px fixed column */
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -214,6 +311,6 @@ td.ref-empty {
 
 .barplot-controls legend {
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
 }
 

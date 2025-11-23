@@ -1,3 +1,5 @@
+/* global Chart */
+
 /* ---------------------------------------------------------------------------
  * HEATMAP UTILITIES
  * ------------------------------------------------------------------------- */
@@ -229,7 +231,7 @@ const productColors = {
     'NRPS': '#2e8b57',
     'PKS': '#f4a460',
     'RiPP': '#4169e1',
-    'Hybrid': '#b0c4de',
+    'Hybrid': '#689cba',
     'Terpene': '#800080',
     'Saccharide': '#f0c107',
     'Alkaloid': '#dda0dd',
@@ -482,6 +484,37 @@ function metricLabel(base, inside) {
 }
 
 
+function renderExternalLegend(chart) {
+    const legendContainer = document.getElementById('bgcLegend');
+    if (!legendContainer) return;
+
+    legendContainer.innerHTML = '';
+
+    chart.data.datasets.forEach(ds => {
+        const values = Array.isArray(ds.data) ? ds.data : [];
+        const hasNonZero = values.some(v => v !== 0);
+
+        // Skip legend entries for datasets that are entirely zero
+        if (!hasNonZero) return;
+
+        const item = document.createElement('div');
+        item.style.display = 'flex';
+        item.style.alignItems = 'center';
+        item.style.gap = '6px';
+
+        const swatch = document.createElement('span');
+        swatch.className = 'plot-legend-swatch';
+        swatch.style.backgroundColor = ds.backgroundColor;
+
+        const label = document.createElement('span');
+        label.textContent = ds.label;
+
+        item.appendChild(swatch);
+        item.appendChild(label);
+        legendContainer.appendChild(item);
+    });
+}
+
 /**
  * Build or rebuild the bar plot based on the current UI state.
  * @param {Array[]} data
@@ -558,6 +591,7 @@ function buildBarPlotDynamic(data) {
                     });
                 }
             }
+
         } else if (byCompleteness) {
             // stacks are complete vs incomplete (total)
             const rowComplete   = getRowByLabel(data, metricLabel(metricBase, 'Complete'));
@@ -625,27 +659,46 @@ function buildBarPlotDynamic(data) {
     // stacked if more than one dataset
     const stacked = datasets.length > 1;
 
+
     bgcChart = new Chart(document.getElementById('bgcBarPlot'), { // save the new chart in the same variable
         type: 'bar',
         data: { labels, datasets },
         options: {
             responsive: true,
             maintainAspectRatio: true, // height auto-adjusts from width
-            aspectRatio: 1.7,          // tweak: width / height (e.g., 1.6, 1.7, 1.8)
+            aspectRatio: 1.1,
+            devicePixelRatio: 2,
+            layout: {
+                padding: { top: 10, right: 180, bottom: 10, left: 0 }
+            },
+
             plugins: {
-                legend: { position: 'top' },
+                legend: {
+                    display: false
+                },
                 tooltip: {
+                    animation: { duration: 0 },
                     callbacks: {
                         label: ctx => `${ctx.dataset.label}: ${ctx.raw}`
                     }
                 }
             },
+
             scales: {
-                x: { stacked },
+                x: {
+                    stacked,
+                    ticks: {
+                        autoSkip: true,
+                        autoSkipPadding: 10,
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                },
                 y: { beginAtZero: true, stacked }
             }
         }
     });
+    renderExternalLegend(bgcChart);
 }
 
 
@@ -653,9 +706,16 @@ function buildBarPlotDynamic(data) {
  * PAGE INITIALIZATION & EVENT WIRING
  * ------------------------------------------------------------------------- */
 document.addEventListener('DOMContentLoaded', () => {
+    if (typeof Chart !== 'undefined') {
+        Chart.defaults.font.size = 13;
+        Chart.defaults.font.family = "'Arial', sans-serif";
+        Chart.defaults.animation.duration = 800;
+        Chart.defaults.animation.easing = 'easeOutQuart';
+    }
     buildTable(reportData);
     renderTypeFilters(detectTypes(reportData));
     renderCompletenessFilters(detectCompleteness(reportData));
+
     buildBarPlotDynamic(reportData);
 
     // Extended report toggle visibility (show/hide extra rows)
@@ -670,6 +730,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         toggleBtn.textContent = isHidden ? 'Hide Extended Report' : 'Show Extended Report';
+        toggleBtn.classList.toggle('is-collapsed', isHidden);
+
+        const layout = document.getElementById('reportLayout');
+        if (layout) {
+            if (isHidden) {
+                layout.classList.add('extended-locked');
+            } else {
+                layout.classList.remove('extended-locked');
+            }
+        }
     });
 
     // Heatmap toggle
@@ -738,15 +808,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             allMetricTabs.forEach(b => b.classList.toggle('active', b === btn));
 
-            const chartCanvas = document.getElementById('bgcBarPlot');
-            const pythonPanel = document.getElementById('pythonPlotsPanel');
             const controls    = document.querySelector('.barplot-controls');
+            const plotRow     = document.querySelector('.plot-flex-row');
+            const pythonPanel = document.getElementById('pythonPlotsPanel');
+            const plotContainer = document.querySelector('.plot-and-controls');
 
             if (key === 'pyplots') {
                 // Show python-generated PNGs, hide bar chart
-                if (chartCanvas) chartCanvas.style.display = 'none';
                 if (pythonPanel) pythonPanel.style.display = 'block';
                 if (controls)    controls.style.display    = 'none';
+                if (plotRow)    plotRow.style.display    = 'none';
+                if (plotContainer) plotContainer.classList.add('pyplots-mode');
 
                 // Optional: destroy existing chart
                 if (bgcChart) {
@@ -755,9 +827,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else {
                 // Show bar chart, hide python PNGs
-                if (chartCanvas) chartCanvas.style.display = 'block';
                 if (pythonPanel) pythonPanel.style.display = 'none';
                 if (controls)    controls.style.display    = '';
+                if (plotRow)    plotRow.style.display    = 'flex';
+                if (plotContainer) plotContainer.classList.remove('pyplots-mode');
 
                 buildBarPlotDynamic(reportData);
             }

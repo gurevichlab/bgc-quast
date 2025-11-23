@@ -20,6 +20,7 @@
             <img src="{{ github_logo }}" alt="GitHub" class="github-icon">
             Visit the GitHub project page
         </a>
+        </div>
     </header>
 
 
@@ -45,10 +46,12 @@
 
             </div>
 
-            <div id="reportTableContainer"></div>
             <div class="extended-btn-wrapper">
                 <button id="toggleExtendedBtn">Show Extended Report</button>
             </div>
+
+            <div id="reportTableContainer"></div>
+
         </div>
 
         <!-- The barplot -->
@@ -64,11 +67,15 @@
                         <button class="metric-tab" data-metric="pyplots">BGC overlap plots</button>
                     </div>
 
+                    <div class="plot-flex-row">
+                        <div id="bgcLegend" class="plot-legend-column"></div>
+                        <canvas id="bgcBarPlot" ></canvas>
+                    </div>
+
                     <div id="pythonPlotsPanel" style="display:none">
                         <!-- Python can inject <img src="..."> elements here -->
                     </div>
 
-                    <canvas id="bgcBarPlot"></canvas>
                 </div>
 
                 <div class="barplot-controls">
@@ -80,7 +87,7 @@
                     <!-- Show-by group (completeness + type) -->
                     <fieldset id="showByGroup">
                         <label><input type="checkbox" id="byCompleteness"> by completeness</label>
-                        <label><input type="checkbox" id="byType"> by type</label>
+                        <label><input type="checkbox" id="byType"> by product</label>
                     </fieldset>
 
 
