@@ -150,6 +150,7 @@ function buildTable(data) {
         th.textContent = col;
         headerRow.appendChild(th);
     });
+    headerRow.classList.add('column-header-row');
     table.appendChild(headerRow);
 
     // Loop over each data row
@@ -178,10 +179,26 @@ function buildTable(data) {
 
         // Build each cell in the row
         data[i].forEach((cell, j) => {
-            const td = document.createElement(j === 0 ? 'th' : 'td');
-            td.textContent = (j === 0 && String(cell).toLowerCase() === 'mining_tool')
-                ? 'Genome Mining Tool'
-                : cell;
+            const isRowHeader = (j === 0);
+            const td = document.createElement(isRowHeader ? 'th' : 'td');
+
+            if (isRowHeader) {
+                let labelText = (String(cell).toLowerCase() === 'mining_tool')
+                    ? 'Genome Mining Tool'
+                    : String(cell ?? '');
+
+                td.textContent = labelText;
+
+                const isTotalLabel = labelText.trim().toLowerCase().endsWith('(total)');
+
+                if (isTotalLabel) {
+                    td.classList.add('row-label-total');
+                } else {
+                    td.classList.add('row-label');
+                }
+            } else {
+                td.textContent = cell;
+            }
 
             // Only collect numeric values for heatmap
             if (j > 0) {

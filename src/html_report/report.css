@@ -114,6 +114,21 @@ td {
 
 th {
     background-color: #d9dfec;
+    font-weight: 400;  /* not bold */
+}
+
+/* Top header row bold (column names) */
+tr.column-header-row th {
+    font-weight: 600;
+}
+
+/* Row labels: default normal, totals bold */
+th.row-label {
+    font-weight: 400;
+}
+
+th.row-label-total {
+    font-weight: 600;
 }
 
 /* Reference mode: cells that should look like "no column" */
@@ -313,4 +328,3 @@ td.ref-empty {
   font-weight: 600;
   font-size: 14px;
 }
-
