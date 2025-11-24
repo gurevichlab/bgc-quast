@@ -109,7 +109,7 @@ th, td {
 }
 
 td {
-    background-color: #f8f9fa;
+    background-color: #ffffff;
 }
 
 th {
@@ -170,8 +170,18 @@ td.ref-empty {
   box-shadow: 0 1px 3px rgba(0,0,0,0.25);
 }
 
+#toggleExtendedBtn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+}
+
 #toggleExtendedBtn.is-collapsed {
   background: #6c757d;
+}
+
+#toggleExtendedBtn.is-collapsed:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
 }
 
 /*Heatmap */
@@ -212,7 +222,7 @@ td.ref-empty {
     padding: 6px 14px;
     border-radius: 999px;
     border: 1px solid #ccc;
-    background: #f7f7f7;
+    background: #ffffff;
     cursor: pointer;
     font-size: 14px;
     transition: background 0.15s ease,
@@ -223,9 +233,9 @@ td.ref-empty {
 
 /* Hover effect */
 .metric-tab:hover {
-    background: #f5f3ff;
+    background: #e9e9f3;
     transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.20);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
     border-color: #bbb;
 }
 
@@ -234,7 +244,7 @@ td.ref-empty {
     background: #322b7a;
     color: white;
     border-color: #322b7a;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
 }
 
 /* Clicked/pressed state */
@@ -243,6 +253,11 @@ td.ref-empty {
     box-shadow: 0 1px 3px rgba(0,0,0,0.25);
 }
 
+/* Focus ring for tabs (keyboard navigation) */
+.metric-tab:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+}
 
 
 /* Legend + canvas row inside the chart-wrap */
@@ -327,4 +342,105 @@ td.ref-empty {
 .barplot-controls legend {
   font-weight: 600;
   font-size: 14px;
+}
+
+
+/* Fancy small controls (checkboxes + radio buttons) */
+/* Base style for custom checkboxes & radios */
+.heatmap-controls input[type="checkbox"],
+.barplot-controls input[type="checkbox"],
+#typeFilterGroup input[type="checkbox"],
+#completenessFilterGroup input[type="checkbox"],
+.barplot-controls input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  border: 2px solid #322b7a;
+  background: #ffffff;
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+}
+
+/* Radios are round */
+.barplot-controls input[type="radio"] {
+  border-radius: 50%;
+}
+
+/* Hover feedback */
+.heatmap-controls input[type="checkbox"]:hover,
+.barplot-controls input[type="checkbox"]:hover,
+#typeFilterGroup input[type="checkbox"]:hover,
+#completenessFilterGroup input[type="checkbox"]:hover,
+.barplot-controls input[type="radio"]:hover {
+  box-shadow: 0 0 0 2px rgba(83, 82, 90, 0.25);
+}
+
+/* Focus ring for keyboard users */
+.heatmap-controls input[type="checkbox"]:focus-visible,
+.barplot-controls input[type="checkbox"]:focus-visible,
+#typeFilterGroup input[type="checkbox"]:focus-visible,
+#completenessFilterGroup input[type="checkbox"]:focus-visible,
+.barplot-controls input[type="radio"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+}
+
+/* Checked state */
+.heatmap-controls input[type="checkbox"]:checked,
+.barplot-controls input[type="checkbox"]:checked,
+#typeFilterGroup input[type="checkbox"]:checked,
+#completenessFilterGroup input[type="checkbox"]:checked,
+.barplot-controls input[type="radio"]:checked {
+  background: #322b7a;
+  border-color: #322b7a;
+}
+
+/* State is not available */
+input:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+input:disabled::after {
+    opacity: 0;  /* hide tick/dot */
+}
+
+label:has(input:disabled) {
+    opacity: 0.6;
+}
+
+
+/* Inner dot in checked state */
+.heatmap-controls input[type="checkbox"]::after,
+.barplot-controls input[type="checkbox"]::after,
+#typeFilterGroup input[type="checkbox"]::after,
+#completenessFilterGroup input[type="checkbox"]::after,
+.barplot-controls input[type="radio"]::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: inherit;
+  background: #ffffff;
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.heatmap-controls input[type="checkbox"]:checked::after,
+.barplot-controls input[type="checkbox"]:checked::after,
+#typeFilterGroup input[type="checkbox"]:checked::after,
+#completenessFilterGroup input[type="checkbox"]:checked::after,
+.barplot-controls input[type="radio"]:checked::after {
+  opacity: 1;
+  transform: scale(1);
 }
