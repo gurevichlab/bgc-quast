@@ -188,6 +188,9 @@ function buildTable(data) {
                     : String(cell ?? '');
 
                 td.textContent = labelText;
+                if (labelText === 'Genome Mining Tool') {
+                    td.classList.add('row-label-total');
+                }
 
                 const isTotalLabel = labelText.trim().toLowerCase().endsWith('(total)');
 
