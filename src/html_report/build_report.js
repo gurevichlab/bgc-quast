@@ -664,12 +664,21 @@ function buildBarPlotDynamic(data) {
         type: 'bar',
         data: { labels, datasets },
         options: {
-            responsive: true,
-            maintainAspectRatio: true, // height auto-adjusts from width
-            aspectRatio: 1.1,
+            responsive: false,
+            maintainAspectRatio: false,
             devicePixelRatio: 2,
             layout: {
                 padding: { top: 10, right: 180, bottom: 10, left: 0 }
+            },
+            animation: {
+                duration: 800,
+                easing: 'easeOutQuart'
+            },
+
+            transitions: {
+                // don't animate on resize at all,
+                // in case something does trigger a resize
+                resize: { animation: { duration: 0 } }
             },
 
             plugins: {
@@ -709,8 +718,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof Chart !== 'undefined') {
         Chart.defaults.font.size = 13;
         Chart.defaults.font.family = "'Arial', sans-serif";
-        Chart.defaults.animation.duration = 800;
-        Chart.defaults.animation.easing = 'easeOutQuart';
     }
     buildTable(reportData);
     renderTypeFilters(detectTypes(reportData));
