@@ -79,7 +79,7 @@ compare_tools:
       include_total: true
       order: [ "total", "Complete", "Incomplete", "Unknown completeness" ]
 
-      grouping_combinations: [ [ "product_type", "completeness" ] ]
+  grouping_combinations: [ [ "product_type", "completeness" ] ]
   
 
 compare_samples:
