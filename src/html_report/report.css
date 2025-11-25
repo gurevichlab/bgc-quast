@@ -103,7 +103,7 @@ table {
 }
 
 th, td {
-    border: 1px solid #878686;
+    border: 1px solid #cfcfcf;
     padding: 8px;
     text-align: left;
 }
@@ -113,18 +113,21 @@ td {
 }
 
 th {
-    background-color: #d9dfec;
+    background-color: #ffffff;
     font-weight: 400;  /* not bold */
 }
 
 /* Top header row bold (column names) */
 tr.column-header-row th {
     font-weight: 600;
+    background-color: #322b7a;
+    color: #ffffff;
 }
 
 /* Row labels: default normal, totals bold */
 th.row-label {
     font-weight: 400;
+    background-color: #ffffff;
 }
 
 th.row-label-total {
@@ -136,6 +139,7 @@ td.ref-empty {
     border: none;
     background-color: inherit;
 }
+
 
 /* Table style - rows */
 .extended-row {

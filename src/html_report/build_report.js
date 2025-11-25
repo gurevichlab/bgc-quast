@@ -16,34 +16,74 @@ function getMedian(arr) {
         : arr[mid];
 }
 
-/**
- * Convert hue + lightness to an HSL color string.
- * @param {number} hue
- * @param {number} [lightness=92]
- * @returns {string}
- */
-function getColor(hue, lightness = 92) {
-    return `hsl(${hue}, 80%, ${lightness}%)`;
+// Color helpers: hex <-> rgb + mixing
+// Convert hex → RGB
+function hexToRgb(hex) {
+    const c = hex.replace('#', '');
+    return {
+        r: parseInt(c.substring(0, 2), 16),
+        g: parseInt(c.substring(2, 4), 16),
+        b: parseInt(c.substring(4, 6), 16)
+    };
+}
+
+// Convert RGB → hex
+function rgbToHex({ r, g, b }) {
+    const toHex = x => x.toString(16).padStart(2, '0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
 /**
- * Draw the heatmap legend (smallest → median → largest) above the table.
- * @param {number} lowHue
- * @param {number} topHue
+ * Mix a base color with white.
+ * factor = 0   → white
+ * factor = 1   → base color
  */
-function drawHeatmapLegend(lowHue, topHue) {
-    const canvas = document.getElementById('gradientHeatmap');
-    const ctx = canvas.getContext('2d');
+function mixColorWithWhite(baseHex, factor) {
+    const base = hexToRgb(baseHex);
+    const white = { r: 255, g: 255, b: 255 };
 
+    return rgbToHex({
+        r: Math.round(white.r + (base.r - white.r) * factor),
+        g: Math.round(white.g + (base.g - white.g) * factor),
+        b: Math.round(white.b + (base.b - white.b) * factor)
+    });
+}
+
+/**
+ * Wrapper: returns a hex color that is a lighter/darker
+ * version of baseHex, controlled by factor [0..1].
+ */
+function getColorHex(baseHex, factor) {
+    return mixColorWithWhite(baseHex, factor);
+}
+
+// Base colors for the heatmap:
+const LOW_COLOR_HEX  = "#80852a";  // olive green-yellow
+const HIGH_COLOR_HEX = "#396B9E";  // denim blue
+
+const FACT_WHITE = 0.0;   // ~100% lightness (white)
+const FACT_MIN   = 0.3;   // ~75% lightness
+const FACT_INNER = 0.55;  // ~65% lightness
+const FACT_OUTER = 0.8;   // ~55% lightness
+
+/**
+ * Draw the heatmap legend (smallest → median → largest) above the table.
+ * Uses LOW_COLOR_HEX and HIGH_COLOR_HEX.
+ */
+function drawHeatmapLegend() {
+    const canvas = document.getElementById('gradientHeatmap');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
     const width = canvas.width;
     const height = canvas.height;
 
     const gradient = ctx.createLinearGradient(0, 0, width, 0);
 
-    // Create 3-part gradient: Smallest (lowHue), Median (white), Largest (topHue)
-    gradient.addColorStop(0, getColor(lowHue, 55));  // Smallest
-    gradient.addColorStop(0.5, 'hsl(0, 0%, 100%)');  // Median = white
-    gradient.addColorStop(1, getColor(topHue, 55));  // Largest
+    // Smallest → median → largest
+    gradient.addColorStop(0,   getColorHex(LOW_COLOR_HEX, FACT_INNER));
+    gradient.addColorStop(0.5, "#FFFFFF"); // median
+    gradient.addColorStop(1,   getColorHex(HIGH_COLOR_HEX, FACT_INNER));
 
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
@@ -73,51 +113,46 @@ function heatMapOneRow(cells, values, direction = 'more_is_better') {
     const topOuter = q3 + 3 * iqr;
 
 
-    // Set up the color settings (hues/brightness)
-    const YELLOW = 60, PURPLE = 280;
-    const MID_BRT = 100, MIN_BRT = 75, INNER_BRT = 65, OUTER_BRT = 55;
-
-    // Select hue direction depending on the metric
-    const [lowHue, topHue] = direction === 'less_is_better' ? [PURPLE, YELLOW] : [YELLOW, PURPLE];
+    // Choose which side is "low" and which is "high" based on metric direction
+    const [lowColorHex, topColorHex] =
+        direction === 'less_is_better'
+            ? [HIGH_COLOR_HEX, LOW_COLOR_HEX]  // reversed
+            : [LOW_COLOR_HEX,  HIGH_COLOR_HEX];
 
     // Apply coloring logic per cell
     for (let i = 0; i < cells.length; i++) {
         const cell = cells[i];
         const num = values[i];
-        let hue, lightness;
+        if (num == null || Number.isNaN(num)) continue;
 
         if (num < lowOuter) {
             // Extreme low outlier
-            hue = lowHue; lightness = OUTER_BRT;
-            cell.style.backgroundColor = getColor(hue, lightness);
-            cell.style.color = 'white'; // improve contrast
+            cell.style.backgroundColor = getColorHex(lowColorHex, FACT_OUTER);
+            cell.style.color = 'white';
         } else if (num < lowInner) {
-            // Mid low outlier
-            hue = lowHue; lightness = INNER_BRT;
-            cell.style.backgroundColor = getColor(hue, lightness);
+            // Mild low outlier
+            cell.style.backgroundColor = getColorHex(lowColorHex, FACT_INNER);
         } else if (num < median) {
-            // Between low inner and median → interpolate brightness
-            hue = lowHue;
-            const k = (MID_BRT - MIN_BRT) / (median - lowInner);
-            lightness = MID_BRT - (median - num) * k;
-            cell.style.backgroundColor = getColor(hue, lightness);
+            // Between lowInner and median → interpolate white → lowColor
+            const denom = (median - lowInner) || 1;
+            const k = (FACT_MIN - FACT_WHITE) / denom;
+            const factor = FACT_MIN - (median - num) * k;
+            cell.style.backgroundColor = getColorHex(lowColorHex, factor);
         } else if (num > topOuter) {
             // Extreme high outlier
-            hue = topHue; lightness = OUTER_BRT;
-            cell.style.backgroundColor = getColor(hue, lightness);
+            cell.style.backgroundColor = getColorHex(topColorHex, FACT_OUTER);
             cell.style.color = 'white';
         } else if (num > topInner) {
             // Mild high outlier
-            hue = topHue; lightness = INNER_BRT;
-            cell.style.backgroundColor = getColor(hue, lightness);
+            cell.style.backgroundColor = getColorHex(topColorHex, FACT_INNER);
         } else if (num > median) {
-            // Between median and top inner → interpolate brightness
-            hue = topHue;
-            const k = (MID_BRT - MIN_BRT) / (topInner - median);
-            lightness = MID_BRT - (num - median) * k;
-            cell.style.backgroundColor = getColor(hue, lightness);
+            // Between median and topInner → interpolate white → topColor
+            const denom = (topInner - median) || 1;
+            const k = (FACT_MIN - FACT_WHITE) / denom;
+            const factor = FACT_MIN - (num - median) * k;
+            cell.style.backgroundColor = getColorHex(topColorHex, factor);
         }
-        // If num === median → no color applied (keeps white)
+        // num === median → stays white
     }
 }
 
@@ -892,7 +927,7 @@ document.addEventListener('DOMContentLoaded', () => {
     syncShowByDisabled();
 
     // Draw heatmap gradient
-    drawHeatmapLegend(60, 280);  // yellow to purple
+    drawHeatmapLegend();  // yellow to purple
 
 
 });
