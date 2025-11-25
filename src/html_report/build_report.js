@@ -162,14 +162,7 @@ function buildTable(data) {
         const label = String(rowData[0] ?? '').toLowerCase();
         const isTotal = label.includes('(total)');
         const isMiningTool = label === 'mining_tool';
-        const isCompTotal =
-            label === '# bgcs (complete)' ||
-            label === '# bgcs (incomplete)' ||
-            label === '# bgcs (unknown completeness)' ||
-            label === 'mean bgc length (complete)' ||
-            label === 'mean bgc length (incomplete)' ||
-            label === 'mean bgc length (unknown completeness)';
-        if (!isTotal && !isMiningTool && !isCompTotal) {
+        if (!isTotal && !isMiningTool) {
             row.classList.add('extended-row');
         }
 
