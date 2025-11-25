@@ -492,7 +492,7 @@ const METRIC_BASE = {
 let currentMetricKey = 'bgcs';
 
 function metricLabel(base, inside) {
-    // e.g. base="# BGCs", inside="total"
+    // e.g. base="# BGCs", inside="Total"
     return `${base} (${inside})`;
 }
 
@@ -558,11 +558,11 @@ function buildBarPlotDynamic(data) {
     let datasets = [];
 
     if (mode === 'total') {
-        const row = getRowByLabel(data, metricLabel(metricBase, 'total'));
+        const row = getRowByLabel(data, metricLabel(metricBase, 'Total'));
         if (row) {
             const counts = row.slice(1, colEnd).map(v => parseInt(v, 10));
             datasets.push({
-                label: metricLabel(metricBase, 'total'),
+                label: metricLabel(metricBase, 'Total'),
                 data: counts,
                 backgroundColor: '#322b7a'
             });
@@ -651,11 +651,11 @@ function buildBarPlotDynamic(data) {
         } else {
             // fallback: if user selected "Show by" but no boxes,
             // just show the *current metric* total to avoid an empty chart.
-            const row = getRowByLabel(data, metricLabel(metricBase, 'total'));
+            const row = getRowByLabel(data, metricLabel(metricBase, 'Total'));
             if (row) {
                 const counts = row.slice(1, colEnd).map(v => parseInt(v, 10));
                 datasets.push({
-                    label: metricLabel(metricBase, 'total'),
+                    label: metricLabel(metricBase, 'Total'),
                     data: counts,
                     backgroundColor: '#322b7a'
                 });

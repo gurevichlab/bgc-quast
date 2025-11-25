@@ -16,11 +16,11 @@ basic_report:
   grouping_dimensions:
     product_type:
       include_total: true
-      order: ["total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid",
+      order: ["Total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid",
        "Hybrid"]
     completeness:
       include_total: true
-      order: ["total", "Complete", "Incomplete", "Unknown completeness"]
+      order: ["Total", "Complete", "Incomplete", "Unknown completeness"]
 
   grouping_combinations: [["product_type", "completeness"]]
 
@@ -52,11 +52,11 @@ compare_to_reference:
   grouping_dimensions:
     product_type:
       include_total: true
-      order: ["total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid",
+      order: ["Total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid",
        "Hybrid"]
     completeness:
       include_total: true
-      order: ["total", "Complete", "Incomplete", "Unknown completeness"]
+      order: ["Total", "Complete", "Incomplete", "Unknown completeness"]
 
   grouping_combinations: [["product_type", "completeness"]]
 
@@ -73,11 +73,11 @@ compare_tools:
   grouping_dimensions:
     product_type:
       include_total: true
-      order: ["total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid",
+      order: ["Total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid",
        "Hybrid"]
     completeness:
       include_total: true
-      order: [ "total", "Complete", "Incomplete", "Unknown completeness" ]
+      order: [ "Total", "Complete", "Incomplete", "Unknown completeness" ]
 
   grouping_combinations: [ [ "product_type", "completeness" ] ]
   
@@ -106,11 +106,11 @@ compare_samples:
   grouping_dimensions:
     product_type:
       include_total: true
-      order: ["total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid",
+      order: ["Total", "NRPS", "PKS", "RiPP", "Terpene", "Saccharide", "Alkaloid",
        "Hybrid"]
     sample_group:
       include_total: true
-      order: ["total", "group_A", "group_B", "group_C"]
+      order: ["Total", "group_A", "group_B", "group_C"]
   
 
 # Global settings

@@ -120,7 +120,7 @@ class DataFrameTableBuilder:
         if grouping_parts:
             label = f"{metric_display} ({', '.join(grouping_parts)})"
         else:
-            label = f"{metric_display} (total)"
+            label = f"{metric_display} (Total)"
 
         return label, tuple(sort_key_parts)
 
