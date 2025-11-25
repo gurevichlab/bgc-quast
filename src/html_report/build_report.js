@@ -760,6 +760,83 @@ function buildBarPlotDynamic(data) {
 
 
 /* ---------------------------------------------------------------------------
+ * PLOT DOWNLOADING
+ * ------------------------------------------------------------------------- */
+function exportPlotWithLegend() {
+    const chartCanvas = document.getElementById('bgcBarPlot');
+    const legendContainer = document.getElementById('bgcLegend');
+
+    if (!chartCanvas || !legendContainer) return;
+    if (!bgcChart) return;
+
+    const legendItems = Array.from(legendContainer.querySelectorAll('div'));
+    const hasLegend = legendItems.length > 0;
+
+    // Base dimensions from the existing chart canvas
+    const chartWidth = 1200;   // actual pixel width
+    const chartHeight = chartCanvas.height; // actual pixel height
+
+    // Simple layout constants for the legend area
+    const legendPaddingX = 0;
+    const legendPaddingY = 150;
+    const legendLineHeight = 50;
+    const legendSwatchSize = 14;
+    const legendWidth = 650
+
+    // Create an off-screen canvas
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = chartWidth + (hasLegend ? legendWidth + legendPaddingX : 0);
+    exportCanvas.height = chartHeight;
+
+    const ctx = exportCanvas.getContext('2d');
+
+    // White background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+    // Draw the barplot
+    ctx.drawImage(chartCanvas, 0, 0);
+
+    // Draw the legend on the right
+    if (hasLegend) {
+        let x0 = chartWidth + legendPaddingX;
+        let y0 = legendPaddingY;
+
+        ctx.font = '32px Arial';
+        ctx.textBaseline = 'middle';
+
+        legendItems.forEach((item, idx) => {
+            const swatch = item.querySelector('.plot-legend-swatch');
+            if (!swatch) return;
+
+            const color = window.getComputedStyle(swatch).backgroundColor;
+            const labelText = item.textContent.trim();
+            const y = y0 + idx * legendLineHeight;
+
+            // Swatch
+            ctx.fillStyle = color;
+            ctx.fillRect(x0, y - legendSwatchSize / 2, legendSwatchSize, legendSwatchSize);
+            ctx.strokeStyle = '#696969';
+            ctx.strokeRect(x0, y - legendSwatchSize / 2, legendSwatchSize, legendSwatchSize);
+
+            // Text
+            ctx.fillStyle = '#000000';
+            ctx.fillText(labelText, x0 + legendSwatchSize + 6, y);
+        });
+    }
+
+    // Trigger browser download
+    const link = document.createElement('a');
+    link.href = exportCanvas.toDataURL('image/png');
+    link.download = 'bgc-quast_barplot.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+
+
+/* ---------------------------------------------------------------------------
  * PAGE INITIALIZATION & EVENT WIRING
  * ------------------------------------------------------------------------- */
 document.addEventListener('DOMContentLoaded', () => {
@@ -921,6 +998,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 buildBarPlotDynamic(reportData);
             }
         });
+    }
+
+    // Download button: export plot + legend as a single PNG
+    const dlBtn = document.getElementById('downloadPlotWithLegend');
+    if (dlBtn) {
+        dlBtn.addEventListener('click', exportPlotWithLegend);
     }
 
     // Initialize disabled/enabled state on first load

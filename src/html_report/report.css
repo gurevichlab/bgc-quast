@@ -263,7 +263,28 @@ td.ref-empty {
     box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
 }
 
+/* Download button */
+#downloadPlotWithLegend {
+    padding: 6px 14px;
+    background: #ffffff;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
 
+#downloadPlotWithLegend:hover {
+    background: #e9e9f3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    border-color: #bbb;
+}
+}
+
+#downloadPlotWithLegend:active {
+    background: #e9e9f3;
+}
 /* Legend + canvas row inside the chart-wrap */
 .plot-flex-row {
     display: flex;
@@ -431,7 +452,7 @@ label:has(input:disabled) {
 #completenessFilterGroup input[type="checkbox"]::after {
   content: "✓";
   color: #ffffff;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: bold;
   position: absolute;
   top: 50%;
