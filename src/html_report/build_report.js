@@ -167,7 +167,7 @@ const allNumericCells = [];
  * TABLE BUILDER (main report table + extended rows)
  * ------------------------------------------------------------------------- */
 const isReferenceMode = (typeof reportMode !== 'undefined' && reportMode === "compare_to_reference");
-
+let includeReferenceInHeatmap = false;
 /**
  * Build the main report table and insert it into #reportTableContainer.
  * @param {Array[]} data - 2D array representing the report pivot table.
@@ -233,27 +233,32 @@ function buildTable(data) {
 
             // Only collect numeric values for heatmap
             if (j > 0) {
-                const num = parseFloat(cell);
-                if (!isNaN(num)) {
-                    // Special handling for reference-column cells in Reference mode
-                    const isLastCol = (j === rowData.length - 1);
-                    const rowLabel = String(rowData[0] ?? '');
-                    const isBGCRow = rowLabel.startsWith('# BGCs');
-                    const isMeanRow = rowLabel.startsWith('Mean BGC length');
+                const rowLabel = String(rowData[0] ?? '');
+                const isBGCRow  = rowLabel.startsWith('# BGCs');
+                const isMeanRow = rowLabel.startsWith('Mean BGC length');
+                const isLastCol = (j === rowData.length - 1);
 
-                    if (isReferenceMode && isLastCol) {
-                        // Don't include the reference column value in numericCells/values (remove it from the heatmap)
-                        // - For non-BGC/Mean rows, also hide the 0 and make the cell visually empty.
-                        if (!isBGCRow && !isMeanRow) {
-                            td.textContent = '';
-                            td.classList.add('ref-empty');  // optional, for styling
-                        }
-                        // BGC / Mean rows keep their text, but are still excluded from heatmap.
-                    } else {
-                        // Normal data cell → use it for heatmap
+                // First: check if the cell is numeric at all
+                const num = parseFloat(cell);
+                if (Number.isNaN(num)) {
+                    // Exclude non-numeric cells
+                } else if (isReferenceMode && isLastCol && !isBGCRow && !isMeanRow) {
+                    // Reference mode, last column, numeric row that is NOT
+                    // "# BGCs" or "Mean BGC length" → make it look like "no column"
+                    td.textContent = '';
+                    td.classList.add('ref-empty');
+                } else if (isReferenceMode && isLastCol && (isBGCRow || isMeanRow)) {
+                    // Reference column for "# BGCs" / "Mean BGC length":
+                    //   - text always visible
+                    //   - only participate in heatmap when toggle is on
+                    if (includeReferenceInHeatmap) {
                         numericCells.push(td);
                         numericValues.push(num);
                     }
+                } else {
+                    // Normal numeric cell → always part of the heatmap
+                    numericCells.push(td);
+                    numericValues.push(num);
                 }
             }
 
@@ -889,6 +894,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // Include-reference toggle
+    const includeRefToggle = document.getElementById('heatmapIncludeRef');
+    if (includeRefToggle) {
+        const includeRefLabel = includeRefToggle.closest('label');
+        if (!isReferenceMode) {
+            // Hide the whole label+checkbox outside reference mode
+            if (includeRefLabel) includeRefLabel.style.display = 'none';
+        } else {
+            includeRefToggle.addEventListener('change', () => {
+                includeReferenceInHeatmap = includeRefToggle.checked;
+                // Rebuild table so allNumericCells is recomputed
+                const container = document.getElementById('reportTableContainer');
+                container.innerHTML = '';
+                buildTable(reportData);
+            });
+        }
+    }
 
 
     // Metric tabs: which ones are visible depends on running mode
