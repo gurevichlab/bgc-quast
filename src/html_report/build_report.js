@@ -910,7 +910,7 @@ function initVennPanel(panel, metadata) {
     });
 
     // Assemble UI
-    // Left column: the SVG (and optional description)
+    // Left column: the SVG
     const mainRow = document.createElement('div');
     mainRow.className = 'venn-main-row';
 
@@ -1077,9 +1077,8 @@ function exportSvgAsPng(svgElement, filename) {
     if (!svgElement) return;
 
     // Use viewBox if present; otherwise fall back to rendered size
-    const vb = svgElement.viewBox && svgElement.viewBox.baseVal;
-    const width  = 700; // vb && vb.width  ? vb.width  : (svgElement.clientWidth  || 260);
-    const height = 600; // vb && vb.height ? vb.height : (svgElement.clientHeight || 220);
+    const width  = 700;
+    const height = 600;
 
     // Serialize SVG to a string
     const serializer = new XMLSerializer();

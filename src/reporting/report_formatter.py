@@ -194,18 +194,7 @@ class ReportFormatter:
                     out.append(str(v))
             rows.append(out)
 
-        # Collect plots for compare_tools mode ---
-        python_plots = []
-        if data.running_mode.name == "COMPARE_TOOLS":
-            # adjust the directory to wherever you write your PNGs
-            plots_dir = output_path.parent / "venn_overlaps"
-            if plots_dir.exists():
-                python_plots = [
-                    # store paths relative to the HTML file location
-                    str(p.relative_to(output_path.parent))
-                    for p in sorted(plots_dir.glob("*.png"))
-                ]
-
+        # Collect metadata for compare_tools mode ---
         metadata_json = json.dumps(data.metadata, ensure_ascii=False)
         # Load the assets and inject JSON
         asset_dir = Path(__file__).resolve().parent.parent / "html_report"

@@ -4,7 +4,6 @@ from typing import List, Optional
 
 import src.compare_to_ref_analyzer as compare_to_ref_analyzer
 from src.compare_tools_analyzer import compute_uniqueness
-from src.visualization.venn_diagram import generate_pairwise_venn_diagrams
 import src.input_utils as input_utils
 from src.config import Config
 from src.genome_mining_result import GenomeMiningResult, QuastResult
@@ -111,20 +110,11 @@ class ReportBuilder:
             )
             metrics.extend(mode_metrics_calculator.calculate_metrics())
 
-            # Venn diagrams
-            venn_paths = generate_pairwise_venn_diagrams(
-                meta=meta,  # uses meta["pairwise_by_tool"]
-                output_dir=config.output_config.output_dir,
-                threshold=config.compare_tools_overlap_threshold,
-                subfolder="venn_overlaps",
-            )
-
             # keep in metadata so users/finders can locate them
             metadata.update({
                 "compare_tools_overlap_threshold": config.compare_tools_overlap_threshold,
                 "totals_by_tool": meta.get("totals_by_tool", {}),
                 "pairwise_by_tool": meta.get("pairwise_by_tool", {}),
-                "compare_tools_venn_images": [str(p) for p in venn_paths],
             })
 
         elif running_mode == RunningMode.COMPARE_SAMPLES:

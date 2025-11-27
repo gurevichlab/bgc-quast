@@ -319,15 +319,6 @@ td.ref-empty {
     grid-template-columns: 1fr;  /* no right column reserved */
 }
 
-.python-plot {
-    flex: 1 1 calc(33% - 20px);
-    max-width: calc(33% - 20px);     /* at most 3 per row */
-    height: auto;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background: white;
-}
-
 /* Barplot control buttons */
 .barplot-controls {
   display: flex;
