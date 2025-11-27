@@ -875,11 +875,11 @@ function initVennPanel(panel, metadata) {
     wrapper.className = 'venn-wrapper';
 
     // Checkbox controls
-    const controls = document.createElement('div');
+    const controls = document.createElement('fieldset');
     controls.className = 'venn-controls';
 
-    const label = document.createElement('span');
-    label.textContent = 'Choose two tools:';
+    const label = document.createElement('legend');
+    label.textContent = 'Genome mining tools (max. 2)';
     controls.appendChild(label);
 
     const boxContainer = document.createElement('span');

@@ -379,15 +379,27 @@ td.ref-empty {
 .venn-controls {
     font-size: 14px;
     margin-bottom: 4px;
+
+    /* Copy of .barplot-controls fieldset */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px 10px;
+}
+
+.venn-controls legend {
+    font-weight: 600;
+    font-size: 14px;
 }
 
 .venn-checkboxes label {
     margin-right: 10px;
     cursor: pointer;
+    font-weight: 400;
 }
 
 .venn-checkboxes input {
     margin-right: 3px;
+    font-weight: 400;
 }
 
 .venn-title {
@@ -419,7 +431,7 @@ td.ref-empty {
   height: 14px;
   border-radius: 2px;
   border: 2px solid #322b7a;
-  background: #ffffff;
+  background: #EDF2F4;
   cursor: pointer;
   position: relative;
   display: inline-block;
