@@ -927,7 +927,11 @@ function initVennPanel(panel, metadata) {
 
     wrapper.appendChild(title);
     wrapper.appendChild(mainRow);
-    wrapper.appendChild(downloadBtn);
+
+    // Insert download button BELOW the legend inside the right column
+    rightCol.appendChild(downloadBtn);
+
+    // Finally attach wrapper to panel
     panel.appendChild(wrapper);
 
     // Create one checkbox per tool
