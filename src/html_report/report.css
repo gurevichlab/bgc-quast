@@ -354,10 +354,35 @@ td.ref-empty {
 
 
 /* VENN DIAGRAM */
+.venn-main-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+.venn-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.venn-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+/* Make the checkboxes vertical */
+.venn-checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
 .venn-wrapper {
     display: inline-flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 50px;
 }
 
 .venn-controls {
@@ -378,6 +403,7 @@ td.ref-empty {
     text-align: center;
     font-weight: 600;
     font-size: 16px;
+    margin-bottom: 1px;
 }
 
 .venn-svg {
@@ -533,5 +559,29 @@ label:has(input:disabled) {
 }
 
 #downloadPlotWithLegend:active {
+    background: #e9e9f3;
+}
+
+/* ----- DOWNLOAD BUTTON FOR VENN ----- */
+#downloadVennPlot {
+    padding: 6px 14px;
+    background: #ffffff;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    align-self: center;
+    margin-top: 4px;
+}
+
+#downloadVennPlot:hover {
+    background: #e9e9f3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    border-color: #bbb;
+}
+
+#downloadVennPlot:active {
     background: #e9e9f3;
 }

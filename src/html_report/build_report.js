@@ -279,7 +279,7 @@ function buildTable(data) {
  * BAR CHART BUILDER (Chart.js) – totals / by type / by completeness
  * ------------------------------------------------------------------------- */
 
-// --- product colors (modifiable) ---
+//product colors (modifiable
 const productColors = {
     'NRPS': '#2e8b57',
     'PKS': '#f4a460',
@@ -763,8 +763,10 @@ function buildBarPlotDynamic(data) {
     renderExternalLegend(bgcChart);
 }
 
+
+
 /* ---------------------------------------------------------------------------
- * VEN DIAGRAM BUILDER
+ * VENN DIAGRAM BUILDER
  * ------------------------------------------------------------------------- */
 // Normalize tool names so they display consistently in the Venn diagram
 function normalizeToolLabel(name) {
@@ -809,6 +811,8 @@ function drawVenn(svg, toolA, toolB, pairwiseByTool, threshold) {
         c.setAttribute('r', r);
         c.setAttribute('fill', fill);
         c.setAttribute('fill-opacity', '0.7');
+        c.setAttribute('stroke', '#333333');
+        c.setAttribute('stroke-width', '1');
         svg.appendChild(c);
     };
 
@@ -819,6 +823,7 @@ function drawVenn(svg, toolA, toolB, pairwiseByTool, threshold) {
         t.setAttribute('text-anchor', 'middle');
         t.setAttribute('dominant-baseline', 'middle');
         t.setAttribute('font-size', size);
+        t.setAttribute('font-family', 'Arial, sans-serif');
         t.textContent = text;
         svg.appendChild(t);
     };
@@ -833,15 +838,19 @@ function drawVenn(svg, toolA, toolB, pairwiseByTool, threshold) {
     makeText(130, 110, `${leftNonUni} / ${rightNonUni}`);
 
     // labels
-    makeText(100, 190, labelA, 13);
-    makeText(160, 190, labelB, 13);
+    makeText(90, 200, labelA, 13);
+    makeText(180, 200, labelB, 13);
 
     // title
-    const title = svg.parentElement.querySelector('.venn-title');
-    if (title) {
-        const thrPct = (typeof threshold === 'number') ? Math.round(threshold * 100) : null;
-        title.textContent = `Overlap between ${labelA} and ${labelB}` +
-            (thrPct != null ? ` (overlap threshold = ${thrPct}%)` : '');
+    const wrapper = svg.closest('.venn-wrapper');
+    if (wrapper) {
+        const titleEl = wrapper.querySelector('.venn-title');
+        if (titleEl) {
+            const thrPct = (typeof threshold === 'number') ? Math.round(threshold * 100) : null;
+            titleEl.textContent =
+                `Overlap between ${labelA} and ${labelB}` +
+                (thrPct != null ? ` (overlap threshold = ${thrPct}%)` : '');
+        }
     }
 }
 
@@ -877,19 +886,49 @@ function initVennPanel(panel, metadata) {
     boxContainer.className = 'venn-checkboxes';
     controls.appendChild(boxContainer);
 
+    // Title above the SVG (also updated by drawVenn)
     const title = document.createElement('div');
     title.className = 'venn-title';
     title.textContent = 'Select two tools to see overlap.';
 
+    // The SVG that will hold the circles/text
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.classList.add('venn-svg');
 
-    wrapper.appendChild(controls);
-    wrapper.appendChild(title);
-    wrapper.appendChild(svg);
-    panel.appendChild(wrapper);
-
+    // Track which tools are selected, and the current filename for download
     const selected = [];
+    let currentFilename = 'bgc-quast_venn.png';
+
+    // Download button for the Venn plot
+    const downloadBtn = document.createElement('button');
+    downloadBtn.id = 'downloadVennPlot';
+    downloadBtn.textContent = 'Plot Download';
+    downloadBtn.addEventListener('click', () => {
+        // Do nothing if no diagram yet (no tools selected or not 2 selected)
+        if (!svg.firstChild) return;
+        exportSvgAsPng(svg, currentFilename);
+    });
+
+    // Assemble UI
+    // Left column: the SVG (and optional description)
+    const mainRow = document.createElement('div');
+    mainRow.className = 'venn-main-row';
+
+    const leftCol = document.createElement('div');
+    leftCol.className = 'venn-left';
+    leftCol.appendChild(svg);
+
+    const rightCol = document.createElement('div');
+    rightCol.className = 'venn-right';
+    rightCol.appendChild(controls);
+
+    mainRow.appendChild(leftCol);
+    mainRow.appendChild(rightCol);
+
+    wrapper.appendChild(title);
+    wrapper.appendChild(mainRow);
+    wrapper.appendChild(downloadBtn);
+    panel.appendChild(wrapper);
 
     // Create one checkbox per tool
     tools.forEach(tool => {
@@ -917,7 +956,6 @@ function initVennPanel(panel, metadata) {
                 if (idx !== -1) selected.splice(idx, 1);
             }
 
-            // disable extra checkboxes when 2 chosen
             const all = boxContainer.querySelectorAll('input[type="checkbox"]');
             all.forEach(other => {
                 if (!other.checked) {
@@ -928,12 +966,28 @@ function initVennPanel(panel, metadata) {
             });
 
             if (selected.length === 2) {
-                drawVenn(svg, selected[0], selected[1], pairwise,
-                         metadata && metadata.compare_tools_overlap_threshold);
+                drawVenn(
+                    svg,
+                    selected[0],
+                    selected[1],
+                    pairwise,
+                    metadata && metadata.compare_tools_overlap_threshold
+                );
+
+                const thr = metadata && metadata.compare_tools_overlap_threshold;
+                const thrPct = (typeof thr === 'number') ? Math.round(thr * 100) : null;
+
+                const safeA = normalizeToolLabel(selected[0]).replace(/\s+/g, '');
+                const safeB = normalizeToolLabel(selected[1]).replace(/\s+/g, '');
+
+                currentFilename = (thrPct != null)
+                    ? `venn_${safeA}_vs_${safeB}_${thrPct}.png`
+                    : `venn_${safeA}_vs_${safeB}.png`;
+
             } else {
-                // clear svg + reset title
                 while (svg.firstChild) svg.removeChild(svg.firstChild);
                 title.textContent = 'Select two tools to see overlap.';
+                currentFilename = 'bgc-quast_venn.png';
             }
         });
     });
@@ -1014,6 +1068,52 @@ function exportPlotWithLegend() {
     link.click();
     document.body.removeChild(link);
 }
+
+/* ---------------------------------------------------------------------------
+ * VENN DIAGRAM DOWNLOADING
+ * ------------------------------------------------------------------------- */
+// Export a single SVG element (e.g. the Venn diagram) as a PNG file
+function exportSvgAsPng(svgElement, filename) {
+    if (!svgElement) return;
+
+    // Use viewBox if present; otherwise fall back to rendered size
+    const vb = svgElement.viewBox && svgElement.viewBox.baseVal;
+    const width  = 700; // vb && vb.width  ? vb.width  : (svgElement.clientWidth  || 260);
+    const height = 600; // vb && vb.height ? vb.height : (svgElement.clientHeight || 220);
+
+    // Serialize SVG to a string
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(svgElement);
+
+    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+
+    const img = new Image();
+    img.onload = function () {
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        // White background so exported PNG isn’t transparent
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+
+        URL.revokeObjectURL(url);
+
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = filename || 'bgc-quast_venn.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    img.src = url;
+}
+
+
 
 
 /* ---------------------------------------------------------------------------
