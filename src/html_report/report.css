@@ -1,3 +1,5 @@
+/* ----- PAGE LAYOUT ----- */
+
 /* Entire page layout using Flexbox */
 html, body {
     height: 100%;
@@ -16,6 +18,7 @@ html, body {
     font-size: 14px;
 }
 
+/* ----- REPORT LAYOUT ----- */
 /* Content area: table and plot */
 #reportLayout {
     display: flex;
@@ -74,6 +77,7 @@ html, body {
   text-shadow: 3px 3px 4px rgba(0,0,0,0.6);
 }
 
+/* GitHub link */
 .github-link a {
   color: var(--bar-text);
   text-decoration: none;
@@ -94,7 +98,7 @@ html, body {
 }
 
 
-/* Table styling (unchanged) */
+/* ----- TABLE STYLING ----- */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -202,7 +206,8 @@ td.ref-empty {
     justify-content: space-between;
 }
 
-/* Barplot */
+
+/* ----- BARPLOT STYLING ----- */
 
 .plot-and-controls {
   flex: 0 0 420px;
@@ -263,27 +268,7 @@ td.ref-empty {
     box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
 }
 
-/* Download button */
-#downloadPlotWithLegend {
-    padding: 6px 14px;
-    background: #ffffff;
-    border: 1px solid #d0d0d0;
-    border-radius: 6px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.15s ease-in-out;
-}
 
-#downloadPlotWithLegend:hover {
-    background: #e9e9f3;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-    border-color: #bbb;
-}
-
-#downloadPlotWithLegend:active {
-    background: #e9e9f3;
-}
 /* Legend + canvas row inside the chart-wrap */
 .plot-flex-row {
     display: flex;
@@ -307,7 +292,6 @@ td.ref-empty {
     border: 1px solid #696969;
     display: inline-block;
 }
-
 
 #bgcLegend {
     display: flex;
@@ -490,4 +474,27 @@ label:has(input:disabled) {
 .barplot-controls input[type="radio"]:checked::after {
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
+}
+
+
+/* ----- DOWNLOAD BUTTON ----- */
+#downloadPlotWithLegend {
+    padding: 6px 14px;
+    background: #ffffff;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
+
+#downloadPlotWithLegend:hover {
+    background: #e9e9f3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    border-color: #bbb;
+}
+
+#downloadPlotWithLegend:active {
+    background: #e9e9f3;
 }
