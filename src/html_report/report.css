@@ -160,7 +160,7 @@ td.ref-empty {
   border: none;
   background: #322b7a;
   color: #fff;
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(0,0,0,0.25);
   transition: background 0.15s ease, transform 0.1s ease,
@@ -279,7 +279,7 @@ td.ref-empty {
 /* Left column: legend */
 .plot-legend-column {
     flex: 0 0 190px;
-    font-size: 13px;
+    font-size: 14px;
     color: #696969;
     margin-top: 40px;
 }
@@ -353,10 +353,44 @@ td.ref-empty {
 }
 
 
+/* VENN DIAGRAM */
+.venn-wrapper {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.venn-controls {
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.venn-checkboxes label {
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.venn-checkboxes input {
+    margin-right: 3px;
+}
+
+.venn-title {
+    text-align: center;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.venn-svg {
+    width: 500px;
+    height: 400px;
+}
+
+/* CHECKBOXES AND BUTTONS */
 /* Fancy small controls (checkboxes + radio buttons) */
 /* Base style for custom checkboxes & radios */
 .heatmap-controls input[type="checkbox"],
 .barplot-controls input[type="checkbox"],
+.venn-checkboxes input[type="checkbox"],
 #typeFilterGroup input[type="checkbox"],
 #completenessFilterGroup input[type="checkbox"],
 .barplot-controls input[type="radio"] {
@@ -387,6 +421,7 @@ td.ref-empty {
 /* Hover feedback */
 .heatmap-controls input[type="checkbox"]:hover,
 .barplot-controls input[type="checkbox"]:hover,
+.venn-checkboxes input[type="checkbox"]:hover,
 #typeFilterGroup input[type="checkbox"]:hover,
 #completenessFilterGroup input[type="checkbox"]:hover,
 .barplot-controls input[type="radio"]:hover {
@@ -396,6 +431,7 @@ td.ref-empty {
 /* Focus ring for keyboard users */
 .heatmap-controls input[type="checkbox"]:focus-visible,
 .barplot-controls input[type="checkbox"]:focus-visible,
+.venn-checkboxes input[type="checkbox"]:focus-visible,
 #typeFilterGroup input[type="checkbox"]:focus-visible,
 #completenessFilterGroup input[type="checkbox"]:focus-visible,
 .barplot-controls input[type="radio"]:focus-visible {
@@ -406,6 +442,7 @@ td.ref-empty {
 /* Checked state */
 .heatmap-controls input[type="checkbox"]:checked,
 .barplot-controls input[type="checkbox"]:checked,
+.venn-checkboxes input[type="checkbox"]:checked,
 #typeFilterGroup input[type="checkbox"]:checked,
 #completenessFilterGroup input[type="checkbox"]:checked {
   background: #322b7a;
@@ -426,9 +463,9 @@ label:has(input:disabled) {
     opacity: 0.6;
 }
 
-/* Custom checkmark for checkboxes */
 .heatmap-controls input[type="checkbox"]::after,
 .barplot-controls input[type="checkbox"]::after,
+.venn-checkboxes input[type="checkbox"]::after,
 #typeFilterGroup input[type="checkbox"]::after,
 #completenessFilterGroup input[type="checkbox"]::after {
   content: "✓";
@@ -446,6 +483,7 @@ label:has(input:disabled) {
 /* Show the tick when checked */
 .heatmap-controls input[type="checkbox"]:checked::after,
 .barplot-controls input[type="checkbox"]:checked::after,
+.venn-checkboxes input[type="checkbox"]:checked::after,
 #typeFilterGroup input[type="checkbox"]:checked::after,
 #completenessFilterGroup input[type="checkbox"]:checked::after {
   opacity: 1;
@@ -475,7 +513,6 @@ label:has(input:disabled) {
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
 }
-
 
 /* ----- DOWNLOAD BUTTON ----- */
 #downloadPlotWithLegend {

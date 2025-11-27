@@ -206,8 +206,7 @@ class ReportFormatter:
                     for p in sorted(plots_dir.glob("*.png"))
                 ]
 
-        python_plots_json = json.dumps(python_plots, ensure_ascii=False)
-
+        metadata_json = json.dumps(data.metadata, ensure_ascii=False)
         # Load the assets and inject JSON
         asset_dir = Path(__file__).resolve().parent.parent / "html_report"
         logo_path = asset_dir / "github-mark-white.svg"
@@ -226,7 +225,7 @@ class ReportFormatter:
             .replace("{{ script_js }}", script_js)
             .replace("{{ report_json }}", data_json)
             .replace("{{ report_mode }}", mode)
-            .replace("{{ python_plots }}", python_plots_json)
+            .replace("{{ metadata_json }}", metadata_json)
             .replace("{{ github_logo }}", logo_data_uri)
         )
 
