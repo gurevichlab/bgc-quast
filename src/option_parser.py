@@ -92,11 +92,16 @@ def add_advanced_arguments(parser: argparse.ArgumentParser):
         "--overlap-threshold", "-thr",
         dest="compare_tools_overlap_threshold",
         type=float,
-        default=None,  # None means "use Config’s default (0.90)"
+        default=None,
         metavar="FLOAT",
-        help=("Overlap threshold in [0,1] for Compare-Tools uniqueness "
-              "(directional coverage |A∩B|/|A|). "
-              "If omitted, defaults to the run config value (0.90)."),
+        help="BGC overlap threshold in (0,1] for COMPARE-TOOLS mode (default: 0.9)",
+    )
+
+    advanced_input_group.add_argument(
+        "--edge-distance", "-dist",
+        dest="bgc_completeness_margin",
+        type=int,
+        help="Margin (in bp) from contig edges used to classify BGC completeness (default: 100)",
     )
 
 

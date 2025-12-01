@@ -11,3 +11,4 @@ product_yamls:
 
 bgc_completeness_margin: 100
 allowed_gap_for_fragmented_recovery: 100
+compare_tools_overlap_threshold: 0.9
