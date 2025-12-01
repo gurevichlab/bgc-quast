@@ -89,7 +89,7 @@ def add_advanced_arguments(parser: argparse.ArgumentParser):
     )
 
     advanced_input_group.add_argument(
-        "--overlap-threshold", "-thr",
+        "--overlap-threshold", "-O",
         dest="compare_tools_overlap_threshold",
         type=float,
         default=None,
@@ -98,7 +98,7 @@ def add_advanced_arguments(parser: argparse.ArgumentParser):
     )
 
     advanced_input_group.add_argument(
-        "--edge-distance", "-dist",
+        "--edge-distance", "-D",
         dest="bgc_completeness_margin",
         type=int,
         help="Margin (in bp) from contig edges used to classify BGC completeness (default: 100)",
