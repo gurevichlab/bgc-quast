@@ -68,7 +68,7 @@ def add_advanced_arguments(parser: argparse.ArgumentParser):
 
     advanced_input_group.add_argument(
         "--genome",
-        "-G",
+        "-g",
         help="Path to the genome FASTA or GenBank file; "
         "if genome mining results are provided for multiple genomes, "
         "this argument can accept multiple paths.",
@@ -98,7 +98,7 @@ def add_advanced_arguments(parser: argparse.ArgumentParser):
     )
 
     advanced_input_group.add_argument(
-        "--edge-distance", "-D",
+        "--edge-distance", "-d",
         dest="bgc_completeness_margin",
         type=int,
         help="Margin (in bp) from contig edges used to classify BGC completeness (default: 100)",
