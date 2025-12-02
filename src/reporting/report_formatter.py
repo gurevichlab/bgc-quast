@@ -195,7 +195,12 @@ class ReportFormatter:
             rows.append(out)
 
         # Collect metadata for compare_tools mode ---
-        metadata_json = json.dumps(data.metadata, ensure_ascii=False)
+        if data.running_mode.value == "compare_tools":
+            metadata_to_dump = data.metadata
+        else:
+            # For now we don't expose metadata in other modes
+            metadata_to_dump = {}
+        metadata_json = json.dumps(metadata_to_dump, ensure_ascii=False)
         # Load the assets and inject JSON
         asset_dir = Path(__file__).resolve().parent.parent / "html_report"
         logo_path = asset_dir / "github-mark-white.svg"
