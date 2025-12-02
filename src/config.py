@@ -34,9 +34,9 @@ class Config:
     magic_str: str  # just a placeholder for future expansion of the config
     output_config: OutputConfig
     product_mapping_config: ProductMappingConfig
-    bgc_completeness_margin: int
     allowed_gap_for_fragmented_recovery: int
-    compare_tools_overlap_threshold: float = 0.9
+    bgc_completeness_margin: int
+    compare_tools_overlap_threshold: float
 
 
 def get_default_output_dir(cfg: dict) -> Path:
@@ -74,11 +74,14 @@ def load_config(args: Optional[CommandLineArgs] = None) -> Config:
         product_mapping_config=product_mapping_config,
         bgc_completeness_margin=cfg["bgc_completeness_margin"],
         allowed_gap_for_fragmented_recovery=cfg["allowed_gap_for_fragmented_recovery"],
-        # compare_tools_overlap_threshold stays at dataclass default (0.9) unless overridden by CLI below
+        compare_tools_overlap_threshold=cfg["compare_tools_overlap_threshold"],
     )
 
-    # --- NEW: CLI override (only if user provided --overlap-threshold/--thr) ---
+    # CLI override
     if args is not None and getattr(args, "compare_tools_overlap_threshold", None) is not None:
         conf.compare_tools_overlap_threshold = args.compare_tools_overlap_threshold
+
+    if args is not None and getattr(args, "bgc_completeness_margin", None) is not None:
+        conf.bgc_completeness_margin = args.bgc_completeness_margin
 
     return conf

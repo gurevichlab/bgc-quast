@@ -4,7 +4,6 @@ from typing import List, Optional
 
 import src.compare_to_ref_analyzer as compare_to_ref_analyzer
 from src.compare_tools_analyzer import compute_uniqueness
-from src.visualization.venn_diagram import generate_pairwise_venn_diagrams
 import src.input_utils as input_utils
 from src.config import Config
 from src.genome_mining_result import GenomeMiningResult, QuastResult
@@ -73,7 +72,7 @@ class ReportBuilder:
                 raise ValueError(
                     "No configuration found for running mode: compare_to_reference"
                 )
-            
+
             reference_bgcs = compare_to_ref_analyzer.compute_coverage(
                 results,
                 reference_genome_mining_result,  # type: ignore
@@ -86,6 +85,14 @@ class ReportBuilder:
                 config=mode_config,
             )
             metrics.extend(mode_metrics_calculator.calculate_metrics())
+
+            # Add reference as a third column for basic metrics only
+            if reference_genome_mining_result is not None:
+                ref_basic_calc = BasicMetricsCalculator(
+                    results=[reference_genome_mining_result],
+                    config=report_config,
+                )
+                metrics.extend(ref_basic_calc.calculate_metrics())
 
             metadata.update({"reference_bgcs": reference_bgcs})
 
@@ -103,20 +110,11 @@ class ReportBuilder:
             )
             metrics.extend(mode_metrics_calculator.calculate_metrics())
 
-            # Venn diagrams
-            venn_paths = generate_pairwise_venn_diagrams(
-                meta=meta,  # uses meta["pairwise_by_tool"]
-                output_dir=config.output_config.output_dir,
-                threshold=config.compare_tools_overlap_threshold,
-                subfolder="venn_overlaps",
-            )
-
             # keep in metadata so users/finders can locate them
             metadata.update({
                 "compare_tools_overlap_threshold": config.compare_tools_overlap_threshold,
                 "totals_by_tool": meta.get("totals_by_tool", {}),
                 "pairwise_by_tool": meta.get("pairwise_by_tool", {}),
-                "compare_tools_venn_images": [str(p) for p in venn_paths],
             })
 
         elif running_mode == RunningMode.COMPARE_SAMPLES:
@@ -125,9 +123,15 @@ class ReportBuilder:
 
         # Create DataFrame.
         df = create_dataframe_from_metrics(metrics)
-
         # Create a mapping from file_path to mining_tool
         path_to_tool = {str(r.input_file): r.mining_tool for r in results}
+
+        # Add a mapping for reference as well
+        if reference_genome_mining_result is not None:
+            path_to_tool[str(reference_genome_mining_result.input_file)] = (
+                reference_genome_mining_result.mining_tool
+            )
+
         df["mining_tool"] = df["file_path"].astype(str).map(path_to_tool)
 
         df["file_label"] = df["file_path"].apply(

@@ -39,7 +39,8 @@ def _is_unique_against_candidates(
         raise ValueError(f"The overlap threshold must be in [0,1], got {overlap_threshold}")
 
     for b in candidates:
-        if coverage_of_a_by_b(bgc_a, b) >= overlap_threshold:
+        cov = coverage_of_a_by_b(bgc_a, b)
+        if cov > 0.0 and cov >= overlap_threshold:
             return False
     return True
 
@@ -136,7 +137,8 @@ def compute_uniqueness(
                     continue
                 overlapped_by_B = False
                 for b in by_seq_by_tool.get(seq, {}).get(B_tool, []):
-                    if coverage_of_a_by_b(a, b) >= overlap_threshold:
+                    cov = coverage_of_a_by_b(a, b)
+                    if cov > 0.0 and cov >= overlap_threshold:
                         overlapped_by_B = True
                         break
                 if overlapped_by_B:

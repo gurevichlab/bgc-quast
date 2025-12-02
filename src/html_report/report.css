@@ -1,3 +1,5 @@
+/* ----- PAGE LAYOUT ----- */
+
 /* Entire page layout using Flexbox */
 html, body {
     height: 100%;
@@ -13,28 +15,45 @@ html, body {
     flex-direction: column;
     height: 100%;
     padding: 10px;
+    font-size: 14px;
 }
 
-/* Growable content area: table and plot */
+/* ----- REPORT LAYOUT ----- */
+/* Content area: table and plot */
 #reportLayout {
     display: flex;
-    gap: 0px;
-    flex: 1; /* Takes up remaining vertical space */
+    gap: 100px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+#reportLayout.extended-locked {
+    flex-wrap: nowrap;  /* case when the plot always stays on the right */
 }
 
 #reportLayout > div {
     flex: 1;
 }
 
+#reportLayout > div:first-child {
+    flex: 0 0 700px;   /* left column ~ table */
+}
+
+#reportLayout > div:last-child {
+    flex: 0 0 1000px;   /* right column ~ plot (doesn't grow/shrink with the page change) + controls */
+}
+
 /* Header */
 :root {
-  /* pick your color here */
-  --accent: #050752;
   --bar-text: #ffffff; /* title text color */
 }
 
 .page-header {
-  background: var(--accent);
+  background: linear-gradient(
+  90deg,
+  #322b7a 0%,
+  #515151 100%
+  );
   color: var(--bar-text);
   border: none;
   border-radius: 0;
@@ -43,6 +62,10 @@ html, body {
   margin-right: -10px;
   margin-top: -10px;
   margin-bottom: 12px;
+
+  display: flex;                  /* lay out children in a row */
+  justify-content: space-between; /* title to the left, rest to the right */
+  align-items: center;
 }
 
 .page-header h1 {
@@ -51,30 +74,76 @@ html, body {
   font-size: 32px;
   letter-spacing: 0.2px;
   color: inherit;
+  text-shadow: 3px 3px 4px rgba(0,0,0,0.6);
+}
+
+/* GitHub link */
+.github-link a {
+  color: var(--bar-text);
+  text-decoration: none;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 10px;
+}
+
+.github-link a:hover {
+  text-decoration: underline;
+}
+
+.github-icon {
+  width: 24px;
+  height: 24px;
 }
 
 
-/* Table styling (unchanged) */
-
+/* ----- TABLE STYLING ----- */
 table {
-    width: 80%;
+    width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
+    font-size: 14px;
 }
 
 th, td {
-    border: 1px solid #878686;
+    border: 1px solid #cfcfcf;
     padding: 8px;
     text-align: left;
 }
 
 td {
-    background-color: #f8f9fa;
+    background-color: #ffffff;
 }
 
 th {
-    background-color: #bdd1db;
+    background-color: #ffffff;
+    font-weight: 400;  /* not bold */
 }
+
+/* Top header row bold (column names) */
+tr.column-header-row th {
+    font-weight: 600;
+    background-color: #322b7a;
+    color: #ffffff;
+}
+
+/* Row labels: default normal, totals bold */
+th.row-label {
+    font-weight: 400;
+    background-color: #ffffff;
+}
+
+th.row-label-total {
+    font-weight: 600;
+}
+
+/* Reference mode: cells that should look like "no column" */
+td.ref-empty {
+    border: none;
+    background-color: inherit;
+}
+
 
 /* Table style - rows */
 .extended-row {
@@ -85,8 +154,45 @@ th {
     margin-top: 10px;
 }
 
+#toggleExtendedBtn {
+  padding: 6px 14px;
+  border-radius: 999px;        /* bacilli-shaped */
+  border: none;
+  background: #322b7a;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  transition: background 0.15s ease, transform 0.1s ease,
+              box-shadow 0.15s ease;
+}
 
-/*Heatmap style*/
+#toggleExtendedBtn:hover {
+  background: #3d3495;
+  transform: translateY(-1px); /* lift up a bit */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+}
+
+#toggleExtendedBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+#toggleExtendedBtn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+}
+
+#toggleExtendedBtn.is-collapsed {
+  background: #6c757d;
+}
+
+#toggleExtendedBtn.is-collapsed:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+}
+
+/*Heatmap */
 .heatmap-controls {
     display: flex;
     align-items: center;
@@ -100,31 +206,121 @@ th {
     justify-content: space-between;
 }
 
-/* Barplot */
+
+/* ----- BARPLOT STYLING ----- */
+
 .plot-and-controls {
-  display: flex;
+  flex: 0 0 420px;
+  min-width: 380px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;  /* chart column | controls column */
+  column-gap: 24px;
   align-items: flex-start;
-  gap: 16px;
-  /* Prevent accidental wrapping below the canvas */
-  flex-wrap: nowrap;
-  margin-top: 150px;
+  margin-top: 40px;
+  grid-auto-rows: auto;
 }
 
-.plot-and-controls .chart-wrap {
-  flex: 1 1 720px;   /* <- initial width; grows/shrinks with the layout */
-  min-width: 480px;  /* <- optional floor so it never gets too small */
-  display: block;
+.metric-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
-.plot-and-controls .chart-wrap canvas {
-  display: block;
-  width: 100% !important;
-  height: auto !important; /* keeps aspect ratio unless you later fix height */
+/* Base tab look */
+.metric-tab {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid #ccc;
+    background: #ffffff;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.15s ease,
+                transform 0.1s ease,
+                box-shadow 0.15s ease,
+                border-color 0.15s ease;
 }
 
+/* Hover effect */
+.metric-tab:hover {
+    background: #e9e9f3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    border-color: #bbb;
+}
+
+/* Active tab (selected) */
+.metric-tab.active {
+    background: #322b7a;
+    color: white;
+    border-color: #322b7a;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+
+/* Clicked/pressed state */
+.metric-tab:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+/* Focus ring for tabs (keyboard navigation) */
+.metric-tab:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+}
+
+
+/* Legend + canvas row inside the chart-wrap */
+.plot-flex-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0px;
+}
+
+/* Left column: legend */
+.plot-legend-column {
+    flex: 0 0 190px;
+    font-size: 14px;
+    color: #696969;
+    margin-top: 40px;
+}
+
+.plot-legend-swatch {
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    border: 1px solid #696969;
+    display: inline-block;
+}
+
+#bgcLegend {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Right column: chart takes remaining width */
+.plot-flex-row canvas {
+    flex: 1 1 auto;
+    max-width: 100%;
+    height: auto;
+}
+
+/* Venn diagrams */
+#pythonPlotsPanel {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;    /* allow multiple per row */
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.plot-and-controls.pyplots-mode {
+    grid-template-columns: 1fr;  /* no right column reserved */
+}
+
+/* Barplot control buttons */
 .barplot-controls {
-  /* Keep controls in a narrow column on the right */
-  flex: 0 0 240px;         /* ~240px fixed column */
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -144,15 +340,251 @@ th {
 
 .barplot-controls legend {
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 
-/* Sticky footer */
-#footer {
-    border-top: 1px solid #333;
-    padding-top: 0px;
-    font-size: 15px;
-    text-align: left;
+/* VENN DIAGRAM */
+.venn-main-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
 }
 
+.venn-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.venn-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+/* Make the checkboxes vertical */
+.venn-checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.venn-wrapper {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 50px;
+}
+
+.venn-controls {
+    font-size: 14px;
+    margin-bottom: 4px;
+
+    /* Copy of .barplot-controls fieldset */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px 10px;
+}
+
+.venn-controls legend {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.venn-checkboxes label {
+    margin-right: 10px;
+    cursor: pointer;
+    font-weight: 400;
+}
+
+.venn-checkboxes input {
+    margin-right: 3px;
+    font-weight: 400;
+}
+
+.venn-title {
+    text-align: center;
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 1px;
+}
+
+.venn-svg {
+    width: 500px;
+    height: 400px;
+}
+
+/* CHECKBOXES AND BUTTONS */
+/* Fancy small controls (checkboxes + radio buttons) */
+/* Base style for custom checkboxes & radios */
+.heatmap-controls input[type="checkbox"],
+.barplot-controls input[type="checkbox"],
+.venn-checkboxes input[type="checkbox"],
+#typeFilterGroup input[type="checkbox"],
+#completenessFilterGroup input[type="checkbox"],
+.barplot-controls input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  border: 2px solid #322b7a;
+  background: #EDF2F4;
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+}
+
+/* Radios are round */
+.barplot-controls input[type="radio"] {
+  border-radius: 50%;
+}
+
+/* Hover feedback */
+.heatmap-controls input[type="checkbox"]:hover,
+.barplot-controls input[type="checkbox"]:hover,
+.venn-checkboxes input[type="checkbox"]:hover,
+#typeFilterGroup input[type="checkbox"]:hover,
+#completenessFilterGroup input[type="checkbox"]:hover,
+.barplot-controls input[type="radio"]:hover {
+  box-shadow: 0 0 0 2px rgba(83, 82, 90, 0.25);
+}
+
+/* Focus ring for keyboard users */
+.heatmap-controls input[type="checkbox"]:focus-visible,
+.barplot-controls input[type="checkbox"]:focus-visible,
+.venn-checkboxes input[type="checkbox"]:focus-visible,
+#typeFilterGroup input[type="checkbox"]:focus-visible,
+#completenessFilterGroup input[type="checkbox"]:focus-visible,
+.barplot-controls input[type="radio"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+}
+
+/* Checked state */
+.heatmap-controls input[type="checkbox"]:checked,
+.barplot-controls input[type="checkbox"]:checked,
+.venn-checkboxes input[type="checkbox"]:checked,
+#typeFilterGroup input[type="checkbox"]:checked,
+#completenessFilterGroup input[type="checkbox"]:checked {
+  background: #322b7a;
+  border-color: #322b7a;
+}
+
+/* State is not available */
+input:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+input:disabled::after {
+    opacity: 0;  /* hide tick/dot */
+}
+
+label:has(input:disabled) {
+    opacity: 0.6;
+}
+
+.heatmap-controls input[type="checkbox"]::after,
+.barplot-controls input[type="checkbox"]::after,
+.venn-checkboxes input[type="checkbox"]::after,
+#typeFilterGroup input[type="checkbox"]::after,
+#completenessFilterGroup input[type="checkbox"]::after {
+  content: "✓";
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: bold;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.4);
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+/* Show the tick when checked */
+.heatmap-controls input[type="checkbox"]:checked::after,
+.barplot-controls input[type="checkbox"]:checked::after,
+.venn-checkboxes input[type="checkbox"]:checked::after,
+#typeFilterGroup input[type="checkbox"]:checked::after,
+#completenessFilterGroup input[type="checkbox"]:checked::after {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Inner dot for radio buttons */
+.barplot-controls input[type="radio"]:checked {
+  background: #ffffff;
+  border-color: #322b7a;
+}
+
+.barplot-controls input[type="radio"]::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background: #322b7a;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0.4);
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.barplot-controls input[type="radio"]:checked::after {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* ----- DOWNLOAD BUTTON ----- */
+#downloadPlotWithLegend {
+    padding: 6px 14px;
+    background: #ffffff;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
+
+#downloadPlotWithLegend:hover {
+    background: #e9e9f3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    border-color: #bbb;
+}
+
+#downloadPlotWithLegend:active {
+    background: #e9e9f3;
+}
+
+/* ----- DOWNLOAD BUTTON FOR VENN ----- */
+#downloadVennPlot {
+    padding: 6px 14px;
+    background: #ffffff;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    align-self: center;
+    margin-top: 4px;
+}
+
+#downloadVennPlot:hover {
+    background: #e9e9f3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    border-color: #bbb;
+}
+
+#downloadVennPlot:active {
+    background: #e9e9f3;
+}

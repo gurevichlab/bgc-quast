@@ -14,6 +14,13 @@
     <!-- Header with accent stripe + title -->
     <header class="page-header">
         <h1>BGC-QUAST Report</h1>
+
+        <div class="github-link">
+        <a href="https://github.com/gurevichlab/bgc-quast" target="_blank">
+            <img src="{{ github_logo }}" alt="GitHub" class="github-icon">
+            Visit the GitHub project page
+        </a>
+        </div>
     </header>
 
 
@@ -35,21 +42,42 @@
                 <label>
                     <input type="checkbox" id="heatmapToggle" checked> Show heatmap
                 </label>
+                <label>
+                    <input type="checkbox" id="heatmapIncludeRef"> Include reference
+                </label>
 
 
             </div>
 
-            <div id="reportTableContainer"></div>
             <div class="extended-btn-wrapper">
                 <button id="toggleExtendedBtn">Show Extended Report</button>
             </div>
+
+            <div id="reportTableContainer"></div>
+
         </div>
 
         <!-- The barplot -->
         <div>
             <div class="plot-and-controls">
                 <div class="chart-wrap">
-                    <canvas id="bgcBarPlot"></canvas>
+                    <div class="metric-tabs">
+                        <button class="metric-tab active" data-metric="bgcs">Overview</button>
+                        <button class="metric-tab" data-metric="fully">Fully recovered BGCs</button>
+                        <button class="metric-tab" data-metric="partial">Partially recovered BGCs</button>
+                        <button class="metric-tab" data-metric="missed">Missed BGCs</button>
+                        <button class="metric-tab" data-metric="unique">Unique BGCs</button>
+                        <button class="metric-tab" data-metric="pyplots">BGC overlap plots</button>
+                    </div>
+
+                    <div class="plot-flex-row">
+                        <div id="bgcLegend" class="plot-legend-column"></div>
+                        <canvas id="bgcBarPlot" width="700" height="600"></canvas>
+                    </div>
+
+                    <div id="pythonPlotsPanel" style="display:none">
+                    </div>
+
                 </div>
 
                 <div class="barplot-controls">
@@ -61,13 +89,13 @@
                     <!-- Show-by group (completeness + type) -->
                     <fieldset id="showByGroup">
                         <label><input type="checkbox" id="byCompleteness"> by completeness</label>
-                        <label><input type="checkbox" id="byType"> by type</label>
+                        <label><input type="checkbox" id="byType"> by product</label>
                     </fieldset>
+
 
                     <fieldset id="completenessFilterGroup">
                         <legend>Completeness</legend>
-                        <label><input type="checkbox" id="status_complete" data-status="complete" checked> Complete</label>
-                        <label><input type="checkbox" id="status_incomplete" data-status="incomplete" checked> Incomplete</label>
+                        <!-- JS fills in checkboxes here -->
                     </fieldset>
 
                     <!-- Dynamic product filters (NRP/PKS/RiPP/...) -->
@@ -75,21 +103,20 @@
                         <legend>Products</legend>
                         <!-- JS fills in checkboxes here -->
                     </fieldset>
+
+                     <!-- Download button -->
+                    <button id="downloadPlotWithLegend">Plot Download</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="footer">
-        <p>GitHub Project Page:<br>
-            <a href="https://github.com/gurevichlab/bgc-quast">https://github.com/gurevichlab/bgc-quast</a>
-        </p>
-    </div>
-</div>
 
     <!-- Data injected by Python -->
     <script>
         const reportData = {{ report_json }};
+        const reportMode = "{{ report_mode }}";
+        const reportMetadata = {{ metadata_json }};
     </script>
     <script>
     {{ script_js }}

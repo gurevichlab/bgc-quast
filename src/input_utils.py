@@ -153,10 +153,19 @@ def get_file_label_from_path(file_path: Path) -> str:
             ""
         )  # Remove compression suffix for label extraction
 
+    # Strip primary extension (e.g., .json, .tsv)
     file_path = file_path.with_suffix("")
 
     # TEMPORARY FIX: strip tool/aux markers from the end (e.g., '.antismash', '.clusters')
-    while file_path.suffix in (".antismash", ".clusters"):
+    # TODO: re-write the mechanism for mode choosing
+    temp_markers = {".antismash", ".clusters", ".bgc"}
+    bio_suffixes = {".fasta", ".fa", ".fna", ".fastq", ".fq"}
+
+    while file_path.suffix in temp_markers:
+        file_path = file_path.with_suffix("")
+
+        # If a raw-data suffix remains, drop it
+    if file_path.suffix in bio_suffixes:
         file_path = file_path.with_suffix("")
 
     return file_path.name  # Remove an extension
