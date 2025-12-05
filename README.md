@@ -71,21 +71,6 @@ usage: bgc-quast.py [-h] [--output-dir DIR] [--threads INT] [--debug]
 | `--reference-genome FILE`                | Reference genome input (FASTA/GenBank)                |
 
 ---
-
-### Naming Options
-
-| Option                                | Description                                             |
-|---------------------------------------|---------------------------------------------------------|
-| `--names "N1,N2,..."`                | Custom labels for GM inputs (comma-separated)          |
-| `--naming-style STYLE`               | Strategy to auto-generate input names                  |
-
-**Naming strategies**:
-- `file`, `dir`, `sequence`, `tool`
-- `file-tool`, `dir-tool`, `sequence-tool`
-- `first-file`, `first-dir`, `first-sequence`
-- `auto` *(default)* – uses `dir-tool` for deepBGC, `file-tool` otherwise
-
-
 <a name="sec_run_modes"></a>
 ## Running Modes
 
