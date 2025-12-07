@@ -43,6 +43,7 @@ class DataFrameTableBuilder:
         )
 
         pivot_table.index.name = None
+        pivot_table = pivot_table.fillna(0)
 
         return pivot_table
 
@@ -180,7 +181,7 @@ class ReportFormatter:
             if ref_cols:
                 pivot_table = pivot_table.reindex(columns=ref_cols + other_cols)
 
-        txt = pivot_table.to_string(na_rep="")
+        txt = pivot_table.to_string()
         output_path.write_text(txt, encoding="utf-8")
 
     def write_html(self, data: ReportData, output_path: Path) -> None:
@@ -282,4 +283,4 @@ class ReportFormatter:
             if ref_cols:
                 pivot_table = pivot_table.reindex(columns=ref_cols + other_cols)
 
-        pivot_table.to_csv(output_path, sep="\t", na_rep="")
+        pivot_table.to_csv(output_path, sep="\t")
