@@ -162,6 +162,24 @@ class ReportFormatter:
 
         pivot_table = self.table_builder.build_pivot_table(data)
 
+        # In compare-to-reference mode, make sure the reference column
+        # (identified by its file label in metadata) is always the first column.
+        ref_label = None
+        if isinstance(getattr(data, "metadata", None), dict):
+            ref_label = data.metadata.get("reference_file_label")
+        if ref_label:
+            cols = list(pivot_table.columns)
+
+            def _is_ref(col):
+                # MultiIndex columns come as tuples (file_label, mining_tool)
+                file_label = col[0] if isinstance(col, tuple) else col
+                return file_label == ref_label
+
+            ref_cols = [c for c in cols if _is_ref(c)]
+            other_cols = [c for c in cols if not _is_ref(c)]
+            if ref_cols:
+                pivot_table = pivot_table.reindex(columns=ref_cols + other_cols)
+
         txt = pivot_table.to_string(na_rep="")
         output_path.write_text(txt, encoding="utf-8")
 
@@ -176,6 +194,23 @@ class ReportFormatter:
         mode = data.running_mode.value
 
         pivot_table = self.table_builder.build_pivot_table(data)
+
+        # In compare-to-reference mode, make sure the reference column
+        # (identified by its file label in metadata) is always the first column.
+        ref_label = None
+        if isinstance(getattr(data, "metadata", None), dict):
+            ref_label = data.metadata.get("reference_file_label")
+        if ref_label:
+            cols = list(pivot_table.columns)
+
+            def _is_ref(col):
+                file_label = col[0] if isinstance(col, tuple) else col
+                return file_label == ref_label
+
+            ref_cols = [c for c in cols if _is_ref(c)]
+            other_cols = [c for c in cols if not _is_ref(c)]
+            if ref_cols:
+                pivot_table = pivot_table.reindex(columns=ref_cols + other_cols)
 
         file_labels = ["file_label"]
         mining_tools = ["mining_tool"]
@@ -229,4 +264,22 @@ class ReportFormatter:
     def write_tsv(self, data: ReportData, output_path: Path) -> None:
         """Format and save report as TSV."""
         pivot_table = self.table_builder.build_pivot_table(data)
+
+        # In compare-to-reference mode, make sure the reference column
+        # (identified by its file label in metadata) is always the first column.
+        ref_label = None
+        if isinstance(getattr(data, "metadata", None), dict):
+            ref_label = data.metadata.get("reference_file_label")
+        if ref_label:
+            cols = list(pivot_table.columns)
+
+            def _is_ref(col):
+                file_label = col[0] if isinstance(col, tuple) else col
+                return file_label == ref_label
+
+            ref_cols = [c for c in cols if _is_ref(c)]
+            other_cols = [c for c in cols if not _is_ref(c)]
+            if ref_cols:
+                pivot_table = pivot_table.reindex(columns=ref_cols + other_cols)
+
         pivot_table.to_csv(output_path, sep="\t", na_rep="")

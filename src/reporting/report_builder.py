@@ -97,6 +97,14 @@ class ReportBuilder:
 
             metadata.update({"reference_bgcs": reference_bgcs})
 
+            if reference_genome_mining_result is not None:
+                metadata.update(
+                    {
+                        "reference_input_file": str(reference_genome_mining_result.input_file),
+                        "reference_file_label": reference_genome_mining_result.input_file_label,
+                    }
+                )
+
         elif running_mode == RunningMode.COMPARE_TOOLS:
             mode_config = self.report_config_manager.get_config("compare_tools")
             if not mode_config:

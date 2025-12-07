@@ -100,7 +100,7 @@ def add_advanced_arguments(parser: argparse.ArgumentParser):
     )
 
     advanced_input_group.add_argument(
-        "--overlap-threshold", "-O",
+        "--overlap-threshold",
         dest="compare_tools_overlap_threshold",
         type=float,
         metavar='FLOAT',
@@ -109,7 +109,7 @@ def add_advanced_arguments(parser: argparse.ArgumentParser):
     )
 
     advanced_input_group.add_argument(
-        "--edge-distance", "-d",
+        "--edge-distance",
         dest="bgc_completeness_margin",
         metavar='INT',
         type=int,
