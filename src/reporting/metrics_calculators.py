@@ -37,6 +37,11 @@ class BasicMetricsCalculator(MetricsCalculator):
             List of all calculated MetricValue objects
         """
         metric_names = [m.name for m in self.config.metrics]
+
+        registry_metric_names = [
+            name for name in metric_names if name != "filtered_bgcs_by_length"
+        ]
+
         all_metrics = []
 
         # Generate all combinations of grouping dimensions
@@ -50,7 +55,7 @@ class BasicMetricsCalculator(MetricsCalculator):
                         result.bgcs,
                         result.input_file,
                         result.mining_tool,
-                        metric_names,
+                        registry_metric_names,
                         grouping_dims,
                     )
                     all_metrics.extend(metrics)
@@ -59,7 +64,18 @@ class BasicMetricsCalculator(MetricsCalculator):
                     print(
                         f"Warning: Error calculating metrics for {result.input_file}: {e}"
                     )
-                    # Continue with other results
+
+        if "filtered_bgcs_by_length" in metric_names:
+            for result in self.results:
+                all_metrics.append(
+                    MetricValue(
+                        file_path=result.input_file,
+                        mining_tool=result.mining_tool,
+                        metric_name="filtered_bgcs_by_length",
+                        value=result.filtered_bgcs_by_length,
+                        grouping={},  # no grouping
+                    )
+                )
 
         return all_metrics
 

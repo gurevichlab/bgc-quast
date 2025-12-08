@@ -42,6 +42,17 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
         "at least one is required",
     )
 
+    parser.add_argument(
+        "--min-bgc-length",
+        type=int,
+        metavar='INT',
+        default=None,
+        help=(
+            "Minimum BGC length in bp. BGCs shorter than this threshold are "
+            "filtered out from all analyses (default: 5000)"
+        ),
+    )
+
 
 def add_advanced_arguments(parser: argparse.ArgumentParser):
     advanced_input_group = parser.add_argument_group("Advanced input", "TBA")
@@ -89,17 +100,18 @@ def add_advanced_arguments(parser: argparse.ArgumentParser):
     )
 
     advanced_input_group.add_argument(
-        "--overlap-threshold", "-O",
+        "--overlap-threshold",
         dest="compare_tools_overlap_threshold",
         type=float,
+        metavar='FLOAT',
         default=None,
-        metavar="FLOAT",
         help="BGC overlap threshold in (0,1] for COMPARE-TOOLS mode (default: 0.9)",
     )
 
     advanced_input_group.add_argument(
-        "--edge-distance", "-d",
+        "--edge-distance",
         dest="bgc_completeness_margin",
+        metavar='INT',
         type=int,
         help="Margin (in bp) from contig edges used to classify BGC completeness (default: 100)",
     )
@@ -144,3 +156,10 @@ def validate_arguments(args: CommandLineArgs):
     if thr is not None:
         validate(0.0 <= thr <= 1.0,
                  "--compare-tools-overlap-threshold must be between 0 and 1")
+
+    min_len = getattr(args, "min_bgc_length", None)
+    if min_len is not None:
+        validate(
+            min_len >= 0,
+            "--min-bgc-length must not be a negative integer",
+        )

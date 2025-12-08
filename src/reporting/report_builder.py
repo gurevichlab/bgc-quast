@@ -64,6 +64,7 @@ class ReportBuilder:
         metadata = {
             "running_mode": running_mode.value,
             "results_count": len(results),
+            "min_bgc_length": config.min_bgc_length,
         }
 
         if running_mode == RunningMode.COMPARE_TO_REFERENCE:
@@ -95,6 +96,14 @@ class ReportBuilder:
                 metrics.extend(ref_basic_calc.calculate_metrics())
 
             metadata.update({"reference_bgcs": reference_bgcs})
+
+            if reference_genome_mining_result is not None:
+                metadata.update(
+                    {
+                        "reference_input_file": str(reference_genome_mining_result.input_file),
+                        "reference_file_label": reference_genome_mining_result.input_file_label,
+                    }
+                )
 
         elif running_mode == RunningMode.COMPARE_TOOLS:
             mode_config = self.report_config_manager.get_config("compare_tools")

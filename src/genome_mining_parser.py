@@ -375,13 +375,39 @@ def parse_input_mining_result_files(
         for parser, tool_name in parsers.items():
             try:
                 bgcs = parser(config, file_path, seq_data_map)
+
+                # Apply length-based filtering
+                min_len = config.min_bgc_length
+                filtered_count = 0
+
+                if min_len is None or min_len == 0:
+                    # No filtering requested
+                    kept_bgcs = bgcs
+                else:
+                    kept_bgcs = []
+                    for bgc in bgcs:
+                        length = bgc.end - bgc.start
+                        # Same convention as mean_bgc_length: use end - start
+                        if length >= min_len:
+                            kept_bgcs.append(bgc)
+                        else:
+                            filtered_count += 1
+
+                if filtered_count > 0:
+                    log.info(
+                        f"Filtered out {filtered_count} BGC(s) shorter than "
+                        f"{min_len} bp for {file_path}"
+                    )
+
+
                 results.append(
                     GenomeMiningResult(
                         input_file=file_path.resolve(),
                         input_file_label=get_file_label_from_path(file_path),
                         mining_tool=tool_name,
-                        bgcs=bgcs,
+                        bgcs=kept_bgcs,
                         genome_data=seq_data_map,
+                        filtered_bgcs_by_length=filtered_count,
                     )
                 )
                 break  # If parsing succeeded, move to next file

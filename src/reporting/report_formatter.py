@@ -43,6 +43,7 @@ class DataFrameTableBuilder:
         )
 
         pivot_table.index.name = None
+        pivot_table = pivot_table.fillna(0)
 
         return pivot_table
 
@@ -162,7 +163,25 @@ class ReportFormatter:
 
         pivot_table = self.table_builder.build_pivot_table(data)
 
-        txt = pivot_table.to_string(na_rep="")
+        # In compare-to-reference mode, make sure the reference column
+        # (identified by its file label in metadata) is always the first column.
+        ref_label = None
+        if isinstance(getattr(data, "metadata", None), dict):
+            ref_label = data.metadata.get("reference_file_label")
+        if ref_label:
+            cols = list(pivot_table.columns)
+
+            def _is_ref(col):
+                # MultiIndex columns come as tuples (file_label, mining_tool)
+                file_label = col[0] if isinstance(col, tuple) else col
+                return file_label == ref_label
+
+            ref_cols = [c for c in cols if _is_ref(c)]
+            other_cols = [c for c in cols if not _is_ref(c)]
+            if ref_cols:
+                pivot_table = pivot_table.reindex(columns=ref_cols + other_cols)
+
+        txt = pivot_table.to_string()
         output_path.write_text(txt, encoding="utf-8")
 
     def write_html(self, data: ReportData, output_path: Path) -> None:
@@ -176,6 +195,23 @@ class ReportFormatter:
         mode = data.running_mode.value
 
         pivot_table = self.table_builder.build_pivot_table(data)
+
+        # In compare-to-reference mode, make sure the reference column
+        # (identified by its file label in metadata) is always the first column.
+        ref_label = None
+        if isinstance(getattr(data, "metadata", None), dict):
+            ref_label = data.metadata.get("reference_file_label")
+        if ref_label:
+            cols = list(pivot_table.columns)
+
+            def _is_ref(col):
+                file_label = col[0] if isinstance(col, tuple) else col
+                return file_label == ref_label
+
+            ref_cols = [c for c in cols if _is_ref(c)]
+            other_cols = [c for c in cols if not _is_ref(c)]
+            if ref_cols:
+                pivot_table = pivot_table.reindex(columns=ref_cols + other_cols)
 
         file_labels = ["file_label"]
         mining_tools = ["mining_tool"]
@@ -195,7 +231,12 @@ class ReportFormatter:
             rows.append(out)
 
         # Collect metadata for compare_tools mode ---
-        metadata_json = json.dumps(data.metadata, ensure_ascii=False)
+        if data.running_mode.value == "compare_tools":
+            metadata_to_dump = data.metadata
+        else:
+            # For now we don't expose metadata in other modes
+            metadata_to_dump = {}
+        metadata_json = json.dumps(metadata_to_dump, ensure_ascii=False)
         # Load the assets and inject JSON
         asset_dir = Path(__file__).resolve().parent.parent / "html_report"
         logo_path = asset_dir / "github-mark-white.svg"
@@ -224,4 +265,22 @@ class ReportFormatter:
     def write_tsv(self, data: ReportData, output_path: Path) -> None:
         """Format and save report as TSV."""
         pivot_table = self.table_builder.build_pivot_table(data)
-        pivot_table.to_csv(output_path, sep="\t", na_rep="")
+
+        # In compare-to-reference mode, make sure the reference column
+        # (identified by its file label in metadata) is always the first column.
+        ref_label = None
+        if isinstance(getattr(data, "metadata", None), dict):
+            ref_label = data.metadata.get("reference_file_label")
+        if ref_label:
+            cols = list(pivot_table.columns)
+
+            def _is_ref(col):
+                file_label = col[0] if isinstance(col, tuple) else col
+                return file_label == ref_label
+
+            ref_cols = [c for c in cols if _is_ref(c)]
+            other_cols = [c for c in cols if not _is_ref(c)]
+            if ref_cols:
+                pivot_table = pivot_table.reindex(columns=ref_cols + other_cols)
+
+        pivot_table.to_csv(output_path, sep="\t")

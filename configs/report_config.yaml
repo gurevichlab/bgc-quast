@@ -3,6 +3,9 @@
 
 basic_report:
   metrics:
+    - name: "filtered_bgcs_by_length"
+      display_name: "# Filtered BGCs by length"
+      description: "BGCs shorter than the set threshold"
     - name: "total_bgc_count"
       display_name: "# BGCs"
       description: "Total number of BGCs identified"
