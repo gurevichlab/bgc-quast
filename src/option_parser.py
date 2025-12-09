@@ -42,7 +42,11 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
         "at least one is required",
     )
 
-    parser.add_argument(
+
+def add_advanced_arguments(parser: argparse.ArgumentParser):
+    advanced_input_group = parser.add_argument_group("Advanced input", "TBA")
+
+    advanced_input_group.add_argument(
         "--min-bgc-length",
         type=int,
         metavar='INT',
@@ -52,10 +56,7 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
             "filtered out from all analyses (default: 0)"
         ),
     )
-
-
-def add_advanced_arguments(parser: argparse.ArgumentParser):
-    advanced_input_group = parser.add_argument_group("Advanced input", "TBA")
+    
     advanced_input_group.add_argument(
         "--quast-output-dir",
         "-q",
