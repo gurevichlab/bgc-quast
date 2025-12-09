@@ -49,7 +49,7 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
         default=None,
         help=(
             "Minimum BGC length in bp. BGCs shorter than this threshold are "
-            "filtered out from all analyses (default: 5000)"
+            "filtered out from all analyses (default: 0)"
         ),
     )
 
