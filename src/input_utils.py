@@ -7,6 +7,7 @@ import yaml
 
 from src.genome_mining_result import GenomeMiningResult
 from src.reporting.report_data import RunningMode
+from src.option_parser import ValidationError
 
 
 def open_file(file_path: Path) -> Union[TextIO, gzip.GzipFile]:
@@ -87,11 +88,24 @@ def map_products(
 
 
 def determine_running_mode(
+    mode: str,
     reference_genome_mining_result: Optional[GenomeMiningResult],
     assembly_genome_mining_results: List[GenomeMiningResult],
 ) -> RunningMode:
     """
-    Determine the running mode based on the genome mining results and reference mining result.
+    Determine and validate the running mode based on the requested mode and
+    the available genome mining results.
+
+    - If mode == "auto", try to infer the running mode from the inputs
+      (using labels and mining tools) and return one of:
+      COMPARE_TO_REFERENCE, COMPARE_TOOLS, COMPARE_SAMPLES.
+      If inference fails or inputs are inconsistent, raise ValidationError with an explanation.
+
+    - If mode is one of the explicit modes ("compare-reference",
+      "compare-tools", "compare-samples"), validate that the inputs are
+      consistent with that mode and return the corresponding RunningMode.
+      If validation fails, raise ValidationError with an explanation.
+
     The running mode can be one of the following:
     - COMPARE_TO_REFERENCE: If a reference genome mining result is provided.
     - COMPARE_TOOLS: If the input file labels are the same with same or different mining tools.
@@ -99,35 +113,133 @@ def determine_running_mode(
     - UNKNOWN: If the input file labels are different and different mining tools are used.
 
     Args:
+        mode (str): Requested mode ("auto", "compare-reference", "compare-tools", "compare-samples").
         reference_genome_mining_result (GenomeMiningResult): The reference genome mining result.
         assembly_genome_mining_results (List[GenomeMiningResult]): List of genome mining results.
 
     Returns:
         RunningMode: The determined running mode.
     """
-    different_mining_tools = not all(
-        tool == assembly_genome_mining_results[0].mining_tool
-        for tool in (result.mining_tool for result in assembly_genome_mining_results)
-    )
-    different_file_labels = not all(
-        label == assembly_genome_mining_results[0].input_file_label
-        for label in (
-            result.input_file_label for result in assembly_genome_mining_results
-        )
-    )
 
-    if reference_genome_mining_result is not None:
-        if different_mining_tools:
-            # Different mining tools are not allowed for the COMPARE_TO_REFERENCE mode.
-            return RunningMode.UNKNOWN
+    has_reference = reference_genome_mining_result is not None
+    num_assemblies = len(assembly_genome_mining_results)
+
+    if num_assemblies == 0:
+        raise ValidationError(
+            "No genome mining results were provided. "
+            "Please specify at least one genome mining result file."
+        )
+
+    distinct_tools = {
+        result.mining_tool for result in assembly_genome_mining_results
+    }
+
+    # ----- AUTO MODE -----
+    if mode == "auto":
+        different_mining_tools = not all(
+            tool == assembly_genome_mining_results[0].mining_tool
+            for tool in (result.mining_tool for result in assembly_genome_mining_results)
+        )
+        different_file_labels = not all(
+            label == assembly_genome_mining_results[0].input_file_label
+            for label in (
+                result.input_file_label for result in assembly_genome_mining_results
+            )
+        )
+
+        if has_reference:
+            if different_mining_tools:
+                raise ValidationError(
+                    "Auto mode could not determine the running mode: "
+                    "several mining tools were detected but reference was provided. Please ensure that reference and "
+                    "input genomes are mined with the same tool."
+                )
+            return RunningMode.COMPARE_TO_REFERENCE
+
+        # No reference
+        if different_file_labels and different_mining_tools:
+            raise ValidationError(
+                "Auto mode could not determine the running mode: "
+                "genome mining inputs have different file labels and different mining tools. "
+                "Please either rename the files or rerun with --mode compare-tools or --mode compare-samples "
+                "explicitly."
+            )
+        elif num_assemblies == 1 or different_file_labels:
+            return RunningMode.COMPARE_SAMPLES
+        else:
+            # All file labels are the same regardless of tools
+            return RunningMode.COMPARE_TOOLS
+
+    # ----- EXPLICIT MODES -----
+    if mode == "compare-reference":
+        # Rules:
+        # - reference must be present
+        # - at least one assembly
+        # - exactly one mining tool across reference + assemblies
+        if not has_reference:
+            raise ValidationError(
+                "--mode compare-reference requires reference data, but no "
+                "reference genome mining result was found."
+            )
+
+        tools_with_reference = set(distinct_tools)
+        tools_with_reference.add(
+            reference_genome_mining_result.mining_tool  # type: ignore[union-attr]
+        )
+        if len(tools_with_reference) != 1:
+            raise ValidationError(
+                "--mode compare-reference requires a single mining tool for "
+                "reference and input genomes. Found tools: "
+                f"{', '.join(sorted(tools_with_reference))}."
+            )
+
         return RunningMode.COMPARE_TO_REFERENCE
-    elif different_file_labels and different_mining_tools:
-        return RunningMode.UNKNOWN
-    elif len(assembly_genome_mining_results) == 1 or different_file_labels:
-        return RunningMode.COMPARE_SAMPLES
-    else:
-        # If all mining results have the same file label regardless of the mining tools.
+
+    if mode == "compare-tools":
+        # Rules:
+        # - no reference
+        # - at least 2 assemblies
+        # - >= 1 mining tool
+        if has_reference:
+            raise ValidationError(
+                "--mode compare-tools does not support reference data. "
+                "Please remove the reference genome mining result or use "
+                "--mode compare-reference."
+            )
+
+        if num_assemblies < 2:
+            raise ValidationError(
+                "--mode compare-tools requires at least 2 genome mining runs. "
+                f"Found only {num_assemblies}."
+            )
+
         return RunningMode.COMPARE_TOOLS
+
+    if mode == "compare-samples":
+        # Rules:
+        # - no reference
+        # - at least 1 assembly (already guaranteed)
+        # - exactly 1 mining tool across all assemblies
+        if has_reference:
+            raise ValidationError(
+                "--mode compare-samples does not support reference data. "
+                "Please remove the reference genome mining result or use "
+                "--mode compare-reference."
+            )
+
+        if len(distinct_tools) != 1:
+            raise ValidationError(
+                "--mode compare-samples requires a single mining tool for all "
+                "input genomes. Found tools: "
+                f"{', '.join(sorted(distinct_tools))}."
+            )
+
+        return RunningMode.COMPARE_SAMPLES
+
+    # Should not happen because argparse restricts choices,
+    # but keep a defensive branch.
+    raise ValidationError(f"Unsupported mode: {mode}")
+
 
 
 def get_file_label_from_path(file_path: Path) -> str:

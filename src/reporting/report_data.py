@@ -15,7 +15,6 @@ class RunningMode(Enum):
     COMPARE_TO_REFERENCE = "compare_to_reference"
     COMPARE_TOOLS = "compare_tools"
     COMPARE_SAMPLES = "compare_samples"
-    UNKNOWN = "unknown"
 
 
 @dataclass

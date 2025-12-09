@@ -42,6 +42,20 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
         "at least one is required",
     )
 
+    parser.add_argument(
+        "--mode",
+        choices=["auto", "compare-reference", "compare-tools", "compare-samples"],
+        default="auto",
+        help=(
+            "Running mode that controls how BGC-QUAST interprets the inputs. "
+            "'auto' (default) tries to infer the mode from the provided files. "
+            "'compare-reference' expects reference genome mining result plus QUAST output."
+            "'compare-tools' compares genome mining tools, "
+            "including multiple runs from the same tool. "
+            "'compare-samples' compares assemblies mined with a single tool."
+        ),
+    )
+
 
 def add_advanced_arguments(parser: argparse.ArgumentParser):
     advanced_input_group = parser.add_argument_group("Advanced input", "TBA")
@@ -56,7 +70,7 @@ def add_advanced_arguments(parser: argparse.ArgumentParser):
             "filtered out from all analyses (default: 0)"
         ),
     )
-    
+
     advanced_input_group.add_argument(
         "--quast-output-dir",
         "-q",

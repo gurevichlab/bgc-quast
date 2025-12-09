@@ -144,16 +144,16 @@ class PipelineHelper:
                 raise e
 
         # Set running mode based on the provided arguments.
-        self.running_mode = input_utils.determine_running_mode(
-            self.reference_genome_mining_result, self.assembly_genome_mining_results
-        )
-        if self.running_mode == RunningMode.UNKNOWN:
-            error_message = (
-                "Running mode could not be determined. "
-                "Please provide a valid combination of genome mining results."
+        try:
+            self.running_mode = input_utils.determine_running_mode(
+                self.args.mode,
+                self.reference_genome_mining_result,
+                self.assembly_genome_mining_results,
             )
-            self.log.error(error_message)
-            raise ValidationError(error_message)
+        except ValidationError as e:
+            # Log the specific message from determine_running_mode, then re-raise.
+            self.log.error(str(e))
+            raise
 
         self.log.info(f"Running mode set to: {self.running_mode}")
 
@@ -203,6 +203,23 @@ class PipelineHelper:
             f"TSV report is saved to {self.config.output_config.tsv_report}",
             indent=1,
         )
+
+        # Log file label renamings (if any)
+        renaming_log = self.analysis_report.metadata.get("label_renaming_log") or []
+        if renaming_log:
+            self.log.info(
+                "Some input files had identical labels and were renamed "
+                "in the report to avoid ambiguity:",
+                indent=1,
+            )
+            for entry in renaming_log:
+                path = entry.get("path", "<unknown path>")
+                old_label = entry.get("old_label", "<unknown>")
+                new_label = entry.get("new_label", "<unknown>")
+                self.log.info(
+                    f"{path}: '{old_label}' ===> '{new_label}'",
+                    indent=2,
+                )
 
         if self.running_mode == RunningMode.COMPARE_TOOLS:
             venn_dir = self.config.output_config.output_dir / "venn_overlaps"
