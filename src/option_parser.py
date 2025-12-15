@@ -196,3 +196,8 @@ def validate_arguments(args: CommandLineArgs):
             min_len >= 0,
             "--min-bgc-length must not be a negative integer",
         )
+    if getattr(args, "ref_name", None) and not getattr(args, "reference_mining_result", None):
+        raise ValidationError(
+            "--ref-name was provided but no reference genome mining result was specified. "
+            "Please use --reference-mining-result together with --ref-name."
+        )
