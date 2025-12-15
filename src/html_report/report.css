@@ -128,6 +128,12 @@ tr.column-header-row th {
     color: #ffffff;
 }
 
+/* Reference header */
+tr.column-header-row th.ref-col-header {
+    background-color: #4b679a;
+    color: #ffffff;
+}
+
 /* Row labels: default normal, totals bold */
 th.row-label {
     font-weight: 400;
@@ -138,12 +144,11 @@ th.row-label-total {
     font-weight: 600;
 }
 
-/* Reference mode: cells that should look like "no column" */
-td.ref-empty {
-    border: none;
-    background-color: inherit;
-}
 
+/* Row labels: default normal, totals bold */
+th.mode-specific-metric {
+    background-color: rgba(209, 217, 236, 0.55);
+}
 
 /* Table style - rows */
 .extended-row {

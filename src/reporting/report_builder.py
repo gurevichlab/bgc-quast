@@ -141,7 +141,7 @@ class ReportBuilder:
                 reference_genome_mining_result.mining_tool
             )
 
-        df["mining_tool"] = df["file_path"].astype(str).map(path_to_tool)
+        df["Genome mining tool"] = df["file_path"].astype(str).map(path_to_tool)
 
         df["file_label"] = df["file_path"].apply(
             lambda x: input_utils.get_file_label_from_path(x)

@@ -34,7 +34,7 @@ class DataFrameTableBuilder:
         # Always use file_label as columns
         pivot_table = df.pivot_table(
             index="row_label",
-            columns=["file_label", "mining_tool"]
+            columns=["file_label", "Genome mining tool"]
             if "file_label" in df.columns
             else None,
             values="value",
@@ -56,7 +56,7 @@ class DataFrameTableBuilder:
             "file_label",
             "row_label",
             "sort_key",
-            "mining_tool",
+            "Genome mining tool",
         }
 
         # Use grouping_combinations from config if present, else all grouping columns
@@ -214,7 +214,7 @@ class ReportFormatter:
                 pivot_table = pivot_table.reindex(columns=ref_cols + other_cols)
 
         file_labels = ["file_label"]
-        mining_tools = ["mining_tool"]
+        mining_tools = ["Genome mining tool"]
         for file_label, mining_tool in pivot_table.columns:
             file_labels.append(str(file_label))
             mining_tools.append(str(mining_tool))
