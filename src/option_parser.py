@@ -131,6 +131,24 @@ def add_advanced_arguments(parser: argparse.ArgumentParser):
         help="Margin (in bp) from contig edges used to classify BGC completeness (default: 100)",
     )
 
+    advanced_input_group.add_argument(
+        "--names",
+        type=str,
+        default=None,
+        help=(
+            "Custom names for assembly GM results in reports. "
+            "Comma-separated; use quotes if names contain spaces. "
+            "The number of names must match the number of assembly GM files."
+        ),
+    )
+
+    advanced_input_group.add_argument(
+        "--ref-name",
+        type=str,
+        default=None,
+        help="Custom name for the reference GM result in reports (only if reference is provided).",
+    )
+
 
 def build_cmdline_args_parser(default_cfg: Config) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -170,7 +188,7 @@ def validate_arguments(args: CommandLineArgs):
     thr = getattr(args, "compare_tools_overlap_threshold", None)
     if thr is not None:
         validate(0.0 <= thr <= 1.0,
-                 "--compare-tools-overlap-threshold must be between 0 and 1")
+                 "--overlap-threshold must be between 0 and 1")
 
     min_len = getattr(args, "min_bgc_length", None)
     if min_len is not None:

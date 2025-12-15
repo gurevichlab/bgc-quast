@@ -399,11 +399,12 @@ def parse_input_mining_result_files(
                         f"{min_len} bp for {file_path}"
                     )
 
-
+                file_label = get_file_label_from_path(file_path)
                 results.append(
                     GenomeMiningResult(
                         input_file=file_path.resolve(),
-                        input_file_label=get_file_label_from_path(file_path),
+                        input_file_label=file_label,
+                        display_label=file_label,
                         mining_tool=tool_name,
                         bgcs=kept_bgcs,
                         genome_data=seq_data_map,

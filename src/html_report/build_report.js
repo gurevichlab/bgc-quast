@@ -3,6 +3,27 @@
 /* ---------------------------------------------------------------------------
  * HEATMAP UTILITIES
  * ------------------------------------------------------------------------- */
+            // if (j > 0) {
+            //     const num = parseFloat(cell);
+            //
+            //     // Only consider numeric cells for heatmap
+            //     if (!Number.isNaN(num)) {
+            //         // In COMPARE_TO_REFERENCE mode, the first data column (j === 1)
+            //         // is the reference column (Python now puts reference first).
+            //         const isReferenceColumn = isReferenceMode && (j === 1);
+            //
+            //         if (isReferenceColumn && !includeReferenceInHeatmap) {
+            //             // Reference column stays uncolored (white) when heatmap is on.
+            //         } else {
+            //             // Normal numeric cell, or reference when included:
+            //             // participate in the heatmap.
+            //             numericCells.push(td);
+            //             numericValues.push(num);
+            //         }
+            //     }
+            // }
+
+
 
 /**
  * Compute the median of a sorted numeric array

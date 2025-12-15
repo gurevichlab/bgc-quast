@@ -30,6 +30,14 @@ def compute_coverage(
         list[tuple[Path, list[ReferenceBgc]]]: List of tuples mapping input genome mining results to ReferenceBgc
         objects with computed statistics.
     """
+    labels = [r.input_file_label for r in genome_mining_results]
+    dups = sorted({x for x in labels if labels.count(x) > 1})
+    if dups:
+        raise ValueError(
+            "Duplicate assembly file labels detected in compare-reference mode. "
+            "QUAST pairing relies on input_file_label and requires uniqueness. "
+            f"Duplicate labels: {', '.join(dups)}"
+        )
     ref_bgc_coverage = []
 
     for genome_mining_result in genome_mining_results:

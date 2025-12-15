@@ -2,12 +2,28 @@ import gzip
 import json
 from pathlib import Path
 from typing import Dict, List, Optional, TextIO, Union
-
+from collections import defaultdict
+from src.logger import Logger
 import yaml
 
 from src.genome_mining_result import GenomeMiningResult
 from src.reporting.report_data import RunningMode
 from src.option_parser import ValidationError
+
+
+def validate_no_duplicate_paths(paths: list[Path]) -> None:
+    norm = [p.expanduser().resolve() for p in paths]
+    seen = set()
+    dups = []
+    for p in norm:
+        if p in seen and p not in dups:
+            dups.append(p)
+        seen.add(p)
+    if dups:
+        raise ValidationError(
+            f"Duplicate input files were provided (each file must be listed only once):\n"
+            + "\n".join(f"- {p}" for p in dups)
+        )
 
 
 def open_file(file_path: Path) -> Union[TextIO, gzip.GzipFile]:
@@ -91,6 +107,7 @@ def determine_running_mode(
     mode: str,
     reference_genome_mining_result: Optional[GenomeMiningResult],
     assembly_genome_mining_results: List[GenomeMiningResult],
+    log: Optional[Logger] = None,
 ) -> RunningMode:
     """
     Determine and validate the running mode based on the requested mode and
@@ -136,6 +153,9 @@ def determine_running_mode(
 
     # ----- AUTO MODE -----
     if mode == "auto":
+        if log:
+            log.info("Mode AUTO selected: choosing the running mode based on file labels "
+                     "and mining tools.")
         different_mining_tools = not all(
             tool == assembly_genome_mining_results[0].mining_tool
             for tool in (result.mining_tool for result in assembly_genome_mining_results)
@@ -148,6 +168,8 @@ def determine_running_mode(
         )
 
         if has_reference:
+            if log:
+                log.info("Reference detected.", indent=1)
             if different_mining_tools:
                 raise ValidationError(
                     "Auto mode could not determine the running mode: "
@@ -165,13 +187,31 @@ def determine_running_mode(
                 "explicitly."
             )
         elif num_assemblies == 1 or different_file_labels:
+            if num_assemblies == 1:
+                if log:
+                    log.info(
+                        "Only one assembly provided, choosing COMPARE_SAMPLES.",
+                        indent=1,
+                    )
+            if log:
+                log.info(
+                    "Different file labels detected, choosing COMPARE_SAMPLES.",
+                    indent=1,
+                )
             return RunningMode.COMPARE_SAMPLES
         else:
+            if log:
+                log.info(
+                    "All file labels identical, choosing COMPARE_TOOLS regardless of the provided mining tools.",
+                    indent=1,
+                )
             # All file labels are the same regardless of tools
             return RunningMode.COMPARE_TOOLS
 
     # ----- EXPLICIT MODES -----
     if mode == "compare-reference":
+        if log:
+            log.info("Mode COMPARE_REFERENCE selected")
         # Rules:
         # - reference must be present
         # - at least one assembly
@@ -196,6 +236,8 @@ def determine_running_mode(
         return RunningMode.COMPARE_TO_REFERENCE
 
     if mode == "compare-tools":
+        if log:
+            log.info("Mode COMPARE_TOOLS selected")
         # Rules:
         # - no reference
         # - at least 2 assemblies
@@ -216,9 +258,11 @@ def determine_running_mode(
         return RunningMode.COMPARE_TOOLS
 
     if mode == "compare-samples":
+        if log:
+            log.info("Mode COMPARE_SAMPLES selected")
         # Rules:
         # - no reference
-        # - at least 1 assembly (already guaranteed)
+        # - at least 1 assembly
         # - exactly 1 mining tool across all assemblies
         if has_reference:
             raise ValidationError(
@@ -298,3 +342,77 @@ def get_base_extension(file_path: Path) -> str:
     if file_path.suffix.lower() in compression_suffixes:
         return file_path.with_suffix("").suffix.lower()
     return file_path.suffix.lower()
+
+def _parse_names_arg(names_arg: Optional[str]) -> Optional[List[str]]:
+    if names_arg is None:
+        return None
+    names = [n.strip() for n in names_arg.split(",")]
+    names = [n for n in names if n != ""]
+    return names if names else None
+
+
+def assign_and_deduplicate_display_labels(
+    assembly_results: List[GenomeMiningResult],
+    reference_result: Optional[GenomeMiningResult],
+    names_arg: Optional[str],
+    ref_name: Optional[str],
+) -> List[dict]:
+    """
+    Assign display_label for assembly/reference results and deduplicate
+    (display_label, mining_tool) collisions by suffixing _1, _2, ...
+
+    - Strict: --names count must match number of assembly results.
+    - --names affects assemblies only (in the order provided).
+    - Reference uses --ref-name if provided; otherwise its current display_label
+      (or input_file_label if display_label is None).
+    - Never modifies input_file_label (auto-mode relies on it).
+
+    Returns a renaming log for  messages
+    """
+    names = _parse_names_arg(names_arg)
+
+    if names is not None and len(names) != len(assembly_results):
+        raise ValidationError(
+            f"--names must contain exactly {len(assembly_results)} name(s) "
+            f"to match the number of assembly GM files, but got {len(names)}."
+        )
+
+    # initial assignment
+    for i, res in enumerate(assembly_results):
+        if names is not None:
+            res.display_label = names[i]
+        else:
+            # preserve whatever parser set; fall back if needed
+            res.display_label = res.display_label or res.input_file_label
+
+    if reference_result is not None:
+        if ref_name is not None:
+            reference_result.display_label = ref_name
+        else:
+            reference_result.display_label = (
+                reference_result.display_label or reference_result.input_file_label
+            )
+
+    # suffix duplicates of (display_label, mining_tool)
+    all_results = list(assembly_results)
+    if reference_result is not None:
+        all_results.append(reference_result)
+
+    counts = defaultdict(int)
+    renaming_log: List[dict] = []
+
+    for res in all_results:
+        base = res.display_label or res.input_file_label
+        key = (base, res.mining_tool)
+
+        counts[key] += 1
+        idx = counts[key] - 1  # 0 for first occurrence
+        new_label = base if idx == 0 else f"{base}_{idx}"
+
+        if new_label != base:
+            renaming_log.append(
+                {"path": str(res.input_file), "old_label": base, "new_label": new_label}
+            )
+            res.display_label = new_label
+
+    return renaming_log

@@ -70,81 +70,111 @@ def compute_uniqueness(
 
         meta: {
           "totals_by_tool": {
-              "<tool>": {"unique": int, "non_unique": int, "total": int}, ...
+              "<run_label>": {"unique": int, "non_unique": int, "total": int}, ...
           },
           "pairwise_by_tool": {
-              "<tool_A>": {
-                  "<tool_B>": {"unique": int, "non_unique": int},   # A against B (directional)
+              "<run_labelA>": {
+                  "<run_labelB>": {"unique": int, "non_unique": int},   # A against B (directional)
                   ...
               },
               ...
           },
         }
     """
+    if not results:
+        return [], {"totals_by_tool": {}, "pairwise_by_tool": {}}
+
     # Index all BGCs by sequence with owning result index and tool
     by_seq: Dict[str, List[Tuple[int, str, int, Bgc]]] = defaultdict(list)
-    tools: List[str] = []
     for i, res in enumerate(results):
-        tools.append(res.mining_tool)
         for j, bgc in enumerate(res.bgcs):
             by_seq[bgc.sequence_id].append((i, res.mining_tool, j, bgc))
-    tool_names = sorted(set(tools))
 
-    # Convenience: per-sequence, per-tool lookup (for fast pairwise checks)
-    by_seq_by_tool: Dict[str, Dict[str, List[Bgc]]] = defaultdict(lambda: defaultdict(list))
+    # Convenience: per-sequence, per-run lookup (for fast pairwise checks)
+    by_seq_by_run: Dict[str, Dict[int, List[Bgc]]] = defaultdict(lambda: defaultdict(list))
     for seq, entries in by_seq.items():
-        for (_i, t, _j, b) in entries:
-            by_seq_by_tool[seq][t].append(b)
+        for (run_idx, _tool, _j, b) in entries:
+            by_seq_by_run[seq][run_idx].append(b)
+
+    # Build run labels once, using already-deduplicated input_file_label
+    run_labels: List[str] = [
+        f"{(res.display_label or res.input_file_label)} [{res.mining_tool}]"
+        for res in results
+    ]
+
+    # Aggregates for totals, keyed by run label
+    totals_by_tool: Dict[str, Dict[str, int]] = {
+        run_label: {"unique": 0, "non_unique": 0, "total": 0}
+        for run_label in run_labels
+    }
+
+    # Directional pairwise maps: A_run -> B_run -> counts for A against B,
+    # only for cross-tool comparisons (same semantics as before).
+    pairwise_by_tool: Dict[str, Dict[str, Dict[str, int]]] = {}
+    for i, res in enumerate(results):
+        A_label = run_labels[i]
+        A_tool = res.mining_tool
+        pairwise_by_tool[A_label] = {}
+        for j, other in enumerate(results):
+            if j == i:
+                continue
+            # skip exact same file (same path)
+            if other.input_file == res.input_file:
+                continue
+            B_label = run_labels[j]
+            pairwise_by_tool[A_label][B_label] = {"unique": 0, "non_unique": 0}
 
     results_uniques: List[Tuple[GenomeMiningResult, List[Bgc], List[Bgc]]] = []
 
-    # Aggregates for totals
-    totals_by_tool: Dict[str, Dict[str, int]] = {t: {"unique": 0, "non_unique": 0, "total": 0} for t in tool_names}
-
-    # Directional pairwise maps: A -> B -> counts for A against B
-    pairwise_by_tool: Dict[str, Dict[str, Dict[str, int]]] = {
-        A: {B: {"unique": 0, "non_unique": 0} for B in tool_names if B != A}
-        for A in tool_names
-    }
-
-    # Main pass: per result
+    # Main pass: per result (run)
     for i, res in enumerate(results):
         A_tool = res.mining_tool
+        A_label = run_labels[i]
         uniques_for_res: List[Bgc] = []
         non_uniques_for_res: List[Bgc] = []
 
-        for j, a in enumerate(res.bgcs):
+        for a in res.bgcs:
             seq = a.sequence_id
 
             # -------- Global uniqueness (vs ANY other tool) -------- #
-            # Candidates: same sequence, different tool
-            global_candidates = [b for (_k, other_tool, _jj, b) in by_seq.get(seq, [])
-                                 if other_tool != A_tool]
+            # Candidates: same sequence, different tool (unchanged behaviour)
+            global_candidates = [
+                b for (_k, other_tool, _jj, b) in by_seq.get(seq, [])
+                if other_tool != A_tool
+            ]
             is_unique_global = _is_unique_against_candidates(a, global_candidates, overlap_threshold)
             if is_unique_global:
                 uniques_for_res.append(a)
-                totals_by_tool[A_tool]["unique"] += 1
+                totals_by_tool[A_label]["unique"] += 1
             else:
                 non_uniques_for_res.append(a)
-                totals_by_tool[A_tool]["non_unique"] += 1
+                totals_by_tool[A_label]["non_unique"] += 1
 
-            totals_by_tool[A_tool]["total"] += 1
+            totals_by_tool[A_label]["total"] += 1
 
-            # -------- Directional pairwise (A against each B != A) -------- #
-            # For each other tool B, count this A BGC once as overlapped or not by B.
-            for B_tool in tool_names:
-                if B_tool == A_tool:
+            # -------- Directional pairwise (A run against each B run of other tools) -------- #
+            for j, res_B in enumerate(results):
+                if j == i:
                     continue
+                # skip exact same file (same path)
+                if res_B.input_file == res.input_file:
+                    continue
+
+                B_label = run_labels[j]
+                if B_label not in pairwise_by_tool.get(A_label, {}):
+                    continue
+
                 overlapped_by_B = False
-                for b in by_seq_by_tool.get(seq, {}).get(B_tool, []):
+                for b in by_seq_by_run.get(seq, {}).get(j, []):
                     cov = coverage_of_a_by_b(a, b)
                     if cov > 0.0 and cov >= overlap_threshold:
                         overlapped_by_B = True
                         break
+
                 if overlapped_by_B:
-                    pairwise_by_tool[A_tool][B_tool]["non_unique"] += 1
+                    pairwise_by_tool[A_label][B_label]["non_unique"] += 1
                 else:
-                    pairwise_by_tool[A_tool][B_tool]["unique"] += 1
+                    pairwise_by_tool[A_label][B_label]["unique"] += 1
 
         results_uniques.append((res, uniques_for_res, non_uniques_for_res))
 
@@ -152,20 +182,6 @@ def compute_uniqueness(
         "totals_by_tool": totals_by_tool,
         "pairwise_by_tool": pairwise_by_tool,
     }
-    # Example:
-    # Totals by tool:
-    #   GECCO       unique=  0  non_unique= 14  total= 14
-    #   antiSMASH   unique= 15  non_unique=  3  total= 18
-    #   deepBGC JSON  unique= 82  non_unique= 10  total= 92
-    #
-    # Pairwise by tool (directional A against B):
-    #   GECCO      vs antiSMASH   unique=  2  non_unique= 12
-    #   GECCO      vs deepBGC JSON  unique=  1  non_unique= 13
-    #   antiSMASH  vs GECCO       unique= 18  non_unique=  0
-    #   antiSMASH  vs deepBGC JSON  unique= 15  non_unique=  3
-    #   deepBGC JSON vs GECCO       unique= 89  non_unique=  3
-    #   deepBGC JSON vs antiSMASH   unique= 82  non_unique= 10
-
     return results_uniques, meta
 
 
