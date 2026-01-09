@@ -12,17 +12,12 @@ from src.option_parser import ValidationError
 
 
 def validate_no_duplicate_paths(paths: list[Path]) -> None:
-    norm = [p.expanduser().resolve() for p in paths]
-    seen = set()
-    dups = []
-    for p in norm:
-        if p in seen and p not in dups:
-            dups.append(p)
-        seen.add(p)
-    if dups:
+    normalized = [p.expanduser().resolve() for p in paths]
+    duplicates = {p for p in normalized if normalized.count(p) > 1}
+    if duplicates:
         raise ValidationError(
-            f"Duplicate input files were provided (each file must be listed only once):\n"
-            + "\n".join(f"- {p}" for p in dups)
+            "Duplicate input files were provided (each file must be listed only once):\n"
+            + "\n".join(f"- {p}" for p in sorted(duplicates))
         )
 
 
@@ -141,12 +136,6 @@ def determine_running_mode(
     has_reference = reference_genome_mining_result is not None
     num_assemblies = len(assembly_genome_mining_results)
 
-    if num_assemblies == 0:
-        raise ValidationError(
-            "No genome mining results were provided. "
-            "Please specify at least one genome mining result file."
-        )
-
     distinct_tools = {
         result.mining_tool for result in assembly_genome_mining_results
     }
@@ -193,7 +182,7 @@ def determine_running_mode(
                         "Only one assembly provided, choosing COMPARE_SAMPLES.",
                         indent=1,
                     )
-            if log:
+            elif log:
                 log.info(
                     "Different file labels detected, choosing COMPARE_SAMPLES.",
                     indent=1,
