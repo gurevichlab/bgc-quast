@@ -47,6 +47,7 @@ class PipelineHelper:
         self.quast_results: Optional[List[QuastResult]] = None
         self.running_mode: Optional[RunningMode] = None
         self.analysis_report: Optional[ReportData] = None
+        self.label_renaming_log: List[dict] = []
 
         default_cfg = load_config()
         try:
@@ -109,6 +110,15 @@ class PipelineHelper:
             self.log.error(error_message)
             raise ValidationError(error_message)
 
+        # Prevent the usage of duplicates
+        all_gm_paths = list(self.args.mining_results)
+        if self.args.reference_mining_result is not None:
+            all_gm_paths.append(self.args.reference_mining_result)
+
+        input_utils.validate_no_duplicate_paths(
+            all_gm_paths,
+        )
+
         # Parse genome mining results.
         try:
             self.assembly_genome_mining_results = parse_input_mining_result_files(
@@ -144,16 +154,23 @@ class PipelineHelper:
                 raise e
 
         # Set running mode based on the provided arguments.
-        self.running_mode = input_utils.determine_running_mode(
-            self.reference_genome_mining_result, self.assembly_genome_mining_results
-        )
-        if self.running_mode == RunningMode.UNKNOWN:
-            error_message = (
-                "Running mode could not be determined. "
-                "Please provide a valid combination of genome mining results."
+        try:
+            self.running_mode = input_utils.determine_running_mode(
+                self.args.mode,
+                self.reference_genome_mining_result,
+                self.assembly_genome_mining_results,
+                log=self.log,
             )
-            self.log.error(error_message)
-            raise ValidationError(error_message)
+            self.label_renaming_log = input_utils.assign_and_deduplicate_display_labels(
+                assembly_results=self.assembly_genome_mining_results,
+                reference_result=self.reference_genome_mining_result,
+                names_arg=self.args.names,
+                ref_name=self.args.ref_name,
+            )
+        except ValidationError as e:
+            # Log the specific message from determine_running_mode, then re-raise.
+            self.log.error(str(e))
+            raise
 
         self.log.info(f"Running mode set to: {self.running_mode}")
 
@@ -168,6 +185,7 @@ class PipelineHelper:
             running_mode=self.running_mode,  # type: ignore
             quast_results=self.quast_results,
             reference_genome_mining_result=self.reference_genome_mining_result,
+            label_renaming_log=getattr(self, "label_renaming_log", []),
         )
 
         self.analysis_report = analysis_report
@@ -203,6 +221,23 @@ class PipelineHelper:
             f"TSV report is saved to {self.config.output_config.tsv_report}",
             indent=1,
         )
+
+        # Log file label renamings (if any)
+        renaming_log = self.analysis_report.metadata.get("label_renaming_log") or []
+        if renaming_log:
+            self.log.info(
+                "Some input files had identical labels and were renamed "
+                "in the report to avoid ambiguity:",
+                indent=1,
+            )
+            for entry in renaming_log:
+                path = entry.get("path", "<unknown path>")
+                old_label = entry.get("old_label", "<unknown>")
+                new_label = entry.get("new_label", "<unknown>")
+                self.log.info(
+                    f"{path}: '{old_label}' ===> '{new_label}'",
+                    indent=2,
+                )
 
         if self.running_mode == RunningMode.COMPARE_TOOLS:
             venn_dir = self.config.output_config.output_dir / "venn_overlaps"

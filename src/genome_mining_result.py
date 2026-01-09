@@ -52,6 +52,7 @@ class GenomeMiningResult:
     bgcs: List[Bgc] = field(default_factory=list)
     genome_data: Optional[Dict[str, "ContigData"]] = None
     filtered_bgcs_by_length: int = 0
+    display_label: Optional[str] = None
 
 
 @dataclass
