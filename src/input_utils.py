@@ -118,7 +118,7 @@ def determine_running_mode(
       COMPARE_TO_REFERENCE, COMPARE_TOOLS, COMPARE_SAMPLES.
       If inference fails or inputs are inconsistent, raise ValidationError with an explanation.
 
-    - If mode is one of the explicit modes ("compare-reference",
+    - If mode is one of the explicit modes ("compare-to-reference",
       "compare-tools", "compare-samples"), validate that the inputs are
       consistent with that mode and return the corresponding RunningMode.
       If validation fails, raise ValidationError with an explanation.
@@ -130,7 +130,7 @@ def determine_running_mode(
     - UNKNOWN: If the input file labels are different and different mining tools are used.
 
     Args:
-        mode (str): Requested mode ("auto", "compare-reference", "compare-tools", "compare-samples").
+        mode (str): Requested mode ("auto", "compare-to-reference", "compare-tools", "compare-samples").
         reference_genome_mining_result (GenomeMiningResult): The reference genome mining result.
         assembly_genome_mining_results (List[GenomeMiningResult]): List of genome mining results.
 
@@ -209,7 +209,7 @@ def determine_running_mode(
             return RunningMode.COMPARE_TOOLS
 
     # ----- EXPLICIT MODES -----
-    if mode == "compare-reference":
+    if mode == "compare-to-reference":
         if log:
             log.info("Mode COMPARE_REFERENCE selected")
         # Rules:
@@ -218,7 +218,7 @@ def determine_running_mode(
         # - exactly one mining tool across reference + assemblies
         if not has_reference:
             raise ValidationError(
-                "--mode compare-reference requires reference data, but no "
+                "--mode compare-to-reference requires reference data, but no "
                 "reference genome mining result was found."
             )
 
@@ -228,7 +228,7 @@ def determine_running_mode(
         )
         if len(tools_with_reference) != 1:
             raise ValidationError(
-                "--mode compare-reference requires a single mining tool for "
+                "--mode compare-to-reference requires the same genome mining tool for "
                 "reference and input genomes. Found tools: "
                 f"{', '.join(sorted(tools_with_reference))}."
             )
@@ -246,7 +246,7 @@ def determine_running_mode(
             raise ValidationError(
                 "--mode compare-tools does not support reference data. "
                 "Please remove the reference genome mining result or use "
-                "--mode compare-reference."
+                "--mode compare-to-reference."
             )
 
         if num_assemblies < 2:
@@ -268,7 +268,7 @@ def determine_running_mode(
             raise ValidationError(
                 "--mode compare-samples does not support reference data. "
                 "Please remove the reference genome mining result or use "
-                "--mode compare-reference."
+                "--mode compare-to-reference."
             )
 
         if len(distinct_tools) != 1:
@@ -374,7 +374,7 @@ def assign_and_deduplicate_display_labels(
     if names is not None and len(names) != len(assembly_results):
         raise ValidationError(
             f"--names must contain exactly {len(assembly_results)} name(s) "
-            f"to match the number of assembly GM files, but got {len(names)}."
+            f"to match the number of input genome mining result files, but got {len(names)}."
         )
 
     # initial assignment

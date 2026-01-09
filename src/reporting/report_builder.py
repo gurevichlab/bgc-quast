@@ -126,8 +126,8 @@ class ReportBuilder:
             # keep in metadata so users/finders can locate them
             metadata.update({
                 "compare_tools_overlap_threshold": config.compare_tools_overlap_threshold,
-                "totals_by_tool": meta.get("totals_by_tool", {}),
-                "pairwise_by_tool": meta.get("pairwise_by_tool", {}),
+                "totals_by_run": meta.get("totals_by_run", {}),
+                "pairwise_by_run": meta.get("pairwise_by_run", {}),
             })
 
         elif running_mode == RunningMode.COMPARE_SAMPLES:

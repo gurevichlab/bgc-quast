@@ -34,7 +34,7 @@ def compute_coverage(
     dups = sorted({x for x in labels if labels.count(x) > 1})
     if dups:
         raise ValueError(
-            "Duplicate assembly file labels detected in compare-reference mode. "
+            "Duplicate assembly file labels detected in the compare-to-reference mode. "
             "QUAST pairing relies on input_file_label and requires uniqueness. "
             f"Duplicate labels: {', '.join(dups)}"
         )

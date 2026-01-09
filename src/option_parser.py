@@ -44,12 +44,12 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
 
     parser.add_argument(
         "--mode",
-        choices=["auto", "compare-reference", "compare-tools", "compare-samples"],
+        choices=["auto", "compare-to-reference", "compare-tools", "compare-samples"],
         default="auto",
         help=(
             "Running mode that controls how BGC-QUAST interprets the inputs. "
             "'auto' (default) tries to infer the mode from the provided files. "
-            "'compare-reference' expects reference genome mining result plus QUAST output."
+            "'compare-to-reference' expects reference genome mining result plus QUAST output."
             "'compare-tools' compares genome mining tools, "
             "including multiple runs from the same tool. "
             "'compare-samples' compares assemblies mined with a single tool."
@@ -136,9 +136,9 @@ def add_advanced_arguments(parser: argparse.ArgumentParser):
         type=str,
         default=None,
         help=(
-            "Custom names for assembly GM results in reports. "
+            "Custom names for the input genome mining results in reports. "
             "Comma-separated; use quotes if names contain spaces. "
-            "The number of names must match the number of assembly GM files."
+            "The number of names must match the number of genome mining results files."
         ),
     )
 
@@ -146,7 +146,7 @@ def add_advanced_arguments(parser: argparse.ArgumentParser):
         "--ref-name",
         type=str,
         default=None,
-        help="Custom name for the reference GM result in reports (only if reference is provided).",
+        help="Custom name for the reference genome mining result in reports (only if reference is provided).",
     )
 
 
