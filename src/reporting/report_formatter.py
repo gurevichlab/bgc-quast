@@ -181,7 +181,7 @@ class ReportFormatter:
             if ref_cols:
                 pivot_table = pivot_table.reindex(columns=ref_cols + other_cols)
 
-        txt = pivot_table.to_string()
+        txt = pivot_table.to_string(sparsify=False)  # show repeated MultiIndex labels instead of leaving them blank (e.g. file_label) -- the default behaviour
         output_path.write_text(txt, encoding="utf-8")
 
     def write_html(self, data: ReportData, output_path: Path) -> None:
