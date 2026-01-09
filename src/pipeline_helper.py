@@ -1,4 +1,5 @@
 from typing import List, Optional
+from pathlib import Path
 
 import src.input_utils as input_utils
 import src.reporting.report_writer as report_writer
@@ -70,12 +71,9 @@ class PipelineHelper:
         self.log.start()
 
     def set_up_output_dir(self) -> None:
-        """
-        Set up the output directory for the pipeline.
+        output_cfg = self.config.output_config
+        output_dir = output_cfg.output_dir
 
-        If the directory already exists, log a warning and overwrite its content.
-        """
-        output_dir = self.config.output_config.output_dir
         if output_dir.exists():
             self.log.warning(
                 f"Output directory ({output_dir}) already exists! "
@@ -84,7 +82,28 @@ class PipelineHelper:
         else:
             output_dir.mkdir(parents=True)
 
-        # TODO: Create 'latest' symlink if needed (default output dir with timestamp)
+        # Only for the *default timestamped* output dir:
+        if output_cfg.update_latest_symlink:
+            self._update_latest_symlink(output_cfg.latest_symlink, output_dir)
+
+    def _update_latest_symlink(self, symlink_path: Path, target_dir: Path) -> None:
+        """
+        Create/overwrite symlink_path -> target_dir.
+        """
+        try:
+            if symlink_path.exists() or symlink_path.is_symlink():
+                # If it's a symlink or file, unlink. If it's a real dir, be defensive.
+                if symlink_path.is_dir() and not symlink_path.is_symlink():
+                    raise RuntimeError(
+                        f"Cannot overwrite '{symlink_path}': it exists and is a directory (not a symlink)."
+                    )
+                symlink_path.unlink()
+
+            relative_target = target_dir.relative_to(symlink_path.parent)
+            symlink_path.symlink_to(relative_target, target_is_directory=True)
+        except OSError as e:
+            self.log.warning(f"Failed to update latest symlink '{symlink_path}' -> '{target_dir}': {e}")
+
 
     def parse_input(self) -> None:
         """

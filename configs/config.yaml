@@ -1,8 +1,9 @@
 default_output_dir_root: bgc_quast_results
 symlink_to_latest: latest
 
-report: report.tsv
-html_report: report.html
+report_txt: report.txt
+report_tsv: report.tsv
+report_html: report.html
 
 product_yamls:
   antismash_product_mapping: "antismash_class_mapping.yaml"
