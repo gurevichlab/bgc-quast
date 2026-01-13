@@ -43,19 +43,34 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
     )
 
     parser.add_argument(
-        "--min-bgc-length",
-        type=int,
-        metavar='INT',
-        default=None,
+        "--mode",
+        choices=["auto", "compare-to-reference", "compare-tools", "compare-samples"],
+        default="auto",
         help=(
-            "Minimum BGC length in bp. BGCs shorter than this threshold are "
-            "filtered out from all analyses (default: 5000)"
+            "Running mode that controls how BGC-QUAST interprets the inputs. "
+            "'auto' (default) tries to infer the mode from the provided files. "
+            "'compare-to-reference' expects reference genome mining result plus QUAST output."
+            "'compare-tools' compares genome mining tools, "
+            "including multiple runs from the same tool. "
+            "'compare-samples' compares assemblies mined with a single tool."
         ),
     )
 
 
 def add_advanced_arguments(parser: argparse.ArgumentParser):
     advanced_input_group = parser.add_argument_group("Advanced input", "TBA")
+
+    advanced_input_group.add_argument(
+        "--min-bgc-length",
+        type=int,
+        metavar='INT',
+        default=None,
+        help=(
+            "Minimum BGC length in bp. BGCs shorter than this threshold are "
+            "filtered out from all analyses (default: 0)"
+        ),
+    )
+
     advanced_input_group.add_argument(
         "--quast-output-dir",
         "-q",
@@ -116,6 +131,24 @@ def add_advanced_arguments(parser: argparse.ArgumentParser):
         help="Margin (in bp) from contig edges used to classify BGC completeness (default: 100)",
     )
 
+    advanced_input_group.add_argument(
+        "--names",
+        type=str,
+        default=None,
+        help=(
+            "Custom names for the input genome mining results in reports. "
+            "Comma-separated; use quotes if names contain spaces. "
+            "The number of names must match the number of genome mining results files."
+        ),
+    )
+
+    advanced_input_group.add_argument(
+        "--ref-name",
+        type=str,
+        default=None,
+        help="Custom name for the reference genome mining result in reports (only if reference is provided).",
+    )
+
 
 def build_cmdline_args_parser(default_cfg: Config) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -155,11 +188,16 @@ def validate_arguments(args: CommandLineArgs):
     thr = getattr(args, "compare_tools_overlap_threshold", None)
     if thr is not None:
         validate(0.0 <= thr <= 1.0,
-                 "--compare-tools-overlap-threshold must be between 0 and 1")
+                 "--overlap-threshold must be between 0 and 1")
 
     min_len = getattr(args, "min_bgc_length", None)
     if min_len is not None:
         validate(
             min_len >= 0,
             "--min-bgc-length must not be a negative integer",
+        )
+    if getattr(args, "ref_name", None) and not getattr(args, "reference_mining_result", None):
+        raise ValidationError(
+            "--ref-name was provided but no reference genome mining result was specified. "
+            "Please use --reference-mining-result together with --ref-name."
         )

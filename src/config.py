@@ -11,16 +11,12 @@ import yaml
 @dataclass
 class OutputConfig:
     output_dir: Path
-    symlink_to_latest: Path
-    report: Path
+    latest_symlink: Path
+    update_latest_symlink: bool
 
-    def __init__(self, output_dir: Path):
-        self.output_dir = output_dir
-        # TODO: read these default values from config.yaml
-        self.symlink_to_latest = self.output_dir / Path("latest")
-        self.report = self.output_dir / Path("report.txt")
-        self.html_report = self.output_dir / Path("report.html")
-        self.tsv_report = self.output_dir / Path("report.tsv")
+    report: Path
+    html_report: Path
+    tsv_report: Path
 
 
 @dataclass
@@ -30,8 +26,6 @@ class ProductMappingConfig:
 
 @dataclass
 class Config:
-    magic_number: int  # just a placeholder for future expansion of the config
-    magic_str: str  # just a placeholder for future expansion of the config
     output_config: OutputConfig
     product_mapping_config: ProductMappingConfig
     allowed_gap_for_fragmented_recovery: int
@@ -40,28 +34,38 @@ class Config:
     compare_tools_overlap_threshold: float
 
 
-def get_default_output_dir(cfg: dict) -> Path:
-    while (
-        out_dir := (
-            Path.cwd()
-            / Path(cfg["default_output_dir_root"])
-            / Path(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
-        )
-    ).exists():
+def _unique_timestamp_dir(root: Path) -> Path:
+    while True:
+        out_dir = root / Path(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+        if not out_dir.exists():
+            return out_dir
         time.sleep(1)
-
-    return out_dir
 
 
 def load_config(args: Optional[CommandLineArgs] = None) -> Config:
     tool_dir = Path(__file__).parent.parent.resolve()
     configs_dir = tool_dir / Path("configs")
     cfg = yaml.safe_load((configs_dir / "config.yaml").open("r"))
-    out_dir = (
-        args.output_dir.resolve()
-        if args is not None and args.output_dir is not None
-        else get_default_output_dir(cfg)
+
+    default_output_dir_root = Path.cwd() / Path(cfg["default_output_dir_root"])
+    latest_output_dir_symlink = default_output_dir_root / Path(cfg["symlink_to_latest"])
+
+    if args is not None and getattr(args, "output_dir", None) is not None:
+        output_dir = args.output_dir.expanduser().resolve()
+        update_latest = False
+    else:
+        output_dir = _unique_timestamp_dir(default_output_dir_root)
+        update_latest = True
+
+    output_config = OutputConfig(
+        output_dir=output_dir,
+        latest_symlink=latest_output_dir_symlink,
+        update_latest_symlink=update_latest,
+        report=output_dir / Path(cfg["report_txt"]),
+        html_report=output_dir / Path(cfg["report_html"]),
+        tsv_report=output_dir / Path(cfg["report_tsv"]),
     )
+
     product_mapping_config = ProductMappingConfig(
         product_yamls={
             k: configs_dir / Path(v) for k, v in cfg["product_yamls"].items()
@@ -69,9 +73,7 @@ def load_config(args: Optional[CommandLineArgs] = None) -> Config:
     )
 
     conf = Config(
-        magic_number=42,
-        magic_str="",
-        output_config=OutputConfig(out_dir),
+        output_config=output_config,
         product_mapping_config=product_mapping_config,
         min_bgc_length=cfg["min_bgc_length"],
         bgc_completeness_margin=cfg["bgc_completeness_margin"],

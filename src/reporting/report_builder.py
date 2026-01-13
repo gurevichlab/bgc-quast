@@ -1,6 +1,7 @@
 """Report builder for creating structured reports from genome mining results."""
 
 from typing import List, Optional
+from collections import defaultdict
 
 import src.compare_to_ref_analyzer as compare_to_ref_analyzer
 from src.compare_tools_analyzer import compute_uniqueness
@@ -33,6 +34,7 @@ class ReportBuilder:
         running_mode: RunningMode,
         quast_results: Optional[list[QuastResult]] = None,
         reference_genome_mining_result: Optional[GenomeMiningResult] = None,
+        label_renaming_log: Optional[list[dict]] = None,
     ) -> ReportData:
         """
         Build a report from genome mining results.
@@ -52,6 +54,7 @@ class ReportBuilder:
         report_config = self.report_config_manager.get_config("basic_report")
         if not report_config:
             raise ValueError("No configuration found for running mode: basic_report")
+
 
         basic_metrics_calculator = BasicMetricsCalculator(
             results=results,
@@ -101,7 +104,8 @@ class ReportBuilder:
                 metadata.update(
                     {
                         "reference_input_file": str(reference_genome_mining_result.input_file),
-                        "reference_file_label": reference_genome_mining_result.input_file_label,
+                        "reference_file_label": (reference_genome_mining_result.display_label
+                                                 or reference_genome_mining_result.input_file_label),
                     }
                 )
 
@@ -122,8 +126,8 @@ class ReportBuilder:
             # keep in metadata so users/finders can locate them
             metadata.update({
                 "compare_tools_overlap_threshold": config.compare_tools_overlap_threshold,
-                "totals_by_tool": meta.get("totals_by_tool", {}),
-                "pairwise_by_tool": meta.get("pairwise_by_tool", {}),
+                "totals_by_run": meta.get("totals_by_run", {}),
+                "pairwise_by_run": meta.get("pairwise_by_run", {}),
             })
 
         elif running_mode == RunningMode.COMPARE_SAMPLES:
@@ -134,18 +138,25 @@ class ReportBuilder:
         df = create_dataframe_from_metrics(metrics)
         # Create a mapping from file_path to mining_tool
         path_to_tool = {str(r.input_file): r.mining_tool for r in results}
+        path_to_label = {str(r.input_file): (r.display_label or r.input_file_label) for r in results}
 
         # Add a mapping for reference as well
         if reference_genome_mining_result is not None:
             path_to_tool[str(reference_genome_mining_result.input_file)] = (
                 reference_genome_mining_result.mining_tool
             )
+            path_to_label[str(reference_genome_mining_result.input_file)] = (
+                    reference_genome_mining_result.display_label or reference_genome_mining_result.input_file_label
+            )
 
-        df["Genome mining tool"] = df["file_path"].astype(str).map(path_to_tool)
+        file_paths_str = df["file_path"].astype(str)
 
-        df["file_label"] = df["file_path"].apply(
-            lambda x: input_utils.get_file_label_from_path(x)
-        )
+        df["mining_tool"] = df["file_path"].astype(str).map(path_to_tool)
+        df["file_label"] = file_paths_str.map(path_to_label)
+        df["input_file"] = file_paths_str
+
         df.drop(columns=["file_path"], inplace=True, errors="ignore")
+
+        metadata["label_renaming_log"] = label_renaming_log or []
 
         return ReportData(metrics_df=df, running_mode=running_mode, metadata=metadata)

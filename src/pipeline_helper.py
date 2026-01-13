@@ -1,4 +1,5 @@
 from typing import List, Optional
+from pathlib import Path
 
 import src.input_utils as input_utils
 import src.reporting.report_writer as report_writer
@@ -47,6 +48,7 @@ class PipelineHelper:
         self.quast_results: Optional[List[QuastResult]] = None
         self.running_mode: Optional[RunningMode] = None
         self.analysis_report: Optional[ReportData] = None
+        self.label_renaming_log: List[dict] = []
 
         default_cfg = load_config()
         try:
@@ -69,12 +71,9 @@ class PipelineHelper:
         self.log.start()
 
     def set_up_output_dir(self) -> None:
-        """
-        Set up the output directory for the pipeline.
+        output_cfg = self.config.output_config
+        output_dir = output_cfg.output_dir
 
-        If the directory already exists, log a warning and overwrite its content.
-        """
-        output_dir = self.config.output_config.output_dir
         if output_dir.exists():
             self.log.warning(
                 f"Output directory ({output_dir}) already exists! "
@@ -83,7 +82,28 @@ class PipelineHelper:
         else:
             output_dir.mkdir(parents=True)
 
-        # TODO: Create 'latest' symlink if needed (default output dir with timestamp)
+        # Only for the *default timestamped* output dir:
+        if output_cfg.update_latest_symlink:
+            self._update_latest_symlink(output_cfg.latest_symlink, output_dir)
+
+    def _update_latest_symlink(self, symlink_path: Path, target_dir: Path) -> None:
+        """
+        Create/overwrite symlink_path -> target_dir.
+        """
+        try:
+            if symlink_path.exists() or symlink_path.is_symlink():
+                # If it's a symlink or file, unlink. If it's a real dir, be defensive.
+                if symlink_path.is_dir() and not symlink_path.is_symlink():
+                    raise RuntimeError(
+                        f"Cannot overwrite '{symlink_path}': it exists and is a directory (not a symlink)."
+                    )
+                symlink_path.unlink()
+
+            relative_target = target_dir.relative_to(symlink_path.parent)
+            symlink_path.symlink_to(relative_target, target_is_directory=True)
+        except OSError as e:
+            self.log.warning(f"Failed to update latest symlink '{symlink_path}' -> '{target_dir}': {e}")
+
 
     def parse_input(self) -> None:
         """
@@ -108,6 +128,15 @@ class PipelineHelper:
             )
             self.log.error(error_message)
             raise ValidationError(error_message)
+
+        # Prevent the usage of duplicates
+        all_gm_paths = list(self.args.mining_results)
+        if self.args.reference_mining_result is not None:
+            all_gm_paths.append(self.args.reference_mining_result)
+
+        input_utils.validate_no_duplicate_paths(
+            all_gm_paths,
+        )
 
         # Parse genome mining results.
         try:
@@ -144,16 +173,23 @@ class PipelineHelper:
                 raise e
 
         # Set running mode based on the provided arguments.
-        self.running_mode = input_utils.determine_running_mode(
-            self.reference_genome_mining_result, self.assembly_genome_mining_results
-        )
-        if self.running_mode == RunningMode.UNKNOWN:
-            error_message = (
-                "Running mode could not be determined. "
-                "Please provide a valid combination of genome mining results."
+        try:
+            self.running_mode = input_utils.determine_running_mode(
+                self.args.mode,
+                self.reference_genome_mining_result,
+                self.assembly_genome_mining_results,
+                log=self.log,
             )
-            self.log.error(error_message)
-            raise ValidationError(error_message)
+            self.label_renaming_log = input_utils.assign_and_deduplicate_display_labels(
+                assembly_results=self.assembly_genome_mining_results,
+                reference_result=self.reference_genome_mining_result,
+                names_arg=self.args.names,
+                ref_name=self.args.ref_name,
+            )
+        except ValidationError as e:
+            # Log the specific message from determine_running_mode, then re-raise.
+            self.log.error(str(e))
+            raise
 
         self.log.info(f"Running mode set to: {self.running_mode}")
 
@@ -168,6 +204,7 @@ class PipelineHelper:
             running_mode=self.running_mode,  # type: ignore
             quast_results=self.quast_results,
             reference_genome_mining_result=self.reference_genome_mining_result,
+            label_renaming_log=getattr(self, "label_renaming_log", []),
         )
 
         self.analysis_report = analysis_report
@@ -203,6 +240,23 @@ class PipelineHelper:
             f"TSV report is saved to {self.config.output_config.tsv_report}",
             indent=1,
         )
+
+        # Log file label renamings (if any)
+        renaming_log = self.analysis_report.metadata.get("label_renaming_log") or []
+        if renaming_log:
+            self.log.info(
+                "Some input files had identical labels and were renamed "
+                "in the report to avoid ambiguity:",
+                indent=1,
+            )
+            for entry in renaming_log:
+                path = entry.get("path", "<unknown path>")
+                old_label = entry.get("old_label", "<unknown>")
+                new_label = entry.get("new_label", "<unknown>")
+                self.log.info(
+                    f"{path}: '{old_label}' ===> '{new_label}'",
+                    indent=2,
+                )
 
         if self.running_mode == RunningMode.COMPARE_TOOLS:
             venn_dir = self.config.output_config.output_dir / "venn_overlaps"

@@ -892,7 +892,7 @@ function drawVenn(svg, toolA, toolB, pairwiseByTool, threshold) {
 
 // Create the full Venn panel (checkboxes + title + SVG).
 function initVennPanel(panel, metadata) {
-    const pairwise = metadata && metadata.pairwise_by_tool;
+    const pairwise = metadata && metadata.pairwise_by_run;
     if (!pairwise) {
         panel.textContent = 'No overlap information available.';
         return;

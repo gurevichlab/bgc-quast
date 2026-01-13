@@ -50,10 +50,10 @@ class Logger(object):
             sys.stderr.write('\n' + msg + '\n')
         else:
             self._logger.error('')
-            if is_exception:
-                self._logger.exception(msg)
-            else:
-                self._logger.error(msg)
+            # if is_exception:
+            #     self._logger.exception(msg)
+            # else:
+            self._logger.error(msg)
 
         sys.exit(1)
 
