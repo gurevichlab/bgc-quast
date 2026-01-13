@@ -151,7 +151,7 @@ class ReportBuilder:
 
         file_paths_str = df["file_path"].astype(str)
 
-        df["mining_tool"] = df["file_path"].astype(str).map(path_to_tool)
+        df["Genome mining tool"] = df["file_path"].astype(str).map(path_to_tool)
         df["file_label"] = file_paths_str.map(path_to_label)
         df["input_file"] = file_paths_str
 
