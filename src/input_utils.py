@@ -159,7 +159,13 @@ def determine_running_mode(
         if has_reference:
             if log:
                 log.info("Reference detected.", indent=1)
-            if different_mining_tools:
+
+            tools_with_reference = set(distinct_tools)
+            tools_with_reference.add(
+                reference_genome_mining_result.mining_tool  # type: ignore[union-attr]
+            )
+
+            if len(tools_with_reference) != 1:
                 raise ValidationError(
                     "Auto mode could not determine the running mode: "
                     "several mining tools were detected but reference was provided. Please ensure that reference and "
