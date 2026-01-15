@@ -22,7 +22,7 @@ function renderRunSummary(meta) {
 
     const margin = meta.bgc_completeness_margin;
     if (margin != null) {
-        text += `and <code>${margin}</code> bp margin from contig edges.`;
+        text += `and with <code>${margin}</code> bp margin from contig edges.`;
     }
 
     if (resolved === 'compare_tools' && meta.compare_tools_overlap_threshold != null) {
