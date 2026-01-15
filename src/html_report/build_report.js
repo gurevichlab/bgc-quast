@@ -18,7 +18,7 @@ function renderRunSummary(meta) {
         modeText = `The running mode is <code>${resolved}</code>.`;
     }
 
-    let text = `${modeText} All statistics are based on BGCs of size ≥ <code>${meta.min_bgc_length}</code>`;
+    let text = `${modeText} All statistics are based on BGCs of size ≥ <code>${meta.min_bgc_length}</code> bp`;
 
     const margin = meta.bgc_completeness_margin;
     if (margin != null) {
