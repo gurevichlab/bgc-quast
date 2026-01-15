@@ -1,6 +1,40 @@
 /* global Chart */
 
 /* ---------------------------------------------------------------------------
+ * BGC-QUAST RUN SUMMARY
+ * ------------------------------------------------------------------------- */
+
+function renderRunSummary(meta) {
+    const el = document.getElementById('runSummary');
+    if (!el) return;
+
+    const requested = meta.requested_mode;
+    const resolved  = meta.running_mode;
+
+    let modeText;
+    if (requested === 'auto') {
+        modeText = `The running mode is <code>auto</code> that determined the mode as <code>${resolved}</code>.`;
+    } else {
+        modeText = `The running mode is <code>${resolved}</code>.`;
+    }
+
+    let text = `${modeText} All statistics are based on BGCs of size ≥ <code>${meta.min_bgc_length}</code>`;
+
+    const margin = meta.bgc_completeness_margin;
+    if (margin != null) {
+        text += `and with <code>${margin}</code> bp margin from contig edges.`;
+    }
+
+    if (resolved === 'compare_tools' && meta.compare_tools_overlap_threshold != null) {
+        const pct = Math.round(meta.compare_tools_overlap_threshold * 100);
+        text += ` The BGC overlap threshold is set to <code>${pct}%</code>.`;
+    }
+
+    el.innerHTML = text;
+}
+
+
+/* ---------------------------------------------------------------------------
  * HEATMAP UTILITIES
  * ------------------------------------------------------------------------- */
 
@@ -161,7 +195,26 @@ function heatMapOneRow(cells, values, direction = 'more_is_better') {
  * Each entry: { cells: HTMLTableCellElement[], values: number[] }
  */
 const allNumericCells = [];
+let extendedReportShown = false;
 
+function applyExtendedState() {
+    const extendedRows = document.querySelectorAll('.extended-row');
+    extendedRows.forEach(row => {
+        row.style.display = extendedReportShown ? 'table-row' : 'none';
+    });
+
+    const toggleBtn = document.getElementById('toggleExtendedBtn');
+    if (toggleBtn) {
+        toggleBtn.textContent = extendedReportShown ? 'Hide extended report' : 'Show extended report';
+        toggleBtn.classList.toggle('is-collapsed', extendedReportShown);
+    }
+
+    const layout = document.getElementById('reportLayout');
+    if (layout) {
+        if (extendedReportShown) layout.classList.add('extended-locked');
+        else layout.classList.remove('extended-locked');
+    }
+}
 
 /* ---------------------------------------------------------------------------
  * TABLE BUILDER (main report table + extended rows)
@@ -180,9 +233,15 @@ function buildTable(data) {
 
     // Build column headers
     headerRow.appendChild(document.createElement('th')); // top-left empty cell
-    data[0].slice(1).forEach(col => {
+    data[0].slice(1).forEach((col, idx) => {
         const th = document.createElement('th');
         th.textContent = col;
+
+        // idx=0 corresponds to j===1 (first data column) -> reference in reference mode
+        if (isReferenceMode && idx === 0) {
+            th.classList.add('ref-col-header');
+        }
+
         headerRow.appendChild(th);
     });
     headerRow.classList.add('column-header-row');
@@ -196,7 +255,7 @@ function buildTable(data) {
         // Hide extended rows by default (only show "total" by default)
         const label = String(rowData[0] ?? '').toLowerCase();
         const isTotal = label.includes('(total)');
-        const isMiningTool = label === 'mining_tool';
+        const isMiningTool = label === 'genome mining tool';
         if (!isTotal && !isMiningTool) {
             row.classList.add('extended-row');
         }
@@ -211,12 +270,12 @@ function buildTable(data) {
             const td = document.createElement(isRowHeader ? 'th' : 'td');
 
             if (isRowHeader) {
-                let labelText = (String(cell).toLowerCase() === 'mining_tool')
-                    ? 'Genome Mining Tool'
+                let labelText = (String(cell).toLowerCase() === 'genome mining tool')
+                    ? 'Genome mining tool'
                     : String(cell ?? '');
 
                 td.textContent = labelText;
-                if (labelText === 'Genome Mining Tool') {
+                if (labelText === 'Genome mining tool') {
                     td.classList.add('row-label-total');
                 }
 
@@ -227,38 +286,50 @@ function buildTable(data) {
                 } else {
                     td.classList.add('row-label');
                 }
+
+                const rawLabel = String(cell ?? '');
+
+                // Compare-tools mode-specific rows
+                const isCompareToolsSpecific =
+                    rawLabel.startsWith('Unique BGCs') ||
+                    rawLabel.startsWith('Unique recovery rate');
+
+                // Compare-reference mode-specific rows
+                const isCompareRefSpecific =
+                    rawLabel.startsWith('Fully recovered BGCs') ||
+                    rawLabel.startsWith('Partially recovered BGCs') ||
+                    rawLabel.startsWith('Missed BGCs') ||
+                    rawLabel.startsWith('Fragmented BGCs') ||
+                    rawLabel.startsWith('Misclassified product type') ||
+                    rawLabel.startsWith('Recovery rate');
+
+                if ((reportMode === 'compare_tools' && isCompareToolsSpecific) ||
+                    (reportMode === 'compare_to_reference' && isCompareRefSpecific)) {
+                    td.classList.add('mode-specific-metric');
+                }
+
             } else {
                 td.textContent = cell;
             }
 
             // Only collect numeric values for heatmap
             if (j > 0) {
-                const rowLabel = String(rowData[0] ?? '');
-                const isBGCRow  = rowLabel.startsWith('# BGCs');
-                const isMeanRow = rowLabel.startsWith('Mean BGC length');
-                const isLastCol = (j === rowData.length - 1);
-
-                // First: check if the cell is numeric at all
                 const num = parseFloat(cell);
-                if (Number.isNaN(num)) {
-                    // Exclude non-numeric cells
-                } else if (isReferenceMode && isLastCol && !isBGCRow && !isMeanRow) {
-                    // Reference mode, last column, numeric row that is NOT
-                    // "# BGCs" or "Mean BGC length" → make it look like "no column"
-                    td.textContent = '';
-                    td.classList.add('ref-empty');
-                } else if (isReferenceMode && isLastCol && (isBGCRow || isMeanRow)) {
-                    // Reference column for "# BGCs" / "Mean BGC length":
-                    //   - text always visible
-                    //   - only participate in heatmap when toggle is on
-                    if (includeReferenceInHeatmap) {
+
+                // Only consider numeric cells for heatmap
+                if (!Number.isNaN(num)) {
+                    // In COMPARE_TO_REFERENCE mode, the first data column (j === 1)
+                    // is the reference column
+                    const isReferenceColumn = isReferenceMode && (j === 1);
+
+                    if (isReferenceColumn && !includeReferenceInHeatmap) {
+                        // Reference column stays uncolored (white) when heatmap is on.
+                    } else {
+                        // Normal numeric cell, or reference when included:
+                        // participate in the heatmap.
                         numericCells.push(td);
                         numericValues.push(num);
                     }
-                } else {
-                    // Normal numeric cell → always part of the heatmap
-                    numericCells.push(td);
-                    numericValues.push(num);
                 }
             }
 
@@ -580,14 +651,13 @@ function buildBarPlotDynamic(data) {
 
     const metricBase = METRIC_BASE[currentMetricKey];
 
-    // In COMPARE_TO_REFERENCE, drop the last (reference) column from the plot for all tabs except Overview (totals)
-    const hideReferenceForThisMetric =
-        isReferenceMode && currentMetricKey !== 'bgcs';
-    const colEnd = hideReferenceForThisMetric ? -1 : undefined;
+    // In COMPARE_TO_REFERENCE, drop the reference column from the plot for all tabs except Overview (totals)
+    const hideReferenceForThisMetric = isReferenceMode && currentMetricKey !== 'bgcs';
+    const colStart = hideReferenceForThisMetric ? 2 : 1;
 
     // labels are Assembly+Tool
-    const tools = data[1].slice(1, colEnd);
-    const assemblies = data[0].slice(1, colEnd);
+    const tools = data[1].slice(colStart);
+    const assemblies = data[0].slice(colStart);
     const labels = tools.map((tool, i) => `${tool}\n${assemblies[i]}`);
 
     // read UI
@@ -600,7 +670,7 @@ function buildBarPlotDynamic(data) {
     if (mode === 'total') {
         const row = getRowByLabel(data, metricLabel(metricBase, 'Total'));
         if (row) {
-            const counts = row.slice(1, colEnd).map(v => parseInt(v, 10));
+            const counts = row.slice(colStart).map(v => parseInt(v, 10));
             datasets.push({
                 label: metricLabel(metricBase, 'Total'),
                 data: counts,
@@ -625,21 +695,21 @@ function buildBarPlotDynamic(data) {
                 if (statuses.includes('complete') && rowComplete) {
                     datasets.push({
                         label: `${type} complete`,
-                        data: rowComplete.slice(1, colEnd).map(v => parseInt(v, 10)),
+                        data: rowComplete.slice(colStart).map(v => parseInt(v, 10)),
                         backgroundColor: baseColor
                     });
                 }
                 if (statuses.includes('incomplete') && rowIncomplete) {
                     datasets.push({
                         label: `${type} incomplete`,
-                        data: rowIncomplete.slice(1, colEnd).map(v => parseInt(v, 10)),
+                        data: rowIncomplete.slice(colStart).map(v => parseInt(v, 10)),
                         backgroundColor: lighten(baseColor, 0.45) // lighter shade
                     });
                 }
                 if (statuses.includes('unknown completeness') && rowUnknown) {
                     datasets.push({
                         label: `${type} unknown completeness`,
-                        data: rowUnknown.slice(1, colEnd).map(v => parseInt(v, 10)),
+                        data: rowUnknown.slice(colStart).map(v => parseInt(v, 10)),
                         backgroundColor: lighten(baseColor, 0.75) // even lighter shade
                     });
                 }
@@ -655,21 +725,21 @@ function buildBarPlotDynamic(data) {
             if (statuses.includes('complete') && rowComplete) {
                 datasets.push({
                     label: 'Complete',
-                    data: rowComplete.slice(1, colEnd).map(v => parseInt(v, 10)),
+                    data: rowComplete.slice(colStart).map(v => parseInt(v, 10)),
                     backgroundColor: '#578c18'
                 });
             }
             if (statuses.includes('incomplete') && rowIncomplete) {
                 datasets.push({
                     label: 'Incomplete',
-                    data: rowIncomplete.slice(1, colEnd).map(v => parseInt(v, 10)),
+                    data: rowIncomplete.slice(colStart).map(v => parseInt(v, 10)),
                     backgroundColor: '#ccca3d'
                 });
             }
             if (statuses.includes('unknown completeness') && rowUnknown) {
                 datasets.push({
                     label: 'Unknown completeness',
-                    data: rowUnknown.slice(1, colEnd).map(v => parseInt(v, 10)),
+                    data: rowUnknown.slice(colStart).map(v => parseInt(v, 10)),
                     backgroundColor: '#999999'
                 });
             }
@@ -683,7 +753,7 @@ function buildBarPlotDynamic(data) {
                 if (row) {
                     datasets.push({
                         label: type,
-                        data: row.slice(1, colEnd).map(v => parseInt(v, 10)),
+                        data: row.slice(colStart).map(v => parseInt(v, 10)),
                         backgroundColor: productColors[type] || productColors['Other']
                     });
                 }
@@ -693,7 +763,7 @@ function buildBarPlotDynamic(data) {
             // just show the *current metric* total to avoid an empty chart.
             const row = getRowByLabel(data, metricLabel(metricBase, 'Total'));
             if (row) {
-                const counts = row.slice(1, colEnd).map(v => parseInt(v, 10));
+                const counts = row.slice(colStart).map(v => parseInt(v, 10));
                 datasets.push({
                     label: metricLabel(metricBase, 'Total'),
                     data: counts,
@@ -835,11 +905,11 @@ function drawVenn(svg, toolA, toolB, pairwiseByTool, threshold) {
     // counts
     makeText(70, 110,  String(leftUnique));
     makeText(190, 110, String(rightUnique));
-    makeText(130, 110, `${leftNonUni} / ${rightNonUni}`);
+    makeText(130, 110, `${leftNonUni} | ${rightNonUni}`);
 
     // labels
-    makeText(90, 200, labelA, 13);
-    makeText(180, 200, labelB, 13);
+    makeText(60, 200, labelA, 10);
+    makeText(200, 200, labelB, 10);
 
     // title
     const wrapper = svg.closest('.venn-wrapper');
@@ -902,7 +972,7 @@ function initVennPanel(panel, metadata) {
     // Download button for the Venn plot
     const downloadBtn = document.createElement('button');
     downloadBtn.id = 'downloadVennPlot';
-    downloadBtn.textContent = 'Plot Download';
+    downloadBtn.textContent = 'Download plot';
     downloadBtn.addEventListener('click', () => {
         // Do nothing if no diagram yet (no tools selected or not 2 selected)
         if (!svg.firstChild) return;
@@ -1127,6 +1197,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Chart.defaults.font.size = 13;
         Chart.defaults.font.family = "'Arial', sans-serif";
     }
+    renderRunSummary(reportMetadata);
     buildTable(reportData);
     renderTypeFilters(detectTypes(reportData));
     renderCompletenessFilters(detectCompleteness(reportData));
@@ -1136,25 +1207,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Extended report toggle visibility (show/hide extra rows)
     const toggleBtn = document.getElementById('toggleExtendedBtn');
     toggleBtn.addEventListener('click', () => {
-        const extendedRows = document.querySelectorAll('.extended-row');
-        if (!extendedRows.length) return; // nothing to toggle
-        const isHidden = getComputedStyle(extendedRows[0]).display === 'none';
-
-        extendedRows.forEach(row => {
-            row.style.display = isHidden ? 'table-row' : 'none';
-        });
-
-        toggleBtn.textContent = isHidden ? 'Hide Extended Report' : 'Show Extended Report';
-        toggleBtn.classList.toggle('is-collapsed', isHidden);
-
-        const layout = document.getElementById('reportLayout');
-        if (layout) {
-            if (isHidden) {
-                layout.classList.add('extended-locked');
-            } else {
-                layout.classList.remove('extended-locked');
-            }
-        }
+        extendedReportShown = !extendedReportShown;
+        applyExtendedState();
     });
 
     // Heatmap toggle
@@ -1183,10 +1237,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             includeRefToggle.addEventListener('change', () => {
                 includeReferenceInHeatmap = includeRefToggle.checked;
-                // Rebuild table so allNumericCells is recomputed
                 const container = document.getElementById('reportTableContainer');
                 container.innerHTML = '';
                 buildTable(reportData);
+                applyExtendedState(); // <-- keep extended state
             });
         }
     }

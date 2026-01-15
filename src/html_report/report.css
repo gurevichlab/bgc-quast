@@ -97,6 +97,22 @@ html, body {
   height: 24px;
 }
 
+/* ----- OPTIONS SUMMARY ----- */
+.run-summary {
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 10px 0 16px 0;
+  color: #333;
+  line-height: 1.35;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.10);
+}
+.run-summary code {
+  background: #f2f2f7;
+  padding: 1px 5px;
+  border-radius: 6px;
+}
 
 /* ----- TABLE STYLING ----- */
 table {
@@ -128,6 +144,12 @@ tr.column-header-row th {
     color: #ffffff;
 }
 
+/* Reference header */
+tr.column-header-row th.ref-col-header {
+    background-color: #4b679a;
+    color: #ffffff;
+}
+
 /* Row labels: default normal, totals bold */
 th.row-label {
     font-weight: 400;
@@ -138,12 +160,11 @@ th.row-label-total {
     font-weight: 600;
 }
 
-/* Reference mode: cells that should look like "no column" */
-td.ref-empty {
-    border: none;
-    background-color: inherit;
-}
 
+/* Row labels: default normal, totals bold */
+th.mode-specific-metric {
+    background-color: rgba(209, 217, 236, 0.55);
+}
 
 /* Table style - rows */
 .extended-row {

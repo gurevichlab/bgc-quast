@@ -205,6 +205,7 @@ class PipelineHelper:
             quast_results=self.quast_results,
             reference_genome_mining_result=self.reference_genome_mining_result,
             label_renaming_log=getattr(self, "label_renaming_log", []),
+            requested_mode=self.args.mode,
         )
 
         self.analysis_report = analysis_report

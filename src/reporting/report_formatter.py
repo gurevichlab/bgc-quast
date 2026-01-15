@@ -8,7 +8,7 @@ import math
 import base64
 from src.reporting.report_config import ReportConfig
 from src.reporting.report_data import ReportData
-
+import re
 
 class DataFrameTableBuilder:
     """Builds pivot tables from ReportData for formatting."""
@@ -34,7 +34,7 @@ class DataFrameTableBuilder:
         # Always use file_label as columns
         pivot_table = df.pivot_table(
             index="row_label",
-            columns=["file_label", "mining_tool"]
+            columns=["file_label", "Genome mining tool"]
             if "file_label" in df.columns
             else None,
             values="value",
@@ -56,7 +56,7 @@ class DataFrameTableBuilder:
             "file_label",
             "row_label",
             "sort_key",
-            "mining_tool",
+            "Genome mining tool",
         }
 
         # Use grouping_combinations from config if present, else all grouping columns
@@ -158,30 +158,52 @@ class ReportFormatter:
         self.config = config
         self.table_builder = DataFrameTableBuilder(config)
 
-    def write_txt(self, data: ReportData, output_path: Path) -> None:
-        """Format and save report as plain text table."""
-
+    def _prepare_pivot_table(self, data: ReportData):
+        """Build pivot table and (if compare-to-reference) move ref first + patch ref metrics."""
         pivot_table = self.table_builder.build_pivot_table(data)
 
-        # In compare-to-reference mode, make sure the reference column
-        # (identified by its file label in metadata) is always the first column.
         ref_label = None
         if isinstance(getattr(data, "metadata", None), dict):
             ref_label = data.metadata.get("reference_file_label")
-        if ref_label:
-            cols = list(pivot_table.columns)
 
-            def _is_ref(col):
-                # MultiIndex columns come as tuples (file_label, mining_tool)
-                file_label = col[0] if isinstance(col, tuple) else col
-                return file_label == ref_label
+        if not ref_label:
+            return pivot_table
 
-            ref_cols = [c for c in cols if _is_ref(c)]
-            other_cols = [c for c in cols if not _is_ref(c)]
-            if ref_cols:
-                pivot_table = pivot_table.reindex(columns=ref_cols + other_cols)
+        cols = list(pivot_table.columns)
 
-        txt = pivot_table.to_string(sparsify=False)  # show repeated MultiIndex labels instead of leaving them blank (e.g. file_label) -- the default behaviour
+        def _is_ref(col):
+            file_label = col[0] if isinstance(col, tuple) else col
+            return file_label == ref_label
+
+        ref_cols = [c for c in cols if _is_ref(c)]
+        if not ref_cols:
+            return pivot_table
+
+        other_cols = [c for c in cols if not _is_ref(c)]
+        pivot_table = pivot_table.reindex(columns=ref_cols + other_cols)
+
+        # Patch reference metrics (only first ref col)
+        ref_col = ref_cols[0]
+        for idx in pivot_table.index:
+            metric = idx[0] if isinstance(idx, tuple) else idx
+
+            if metric.startswith("Recovery rate"):
+                pivot_table.at[idx, ref_col] = 1
+
+            elif metric.startswith("Fully recovered BGCs"):
+                bgc_metric = metric.replace("Fully recovered BGCs", "# BGCs")
+                bgc_idx = (bgc_metric,) + idx[1:] if isinstance(idx, tuple) else bgc_metric
+                if bgc_idx in pivot_table.index:
+                    pivot_table.at[idx, ref_col] = pivot_table.at[bgc_idx, ref_col]
+
+        return pivot_table
+
+    def write_txt(self, data: ReportData, output_path: Path) -> None:
+        """Format and save report as plain text table."""
+        pivot_table = self._prepare_pivot_table(data)
+        txt = pivot_table.map(lambda v: int(v) if isinstance(v, float) and v.is_integer() else
+        (re.sub(r"\.?0+$", "", v) if isinstance(v, str) and re.fullmatch(r"-?\d+\.\d+", v)
+         else v)).to_string(sparsify=False)
         output_path.write_text(txt, encoding="utf-8")
 
     def write_html(self, data: ReportData, output_path: Path) -> None:
@@ -194,27 +216,10 @@ class ReportFormatter:
         # Save the running mode information
         mode = data.running_mode.value
 
-        pivot_table = self.table_builder.build_pivot_table(data)
-
-        # In compare-to-reference mode, make sure the reference column
-        # (identified by its file label in metadata) is always the first column.
-        ref_label = None
-        if isinstance(getattr(data, "metadata", None), dict):
-            ref_label = data.metadata.get("reference_file_label")
-        if ref_label:
-            cols = list(pivot_table.columns)
-
-            def _is_ref(col):
-                file_label = col[0] if isinstance(col, tuple) else col
-                return file_label == ref_label
-
-            ref_cols = [c for c in cols if _is_ref(c)]
-            other_cols = [c for c in cols if not _is_ref(c)]
-            if ref_cols:
-                pivot_table = pivot_table.reindex(columns=ref_cols + other_cols)
+        pivot_table = self._prepare_pivot_table(data)
 
         file_labels = ["file_label"]
-        mining_tools = ["mining_tool"]
+        mining_tools = ["Genome mining tool"]
         for file_label, mining_tool in pivot_table.columns:
             file_labels.append(str(file_label))
             mining_tools.append(str(mining_tool))
@@ -227,15 +232,14 @@ class ReportFormatter:
                 if v is None or (isinstance(v, float) and math.isnan(v)):
                     out.append("0")
                 else:
-                    out.append(str(v))
+                    out.append(str(int(v)) if isinstance(v, float) and v.is_integer() else (
+                        re.sub(r"\.?0+$", "", v) if isinstance(v, str)
+                                                    and re.fullmatch(r"-?\d+\.\d+", v) else str(v))
+                    )
             rows.append(out)
 
-        # Collect metadata for compare_tools mode ---
-        if data.running_mode.value == "compare_tools":
-            metadata_to_dump = data.metadata
-        else:
-            # For now we don't expose metadata in other modes
-            metadata_to_dump = {}
+        # Collect metadata for modes ---
+        metadata_to_dump = data.metadata
         metadata_json = json.dumps(metadata_to_dump, ensure_ascii=False)
         # Load the assets and inject JSON
         asset_dir = Path(__file__).resolve().parent.parent / "html_report"
@@ -264,23 +268,7 @@ class ReportFormatter:
 
     def write_tsv(self, data: ReportData, output_path: Path) -> None:
         """Format and save report as TSV."""
-        pivot_table = self.table_builder.build_pivot_table(data)
-
-        # In compare-to-reference mode, make sure the reference column
-        # (identified by its file label in metadata) is always the first column.
-        ref_label = None
-        if isinstance(getattr(data, "metadata", None), dict):
-            ref_label = data.metadata.get("reference_file_label")
-        if ref_label:
-            cols = list(pivot_table.columns)
-
-            def _is_ref(col):
-                file_label = col[0] if isinstance(col, tuple) else col
-                return file_label == ref_label
-
-            ref_cols = [c for c in cols if _is_ref(c)]
-            other_cols = [c for c in cols if not _is_ref(c)]
-            if ref_cols:
-                pivot_table = pivot_table.reindex(columns=ref_cols + other_cols)
-
-        pivot_table.to_csv(output_path, sep="\t")
+        pivot_table = self._prepare_pivot_table(data)
+        pivot_table.map(lambda v: int(v) if isinstance(v, float) and v.is_integer() else
+        (re.sub(r"\.?0+$", "", v) if isinstance(v, str) and re.fullmatch(r"-?\d+\.\d+", v)
+         else v)).to_csv(output_path, sep="\t")
