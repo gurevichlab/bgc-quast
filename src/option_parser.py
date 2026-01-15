@@ -3,20 +3,109 @@ import argparse
 from argparse import Namespace as CommandLineArgs
 from src.config import Config
 from io import StringIO
+import textwrap
 
+class WrapPreserveNewlinesHelpFormatter(argparse.HelpFormatter):
+    def _split_lines(self, text: str, width: int):
+        # Wrap each existing line separately, preserving manual newlines
+        lines = []
+        for line in text.splitlines() or [""]:
+            if not line.strip():
+                lines.append("")
+            else:
+                lines.extend(textwrap.wrap(line, width))
+        return lines
+
+def formatter(prog: str) -> argparse.HelpFormatter:
+    return WrapPreserveNewlinesHelpFormatter(
+        prog,
+        max_help_position=32,
+        width=100,
+    )
 
 def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
-    # These go directly into the main group (not a separate argument group)
+    # Positional argument
     parser.add_argument(
+        "mining_results",
+        type=Path,
+        nargs="+",
+        metavar="GENOME_MINING_RESULT",
+        help="Paths to genome mining results (antiSMASH, GECCO, or deepBGC); at least one is required",
+    )
+
+    basic = parser.add_argument_group("Basic options")
+
+    basic.add_argument(
         "--output-dir",
         "-o",
         type=Path,
         metavar="DIR",
         help="Output directory "
-        f"[default: {default_cfg.output_config.output_dir.parent}/"
-        "{CURRENT_TIME}]",
+             f"[default: {default_cfg.output_config.output_dir.parent}/"
+             "{CURRENT_TIME}]",
     )
-    parser.add_argument(
+
+    basic.add_argument(
+        "--min-bgc-length",
+        type=int,
+        metavar="INT",
+        default=None,
+        help=(
+            "Minimum BGC length in bp. BGCs shorter than this threshold are "
+            "filtered out from all analyses [default: 0]"
+        ),
+    )
+
+    basic.add_argument(
+        "--edge-distance",
+        dest="bgc_completeness_margin",
+        metavar="INT",
+        type=int,
+        help="Margin (in bp) from contig edges used to classify BGC completeness [default: 100]",
+    )
+
+    basic.add_argument(
+        "--mode",
+        choices=["auto", "compare-to-reference", "compare-tools", "compare-samples"],
+        default="auto",
+        help=(
+            "Running mode that controls how BGC-QUAST interprets the inputs.\n"
+            "  - auto (default): Infer the mode from provided files\n"
+            "  - compare-to-reference: Assess how well BGCs predicted on draft assemblies "
+            "match the predictions from a high-quality reference genome. (!) Requires "
+            "reference mining result and  QUAST output.\n"
+            "  - compare-tools: Compare different genome mining tools run on the same genome sequence "
+            "(supports multiple runs from the same tool).\n"
+            "  - compare-samples: Summarize BGC predictions from a single genome mining tool across multiple genomes. "
+            "Doesn't require any specific options."
+        ),
+    )
+
+    basic.add_argument(
+        "--genome",
+        "-g",
+        help=(
+            "Path to the genome FASTA or GenBank file; if genome mining results are provided for multiple "
+            "genomes, this argument can accept multiple paths."
+        ),
+        metavar="GENOME",
+        nargs="*",
+        dest="genome_data",
+        type=Path,
+    )
+
+    basic.add_argument(
+        "--names",
+        type=str,
+        default=None,
+        help=(
+            "Custom names for the input genome mining results in reports.\n"
+            "Comma-separated; use quotes if names contain spaces. "
+            "The number of names must match the number of genome mining results files."
+        ),
+    )
+
+    basic.add_argument(
         "--threads",
         "-t",
         default=1,
@@ -25,86 +114,40 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
         help="Number of threads [default: %(default)s]",
         action="store",
     )
-    parser.add_argument(
+
+    basic.add_argument(
         "--debug",
         action="store_true",
         default=False,
         help="Run in debug mode and keep all intermediate files",
     )
 
-    # Add positional arguments: genome mining results (at least one required)
-    parser.add_argument(
-        "mining_results",
-        type=Path,
-        nargs="+",
-        metavar="GENOME_MINING_RESULT",
-        help="Paths to genome mining results (antiSMASH, GECCO, or deepBGC); "
-        "at least one is required",
-    )
+def add_mode_specific_arguments(parser: argparse.ArgumentParser):
+    parser.add_argument_group("Mode-specific options")
 
-    parser.add_argument(
-        "--mode",
-        choices=["auto", "compare-to-reference", "compare-tools", "compare-samples"],
-        default="auto",
-        help=(
-            "Running mode that controls how BGC-QUAST interprets the inputs. "
-            "'auto' (default) tries to infer the mode from the provided files. "
-            "'compare-to-reference' expects reference genome mining result plus QUAST output."
-            "'compare-tools' compares genome mining tools, "
-            "including multiple runs from the same tool. "
-            "'compare-samples' compares assemblies mined with a single tool."
-        ),
-    )
-
-
-def add_advanced_arguments(parser: argparse.ArgumentParser):
-    advanced_input_group = parser.add_argument_group("Advanced input", "TBA")
-
-    advanced_input_group.add_argument(
-        "--min-bgc-length",
-        type=int,
-        metavar='INT',
-        default=None,
-        help=(
-            "Minimum BGC length in bp. BGCs shorter than this threshold are "
-            "filtered out from all analyses (default: 0)"
-        ),
-    )
-
-    advanced_input_group.add_argument(
-        "--quast-output-dir",
-        "-q",
-        help="QUAST output in the reference-based evaluation mode; if specified, it is expected that the "
-        "genome mining results are provided for both the reference and the assembly; "
-        "required if --reference-mining-result is specified",
-        metavar="DIR",
-        action="store",
-        type=Path,
-    )
-
-    advanced_input_group.add_argument(
+    compare_ref = parser.add_argument_group("Compare-to-reference")
+    compare_ref.add_argument(
         "--reference-mining-result",
         "-r",
         help="Path to the reference genome mining result (antiSMASH, GECCO, or deepBGC); "
-        "required if --quast-output-dir is specified",
+             "required if --quast-output-dir is specified",
         metavar="REFERENCE_GENOME_MINING_RESULT",
         action="store",
         type=Path,
     )
 
-    advanced_input_group.add_argument(
-        "--genome",
-        "-g",
-        help="Path to the genome FASTA or GenBank file; "
-        "if genome mining results are provided for multiple genomes, "
-        "this argument can accept multiple paths.",
-        metavar="GENOME",
-        nargs="*",
-        dest="genome_data",
+    compare_ref.add_argument(
+        "--quast-output-dir",
+        "-q",
+        help="QUAST output in the reference-based evaluation mode; if specified, it is expected that the "
+             "genome mining results are provided for both the reference and the assembly; "
+             "required if --reference-mining-result is specified",
+        metavar="DIR",
+        action="store",
         type=Path,
     )
 
-    advanced_input_group.add_argument(
+    compare_ref.add_argument(
         "--reference-genome",
         "-R",
         help="Path to the reference genome FASTA or GenBank file.",
@@ -114,49 +157,48 @@ def add_advanced_arguments(parser: argparse.ArgumentParser):
         type=Path,
     )
 
-    advanced_input_group.add_argument(
-        "--overlap-threshold",
-        dest="compare_tools_overlap_threshold",
-        type=float,
-        metavar='FLOAT',
-        default=None,
-        help="BGC overlap threshold in (0,1] for COMPARE-TOOLS mode (default: 0.9)",
-    )
-
-    advanced_input_group.add_argument(
-        "--edge-distance",
-        dest="bgc_completeness_margin",
-        metavar='INT',
-        type=int,
-        help="Margin (in bp) from contig edges used to classify BGC completeness (default: 100)",
-    )
-
-    advanced_input_group.add_argument(
-        "--names",
-        type=str,
-        default=None,
-        help=(
-            "Custom names for the input genome mining results in reports. "
-            "Comma-separated; use quotes if names contain spaces. "
-            "The number of names must match the number of genome mining results files."
-        ),
-    )
-
-    advanced_input_group.add_argument(
+    compare_ref.add_argument(
         "--ref-name",
         type=str,
         default=None,
         help="Custom name for the reference genome mining result in reports (only if reference is provided).",
     )
 
+    compare_tools = parser.add_argument_group("Compare-tools")
+    compare_tools.add_argument(
+        "--overlap-threshold",
+        dest="compare_tools_overlap_threshold",
+        type=float,
+        metavar="FLOAT",
+        default=None,
+        help="BGC overlap threshold in (0,1] for COMPARE-TOOLS mode [default: 0.9]",
+    )
+
+def add_other_arguments(parser: argparse.ArgumentParser):
+    other = parser.add_argument_group("Other options")
+    other.add_argument(
+        "-h", "--help",
+        action="help",
+        help="show this help message and exit",
+    )
+
 
 def build_cmdline_args_parser(default_cfg: Config) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        add_help=False,  # prevents argparse from creating the default "options:"
+        formatter_class=formatter,
         description="BGC-QUAST: quality assessment tool for genome mining (BGC prediction) software",
+        usage=(
+            "bgc-quast.py [-h] [--output-dir] [--threads] [--debug] [--mode] "
+            "[--min-bgc-length INT] [--names NAMES] [mode-specific options] "
+            "<GENOME_MINING_RESULT>"
+        ),
     )
+
     add_basic_arguments(parser, default_cfg)
-    add_advanced_arguments(parser)
+    add_mode_specific_arguments(parser)
+    add_other_arguments(parser)
+
     return parser
 
 
