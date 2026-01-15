@@ -238,12 +238,8 @@ class ReportFormatter:
                     )
             rows.append(out)
 
-        # Collect metadata for compare_tools mode ---
-        if data.running_mode.value == "compare_tools":
-            metadata_to_dump = data.metadata
-        else:
-            # For now we don't expose metadata in other modes
-            metadata_to_dump = {}
+        # Collect metadata for modes ---
+        metadata_to_dump = data.metadata
         metadata_json = json.dumps(metadata_to_dump, ensure_ascii=False)
         # Load the assets and inject JSON
         asset_dir = Path(__file__).resolve().parent.parent / "html_report"

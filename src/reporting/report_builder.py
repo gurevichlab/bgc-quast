@@ -35,6 +35,7 @@ class ReportBuilder:
         quast_results: Optional[list[QuastResult]] = None,
         reference_genome_mining_result: Optional[GenomeMiningResult] = None,
         label_renaming_log: Optional[list[dict]] = None,
+        requested_mode: Optional[str] = None,
     ) -> ReportData:
         """
         Build a report from genome mining results.
@@ -64,10 +65,14 @@ class ReportBuilder:
         if not metrics:
             raise ValueError("No metrics were calculated. Check your input data.")
 
+        requested_mode = requested_mode
+
         metadata = {
+            "requested_mode": requested_mode.replace("-", "_"),
             "running_mode": running_mode.value,
             "results_count": len(results),
             "min_bgc_length": config.min_bgc_length,
+            "bgc_completeness_margin": config.bgc_completeness_margin,
         }
 
         if running_mode == RunningMode.COMPARE_TO_REFERENCE:
@@ -98,7 +103,7 @@ class ReportBuilder:
                 )
                 metrics.extend(ref_basic_calc.calculate_metrics())
 
-            metadata.update({"reference_bgcs": reference_bgcs})
+            # metadata.update({"reference_bgcs": reference_bgcs})
 
             if reference_genome_mining_result is not None:
                 metadata.update(

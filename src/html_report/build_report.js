@@ -1,6 +1,40 @@
 /* global Chart */
 
 /* ---------------------------------------------------------------------------
+ * BGC-QUAST RUN SUMMARY
+ * ------------------------------------------------------------------------- */
+
+function renderRunSummary(meta) {
+    const el = document.getElementById('runSummary');
+    if (!el) return;
+
+    const requested = meta.requested_mode;
+    const resolved  = meta.running_mode;
+
+    let modeText;
+    if (requested === 'auto') {
+        modeText = `The running mode is <code>auto</code> that determined the mode as <code>${resolved}</code>.`;
+    } else {
+        modeText = `The running mode is <code>${resolved}</code>.`;
+    }
+
+    let text = `${modeText} All statistics are based on BGCs of size ≥ <code>${meta.min_bgc_length}</code>`;
+
+    const margin = meta.bgc_completeness_margin;
+    if (margin != null) {
+        text += `and <code>${margin}</code> bp margin from contig edges.`;
+    }
+
+    if (resolved === 'compare_tools' && meta.compare_tools_overlap_threshold != null) {
+        const pct = Math.round(meta.compare_tools_overlap_threshold * 100);
+        text += ` The BGC overlap threshold is set to <code>${pct}%</code>.`;
+    }
+
+    el.innerHTML = text;
+}
+
+
+/* ---------------------------------------------------------------------------
  * HEATMAP UTILITIES
  * ------------------------------------------------------------------------- */
 
@@ -1163,6 +1197,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Chart.defaults.font.size = 13;
         Chart.defaults.font.family = "'Arial', sans-serif";
     }
+    renderRunSummary(reportMetadata);
     buildTable(reportData);
     renderTypeFilters(detectTypes(reportData));
     renderCompletenessFilters(detectCompleteness(reportData));

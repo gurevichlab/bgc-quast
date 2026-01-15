@@ -97,6 +97,22 @@ html, body {
   height: 24px;
 }
 
+/* ----- OPTIONS SUMMARY ----- */
+.run-summary {
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 10px 0 16px 0;
+  color: #333;
+  line-height: 1.35;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.10);
+}
+.run-summary code {
+  background: #f2f2f7;
+  padding: 1px 5px;
+  border-radius: 6px;
+}
 
 /* ----- TABLE STYLING ----- */
 table {
