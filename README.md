@@ -37,12 +37,9 @@ Compressed files (`.gz`) are supported. See [test_data](test_data) for example f
 
 ## Command-line Options
 ```bash
-usage: bgc-quast.py [-h] [--output-dir DIR] [--threads INT] [--debug]
-                    [--quast-output-dir DIR] [--reference-mining-result FILE]
-                    [--genome FILE ...] [--reference-genome FILE]
-                    [--names "NAME1,NAME2,..."]
-                    [--naming-style {file,dir,sequence,...}]
-                    GENOME_MINING_RESULT [GENOME_MINING_RESULT ...]
+usage: bgc-quast.py [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-to-reference,compare-tools,compare-samples}]
+                    [--min-bgc-length INT] [--names NAME1,NAME2 ...] [--genome FILE ...] [--debug]
+                    [mode-specific options] <GENOME_MINING_RESULT>
 ```
 ### Positional Arguments
 
@@ -50,7 +47,7 @@ usage: bgc-quast.py [-h] [--output-dir DIR] [--threads INT] [--debug]
 
 ---
 
-### General Options
+### Basic options
 
 | Option                        | Description                                               |
 |-------------------------------|-----------------------------------------------------------|
@@ -58,17 +55,30 @@ usage: bgc-quast.py [-h] [--output-dir DIR] [--threads INT] [--debug]
 | `--output-dir DIR, -o DIR`   | Output directory [default: timestamped folder]            |
 | `--threads INT, -t INT`      | Number of threads [default: 1]                            |
 | `--debug`                    | Keep intermediate files                                   |
+| `--genome, -g [FILE ...]`     | Path to the genome FASTA/GenBank file; can accept multiple paths; required for `--min-bgc-length` and `edge-distance` |
+| `--names NAME1,NAME2 ...` | Custom names for the input genome mining results in reports |
+| `--min-bgc-length INT` |  Minimum BGC length in bp.  [default: 0] |
+| `--edge-distance INT` | Margin (in bp) from contig edges used to classify BGC completeness |
+| `--mode {auto,compare-to-reference,compare-tools,compare-samples}` | Running mode that controls how BGC-QUAST interprets the inputs |
 
 ---
 
-### Advanced Input
+### Compare-to-reference options
 
 | Option                                     | Description                                           |
 |--------------------------------------------|-------------------------------------------------------|
 | `--quast-output-dir DIR, -q DIR`          | QUAST output (required for reference-based mode)      |
 | `--reference-mining-result FILE, -r FILE` | GM result on the reference genome                     |
-| `--genome FILE` (multiple allowed)        | FASTA/GenBank genome input (can be gzipped)           |
 | `--reference-genome FILE`                | Reference genome input (FASTA/GenBank)                |
+| `--ref-name REF_NAME`                    | Custom name for the reference genome mining result in reports |
+
+---
+
+### Compare-tools options
+| Option                                     | Description                                           |
+|--------------------------------------------|-------------------------------------------------------|
+| `--overlap-threshold FLOAT`          | BGC overlap threshold percentage in (0,1] for COMPARE-TOOLS mode [default: 0.9]      | 
+
 
 ---
 <a name="sec_run_modes"></a>
@@ -87,12 +97,14 @@ However, basic BGC quality metrics are computed in either of them.
 
 **Use case**: Assess how well BGCs predicted on draft assemblies match the predictions from a high-quality reference genome.
 
-**Command**:
+**Command example**:
 ```bash
 ./bgc-quast.py assembly_run1.json assembly_run2.json \
   --reference-mining-result reference_run.json \
   --quast-output-dir quast_output \
+  --reference-genome Reference_name \
   --output-dir results/compare_to_reference
+
 ```
 
 **Output:**
@@ -102,25 +114,31 @@ However, basic BGC quality metrics are computed in either of them.
 ### 2. Compare-Tools
 ***Use case***: Compare different GM tools run on the same genome sequence.
 
-**Command**:
+**Command example**:
 
 ```bash
 ./bgc-quast.py antiSMASH_run.json GECCO_run.tsv deepBGC_run.json \
+  --overlap-threshold 0.5 \
+  --genome antiSMASH_run.fasta,GECCO_run.fasta,deepBGC_run.fasta \
+  --min-bgc-length 10000 \
   --output-dir results/compare_tools
 ```
 
 **Output**:
-- Overlap plots (Venn diagrams)
+- Tool overlap plots (Venn diagrams)
 - Interactive browser showing tool-specific and shared BGCs
 
 ### 3. Compare-Samples
 
 **Use case**: Summarize BGC predictions from a single GM tool across multiple genomes or metagenomic samples.
 
-**Command**:
+**Command example**:
 
 ```bash
 ./bgc-quast.py sample1.json sample2.json sample3.json \
+  --names Sample1,Sample2 \
+  --genome sample1.gbk,sample2.gbk,sample3.gbk \
+  --edge-distance 500
   --output-dir results/compare_samples
 ```
 
