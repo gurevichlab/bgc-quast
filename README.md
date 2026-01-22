@@ -112,7 +112,7 @@ However, basic BGC quality metrics are computed in either of them.
 - Side-by-side interactive browser comparing BGCs across assemblies and reference
 
 ### 2. Compare-Tools
-***Use case***: Compare different GM tools run on the same genome sequence.
+**Use case**: Compare different GM tools run on the same genome sequence.
 
 **Command example**:
 
