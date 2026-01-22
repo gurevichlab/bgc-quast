@@ -88,7 +88,7 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
             "Path to the genome FASTA or GenBank file; if genome mining results are provided for multiple "
             "genomes, this argument can accept multiple paths."
         ),
-        metavar="GENOME",
+        metavar="FILE",
         nargs="*",
         dest="genome_data",
         type=Path,
@@ -98,6 +98,8 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
         "--names",
         type=str,
         default=None,
+        metavar="NAME1,NAME2",
+        nargs="*",
         help=(
             "Custom names for the input genome mining results in reports.\n"
             "Comma-separated; use quotes if names contain spaces. "
@@ -189,9 +191,9 @@ def build_cmdline_args_parser(default_cfg: Config) -> argparse.ArgumentParser:
         formatter_class=formatter,
         description="BGC-QUAST: quality assessment tool for genome mining (BGC prediction) software",
         usage=(
-            "bgc-quast.py [-h] [--output-dir] [--threads] [--debug] [--mode] "
-            "[--min-bgc-length INT] [--names NAMES] [mode-specific options] "
-            "<GENOME_MINING_RESULT>"
+             "bgc-quast.py [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-to-reference,compare-tools,compare-samples}] "
+            "[--min-bgc-length INT] [--names NAME1,NAME2 ...] [--genome FILE ...] "
+            "[mode-specific options] <GENOME_MINING_RESULT>"
         ),
     )
 
