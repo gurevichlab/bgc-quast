@@ -16,22 +16,44 @@ of BGC prediction results from multiple tools and datasets.
 
 ## Requirements
 
-- Python 3
-- `pyyaml`, `pandas`, `matplotlib` and `matplotlib-venn` Python packages
+- **Python ≥ 3.9** (tested with Python 3.9–3.13)
+- A conda-compatible environment manager:  
+  [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) or  
+  [Mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html)
 
----
+All required Python dependencies are specified in the
+[`environment.yml`](environment.yml) file.
 
 ## Installation
 
-No installation needed — just clone the repository and run the script.
+### 1. Get the source code
 
----
+Clone the repository:  
+
+```bash
+git clone https://github.com/gurevichlab/bgc-quast.git
+cd bgc-quast
+```  
+Alternatively, download the repository as a ZIP file from [GitHub](https://github.com/gurevichlab/bgc-quast) and extract it.
+
+### 2. Create and activate the conda environment
+
+```bash
+conda env create -f environment.yml
+conda activate bgc-quast
+```
+
+### 3. Verify installation
+
+```bash
+python bgc-quast.py --help
+```
 
 ## Supported Genome Mining Tools
-Currently supported genome mining tools and their output formats:
-- antiSMASH: `.json`
-- GECCO: `.tsv`
-- deepBGC: `.json`, `.tsv`
+Currently supported genome mining tools and their output formats:  
+- antiSMASH: `.json`  
+- GECCO: `.tsv`  
+- deepBGC: `.json`, `.tsv`  
 
 Compressed files (`.gz`) are supported. See [test_data](test_data) for example files. 
 
