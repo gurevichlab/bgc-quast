@@ -1,0 +1,93 @@
+file_label	reference	assembly_20	assembly_10
+Genome mining tool	antiSMASH	antiSMASH	antiSMASH
+# Filtered BGCs by length (Total)	0	0	0
+# BGCs (Total)	6	6	6
+# BGCs (NRPS)	1	1	1
+# BGCs (PKS)	1	1	1
+# BGCs (RiPP)	2	2	2
+# BGCs (Terpene)	2	2	2
+# BGCs (Complete)	6	2	2
+# BGCs (Incomplete)	0	4	4
+# BGCs (NRPS, Complete)	1	0	0
+# BGCs (NRPS, Incomplete)	0	1	1
+# BGCs (PKS, Complete)	1	0	0
+# BGCs (PKS, Incomplete)	0	1	1
+# BGCs (RiPP, Complete)	2	1	1
+# BGCs (RiPP, Incomplete)	0	1	1
+# BGCs (Terpene, Complete)	2	1	1
+# BGCs (Terpene, Incomplete)	0	1	1
+Mean BGC length (Total)	32931.5	27759.167	29313
+Mean BGC length (NRPS)	58337	50160	52045
+Mean BGC length (PKS)	52961	38582	39844
+Mean BGC length (RiPP)	17387.5	15131.5	17261
+Mean BGC length (Terpene)	25758	23775	24733.5
+Mean BGC length (Complete)	32931.5	19057.5	26235
+Mean BGC length (Incomplete)	0	32110	30852
+Mean BGC length (NRPS, Complete)	58337	0	0
+Mean BGC length (NRPS, Incomplete)	0	50160	52045
+Mean BGC length (PKS, Complete)	52961	0	0
+Mean BGC length (PKS, Incomplete)	0	38582	39844
+Mean BGC length (RiPP, Complete)	17387.5	10216	24559
+Mean BGC length (RiPP, Incomplete)	0	20047	9963
+Mean BGC length (Terpene, Complete)	25758	27899	27911
+Mean BGC length (Terpene, Incomplete)	0	19651	21556
+Fully recovered BGCs (Total)	6	2	3
+Fully recovered BGCs (NRPS)	1	0	0
+Fully recovered BGCs (PKS)	1	0	0
+Fully recovered BGCs (RiPP)	2	1	2
+Fully recovered BGCs (Terpene)	2	1	1
+Fully recovered BGCs (Complete)	6	2	3
+Fully recovered BGCs (NRPS, Complete)	1	0	0
+Fully recovered BGCs (PKS, Complete)	1	0	0
+Fully recovered BGCs (RiPP, Complete)	2	1	2
+Fully recovered BGCs (Terpene, Complete)	2	1	1
+Partially recovered BGCs (Total)	0	4	3
+Partially recovered BGCs (NRPS)	0	1	1
+Partially recovered BGCs (PKS)	0	1	1
+Partially recovered BGCs (RiPP)	0	1	0
+Partially recovered BGCs (Terpene)	0	1	1
+Partially recovered BGCs (Complete)	0	4	3
+Partially recovered BGCs (NRPS, Complete)	0	1	1
+Partially recovered BGCs (PKS, Complete)	0	1	1
+Partially recovered BGCs (RiPP, Complete)	0	1	0
+Partially recovered BGCs (Terpene, Complete)	0	1	1
+Missed BGCs (Total)	0	0	0
+Missed BGCs (NRPS)	0	0	0
+Missed BGCs (PKS)	0	0	0
+Missed BGCs (RiPP)	0	0	0
+Missed BGCs (Terpene)	0	0	0
+Missed BGCs (Complete)	0	0	0
+Missed BGCs (NRPS, Complete)	0	0	0
+Missed BGCs (PKS, Complete)	0	0	0
+Missed BGCs (RiPP, Complete)	0	0	0
+Missed BGCs (Terpene, Complete)	0	0	0
+Fragmented BGCs (Total)	0	0	0
+Fragmented BGCs (NRPS)	0	0	0
+Fragmented BGCs (PKS)	0	0	0
+Fragmented BGCs (RiPP)	0	0	0
+Fragmented BGCs (Terpene)	0	0	0
+Fragmented BGCs (Complete)	0	0	0
+Fragmented BGCs (NRPS, Complete)	0	0	0
+Fragmented BGCs (PKS, Complete)	0	0	0
+Fragmented BGCs (RiPP, Complete)	0	0	0
+Fragmented BGCs (Terpene, Complete)	0	0	0
+Misclassified product type (Total)	0	0	0
+Misclassified product type (NRPS)	0	0	0
+Misclassified product type (PKS)	0	0	0
+Misclassified product type (RiPP)	0	0	0
+Misclassified product type (Terpene)	0	0	0
+Misclassified product type (Complete)	0	0	0
+Misclassified product type (NRPS, Complete)	0	0	0
+Misclassified product type (PKS, Complete)	0	0	0
+Misclassified product type (RiPP, Complete)	0	0	0
+Misclassified product type (Terpene, Complete)	0	0	0
+Recovery rate (Total)	1	1	1
+Recovery rate (NRPS)	1	1	1
+Recovery rate (PKS)	1	1	1
+Recovery rate (RiPP)	1	1	1
+Recovery rate (Terpene)	1	1	1
+Recovery rate (Complete)	1	1	1
+Recovery rate (NRPS, Complete)	1	1	1
+Recovery rate (PKS, Complete)	1	1	1
+Recovery rate (RiPP, Complete)	1	1	1
+Recovery rate (Terpene, Complete)	1	1	1

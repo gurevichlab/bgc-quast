@@ -1,0 +1,2097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BGC-QUAST Report</title>
+    <style>
+    /* ----- PAGE LAYOUT ----- */
+
+/* Entire page layout using Flexbox */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #EDF2F4;
+    font-family: Arial, sans-serif;
+}
+
+/* New wrapper to flexibly contain header, layout, and footer */
+#main {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px;
+    font-size: 14px;
+}
+
+/* ----- REPORT LAYOUT ----- */
+/* Content area: table and plot */
+#reportLayout {
+    display: flex;
+    gap: 100px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+#reportLayout.extended-locked {
+    flex-wrap: nowrap;  /* case when the plot always stays on the right */
+}
+
+#reportLayout > div {
+    flex: 1;
+}
+
+#reportLayout > div:first-child {
+    flex: 0 0 700px;   /* left column ~ table */
+}
+
+#reportLayout > div:last-child {
+    flex: 0 0 1000px;   /* right column ~ plot (doesn't grow/shrink with the page change) + controls */
+}
+
+/* Header */
+:root {
+  --bar-text: #ffffff; /* title text color */
+}
+
+.page-header {
+  background: linear-gradient(
+  90deg,
+  #322b7a 0%,
+  #515151 100%
+  );
+  color: var(--bar-text);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin-left: -10px;   /* match #main { padding: 10px } */
+  margin-right: -10px;
+  margin-top: -10px;
+  margin-bottom: 12px;
+
+  display: flex;                  /* lay out children in a row */
+  justify-content: space-between; /* title to the left, rest to the right */
+  align-items: center;
+}
+
+.page-header h1 {
+  margin: 10px;
+  font-weight: 600;
+  font-size: 32px;
+  letter-spacing: 0.2px;
+  color: inherit;
+  text-shadow: 3px 3px 4px rgba(0,0,0,0.6);
+}
+
+/* GitHub link */
+.github-link a {
+  color: var(--bar-text);
+  text-decoration: none;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 10px;
+}
+
+.github-link a:hover {
+  text-decoration: underline;
+}
+
+.github-icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* ----- OPTIONS SUMMARY ----- */
+.run-summary {
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 10px 0 16px 0;
+  color: #333;
+  line-height: 1.35;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.10);
+}
+.run-summary code {
+  background: #f2f2f7;
+  padding: 1px 5px;
+  border-radius: 6px;
+}
+
+/* ----- TABLE STYLING ----- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+th, td {
+    border: 1px solid #cfcfcf;
+    padding: 8px;
+    text-align: left;
+}
+
+td {
+    background-color: #ffffff;
+}
+
+th {
+    background-color: #ffffff;
+    font-weight: 400;  /* not bold */
+}
+
+/* Top header row bold (column names) */
+tr.column-header-row th {
+    font-weight: 600;
+    background-color: #322b7a;
+    color: #ffffff;
+}
+
+/* Reference header */
+tr.column-header-row th.ref-col-header {
+    background-color: #4b679a;
+    color: #ffffff;
+}
+
+/* Row labels: default normal, totals bold */
+th.row-label {
+    font-weight: 400;
+    background-color: #ffffff;
+}
+
+th.row-label-total {
+    font-weight: 600;
+}
+
+
+/* Row labels: default normal, totals bold */
+th.mode-specific-metric {
+    background-color: rgba(209, 217, 236, 0.55);
+}
+
+/* Table style - rows */
+.extended-row {
+    display: none;
+}
+
+.extended-btn-wrapper {
+    margin-top: 10px;
+}
+
+#toggleExtendedBtn {
+  padding: 6px 14px;
+  border-radius: 999px;        /* bacilli-shaped */
+  border: none;
+  background: #322b7a;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  transition: background 0.15s ease, transform 0.1s ease,
+              box-shadow 0.15s ease;
+}
+
+#toggleExtendedBtn:hover {
+  background: #3d3495;
+  transform: translateY(-1px); /* lift up a bit */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+}
+
+#toggleExtendedBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+#toggleExtendedBtn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+}
+
+#toggleExtendedBtn.is-collapsed {
+  background: #6c757d;
+}
+
+#toggleExtendedBtn.is-collapsed:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+}
+
+/*Heatmap */
+.heatmap-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.heatmap-legend-labels {
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+}
+
+
+/* ----- BARPLOT STYLING ----- */
+
+.plot-and-controls {
+  flex: 0 0 420px;
+  min-width: 380px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;  /* chart column | controls column */
+  column-gap: 24px;
+  align-items: flex-start;
+  margin-top: 40px;
+  grid-auto-rows: auto;
+}
+
+.metric-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Base tab look */
+.metric-tab {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid #ccc;
+    background: #ffffff;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.15s ease,
+                transform 0.1s ease,
+                box-shadow 0.15s ease,
+                border-color 0.15s ease;
+}
+
+/* Hover effect */
+.metric-tab:hover {
+    background: #e9e9f3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    border-color: #bbb;
+}
+
+/* Active tab (selected) */
+.metric-tab.active {
+    background: #322b7a;
+    color: white;
+    border-color: #322b7a;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+
+/* Clicked/pressed state */
+.metric-tab:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+/* Focus ring for tabs (keyboard navigation) */
+.metric-tab:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+}
+
+
+/* Legend + canvas row inside the chart-wrap */
+.plot-flex-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0px;
+}
+
+/* Left column: legend */
+.plot-legend-column {
+    flex: 0 0 190px;
+    font-size: 14px;
+    color: #696969;
+    margin-top: 40px;
+}
+
+.plot-legend-swatch {
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    border: 1px solid #696969;
+    display: inline-block;
+}
+
+#bgcLegend {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Right column: chart takes remaining width */
+.plot-flex-row canvas {
+    flex: 1 1 auto;
+    max-width: 100%;
+    height: auto;
+}
+
+/* Venn diagrams */
+#pythonPlotsPanel {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;    /* allow multiple per row */
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.plot-and-controls.pyplots-mode {
+    grid-template-columns: 1fr;  /* no right column reserved */
+}
+
+/* Barplot control buttons */
+.barplot-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.barplot-controls fieldset {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.barplot-controls fieldset label {
+  display: block;
+  margin: 4px 0;
+}
+
+.barplot-controls legend {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+
+/* VENN DIAGRAM */
+.venn-main-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+.venn-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.venn-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+/* Make the checkboxes vertical */
+.venn-checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.venn-wrapper {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 50px;
+}
+
+.venn-controls {
+    font-size: 14px;
+    margin-bottom: 4px;
+
+    /* Copy of .barplot-controls fieldset */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px 10px;
+}
+
+.venn-controls legend {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.venn-checkboxes label {
+    margin-right: 10px;
+    cursor: pointer;
+    font-weight: 400;
+}
+
+.venn-checkboxes input {
+    margin-right: 3px;
+    font-weight: 400;
+}
+
+.venn-title {
+    text-align: center;
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 1px;
+}
+
+.venn-svg {
+    width: 500px;
+    height: 400px;
+}
+
+/* CHECKBOXES AND BUTTONS */
+/* Fancy small controls (checkboxes + radio buttons) */
+/* Base style for custom checkboxes & radios */
+.heatmap-controls input[type="checkbox"],
+.barplot-controls input[type="checkbox"],
+.venn-checkboxes input[type="checkbox"],
+#typeFilterGroup input[type="checkbox"],
+#completenessFilterGroup input[type="checkbox"],
+.barplot-controls input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  border: 2px solid #322b7a;
+  background: #EDF2F4;
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+}
+
+/* Radios are round */
+.barplot-controls input[type="radio"] {
+  border-radius: 50%;
+}
+
+/* Hover feedback */
+.heatmap-controls input[type="checkbox"]:hover,
+.barplot-controls input[type="checkbox"]:hover,
+.venn-checkboxes input[type="checkbox"]:hover,
+#typeFilterGroup input[type="checkbox"]:hover,
+#completenessFilterGroup input[type="checkbox"]:hover,
+.barplot-controls input[type="radio"]:hover {
+  box-shadow: 0 0 0 2px rgba(83, 82, 90, 0.25);
+}
+
+/* Focus ring for keyboard users */
+.heatmap-controls input[type="checkbox"]:focus-visible,
+.barplot-controls input[type="checkbox"]:focus-visible,
+.venn-checkboxes input[type="checkbox"]:focus-visible,
+#typeFilterGroup input[type="checkbox"]:focus-visible,
+#completenessFilterGroup input[type="checkbox"]:focus-visible,
+.barplot-controls input[type="radio"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+}
+
+/* Checked state */
+.heatmap-controls input[type="checkbox"]:checked,
+.barplot-controls input[type="checkbox"]:checked,
+.venn-checkboxes input[type="checkbox"]:checked,
+#typeFilterGroup input[type="checkbox"]:checked,
+#completenessFilterGroup input[type="checkbox"]:checked {
+  background: #322b7a;
+  border-color: #322b7a;
+}
+
+/* State is not available */
+input:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+input:disabled::after {
+    opacity: 0;  /* hide tick/dot */
+}
+
+label:has(input:disabled) {
+    opacity: 0.6;
+}
+
+.heatmap-controls input[type="checkbox"]::after,
+.barplot-controls input[type="checkbox"]::after,
+.venn-checkboxes input[type="checkbox"]::after,
+#typeFilterGroup input[type="checkbox"]::after,
+#completenessFilterGroup input[type="checkbox"]::after {
+  content: "✓";
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: bold;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.4);
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+/* Show the tick when checked */
+.heatmap-controls input[type="checkbox"]:checked::after,
+.barplot-controls input[type="checkbox"]:checked::after,
+.venn-checkboxes input[type="checkbox"]:checked::after,
+#typeFilterGroup input[type="checkbox"]:checked::after,
+#completenessFilterGroup input[type="checkbox"]:checked::after {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Inner dot for radio buttons */
+.barplot-controls input[type="radio"]:checked {
+  background: #ffffff;
+  border-color: #322b7a;
+}
+
+.barplot-controls input[type="radio"]::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background: #322b7a;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0.4);
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.barplot-controls input[type="radio"]:checked::after {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* ----- DOWNLOAD BUTTON ----- */
+#downloadPlotWithLegend {
+    padding: 6px 14px;
+    background: #ffffff;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
+
+#downloadPlotWithLegend:hover {
+    background: #e9e9f3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    border-color: #bbb;
+}
+
+#downloadPlotWithLegend:active {
+    background: #e9e9f3;
+}
+
+/* ----- DOWNLOAD BUTTON FOR VENN ----- */
+#downloadVennPlot {
+    padding: 6px 14px;
+    background: #ffffff;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    align-self: center;
+    margin-top: 4px;
+}
+
+#downloadVennPlot:hover {
+    background: #e9e9f3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    border-color: #bbb;
+}
+
+#downloadVennPlot:active {
+    background: #e9e9f3;
+}
+
+    </style>
+</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<body>
+<div id="main"> <!-- Wrapper -->
+    <!-- Header with accent stripe + title -->
+    <header class="page-header">
+        <h1>BGC-QUAST Report</h1>
+
+        <div class="github-link">
+        <a href="https://github.com/gurevichlab/bgc-quast" target="_blank">
+            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTgiIGhlaWdodD0iOTYiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik00OC44NTQgMEMyMS44MzkgMCAwIDIyIDAgNDkuMjE3YzAgMjEuNzU2IDEzLjk5MyA0MC4xNzIgMzMuNDA1IDQ2LjY5IDIuNDI3LjQ5IDMuMzE2LTEuMDU5IDMuMzE2LTIuMzYyIDAtMS4xNDEtLjA4LTUuMDUyLS4wOC05LjEyNy0xMy41OSAyLjkzNC0xNi40Mi01Ljg2Ny0xNi40Mi01Ljg2Ny0yLjE4NC01LjcwNC01LjQyLTcuMTctNS40Mi03LjE3LTQuNDQ4LTMuMDE1LjMyNC0zLjAxNS4zMjQtMy4wMTUgNC45MzQuMzI2IDcuNTIzIDUuMDUyIDcuNTIzIDUuMDUyIDQuMzY3IDcuNDk2IDExLjQwNCA1LjM3OCAxNC4yMzUgNC4wNzQuNDA0LTMuMTc4IDEuNjk5LTUuMzc4IDMuMDc0LTYuNi0xMC44MzktMS4xNDEtMjIuMjQzLTUuMzc4LTIyLjI0My0yNC4yODMgMC01LjM3OCAxLjk0LTkuNzc4IDUuMDE0LTEzLjItLjQ4NS0xLjIyMi0yLjE4NC02LjI3NS40ODYtMTMuMDM4IDAgMCA0LjEyNS0xLjMwNCAxMy40MjYgNS4wNTJhNDYuOTcgNDYuOTcgMCAwIDEgMTIuMjE0LTEuNjNjNC4xMjUgMCA4LjMzLjU3MSAxMi4yMTMgMS42MyA5LjMwMi02LjM1NiAxMy40MjctNS4wNTIgMTMuNDI3LTUuMDUyIDIuNjcgNi43NjMuOTcgMTEuODE2LjQ4NSAxMy4wMzggMy4xNTUgMy40MjIgNS4wMTUgNy44MjIgNS4wMTUgMTMuMiAwIDE4LjkwNS0xMS40MDQgMjMuMDYtMjIuMzI0IDI0LjI4MyAxLjc4IDEuNTQ4IDMuMzE2IDQuNDgxIDMuMzE2IDkuMTI2IDAgNi42LS4wOCAxMS44OTctLjA4IDEzLjUyNiAwIDEuMzA0Ljg5IDIuODUzIDMuMzE2IDIuMzY0IDE5LjQxMi02LjUyIDMzLjQwNS0yNC45MzUgMzMuNDA1LTQ2LjY5MUM5Ny43MDcgMjIgNzUuNzg4IDAgNDguODU0IDB6IiBmaWxsPSIjZmZmIi8+PC9zdmc+" alt="GitHub" class="github-icon">
+            Visit the GitHub project page
+        </a>
+        </div>
+    </header>
+
+    <div id="runSummary" class="run-summary"></div>
+
+    <!-- Two-column layout: left - table+heatmap, right - plot+controls -->
+    <div id="reportLayout">
+        <div>
+            <div class="heatmap-controls">
+                <!-- Gradient legend -->
+                <div id="heatmapLegend">
+                    <canvas id="gradientHeatmap" width="300" height="10"></canvas>
+                    <div class="heatmap-legend-labels">
+                        <span>Smallest</span>
+                        <span>Median</span>
+                        <span>Largest</span>
+                    </div>
+                </div>
+
+                <!-- Heatmap toggle checkbox -->
+                <label>
+                    <input type="checkbox" id="heatmapToggle" checked> Show heatmap
+                </label>
+                <label>
+                    <input type="checkbox" id="heatmapIncludeRef"> Include reference
+                </label>
+
+
+            </div>
+
+            <div class="extended-btn-wrapper">
+                <button id="toggleExtendedBtn">Show extended report</button>
+            </div>
+
+            <div id="reportTableContainer"></div>
+
+        </div>
+
+        <!-- The barplot -->
+        <div>
+            <div class="plot-and-controls">
+                <div class="chart-wrap">
+                    <div class="metric-tabs">
+                        <button class="metric-tab active" data-metric="bgcs">Overview</button>
+                        <button class="metric-tab" data-metric="fully">Fully recovered BGCs</button>
+                        <button class="metric-tab" data-metric="partial">Partially recovered BGCs</button>
+                        <button class="metric-tab" data-metric="missed">Missed BGCs</button>
+                        <button class="metric-tab" data-metric="unique">Unique BGCs</button>
+                        <button class="metric-tab" data-metric="pyplots">BGC overlap plots</button>
+                    </div>
+
+                    <div class="plot-flex-row">
+                        <div id="bgcLegend" class="plot-legend-column"></div>
+                        <canvas id="bgcBarPlot" width="700" height="600"></canvas>
+                    </div>
+
+                    <div id="pythonPlotsPanel" style="display:none">
+                    </div>
+
+                </div>
+
+                <div class="barplot-controls">
+                    <div class="barplot-mode">
+                        <label><input type="radio" name="barMode" value="total" id="barModeTotal" checked> Total</label>
+                        <label><input type="radio" name="barMode" value="showby" id="barModeShowBy"> Show by:</label>
+                    </div>
+
+                    <!-- Show-by group (completeness + type) -->
+                    <fieldset id="showByGroup">
+                        <label><input type="checkbox" id="byCompleteness"> by completeness</label>
+                        <label><input type="checkbox" id="byType"> by product</label>
+                    </fieldset>
+
+
+                    <fieldset id="completenessFilterGroup">
+                        <legend>Completeness</legend>
+                        <!-- JS fills in checkboxes here -->
+                    </fieldset>
+
+                    <!-- Dynamic product filters (NRP/PKS/RiPP/...) -->
+                    <fieldset id="typeFilterGroup">
+                        <legend>Products</legend>
+                        <!-- JS fills in checkboxes here -->
+                    </fieldset>
+
+                     <!-- Download button -->
+                    <button id="downloadPlotWithLegend">Download plot</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Data injected by Python -->
+    <script>
+        const reportData = [["file_label", "deepBGC", "assembly_10", "assembly_10"], ["Genome mining tool", "deepBGC", "GECCO", "antiSMASH"], ["# Filtered BGCs by length (Total)", "0", "0", "0"], ["# BGCs (Total)", "40", "6", "6"], ["# BGCs (NRPS)", "1", "1", "1"], ["# BGCs (PKS)", "10", "1", "1"], ["# BGCs (RiPP)", "3", "2", "2"], ["# BGCs (Terpene)", "3", "1", "2"], ["# BGCs (Saccharide)", "1", "0", "0"], ["# BGCs (Hybrid)", "2", "0", "0"], ["# BGCs (Unknown product)", "20", "1", "0"], ["# BGCs (Complete)", "0", "0", "2"], ["# BGCs (Incomplete)", "0", "0", "4"], ["# BGCs (Unknown completeness)", "40", "6", "0"], ["# BGCs (NRPS, Incomplete)", "0", "0", "1"], ["# BGCs (NRPS, Unknown completeness)", "1", "1", "0"], ["# BGCs (PKS, Incomplete)", "0", "0", "1"], ["# BGCs (PKS, Unknown completeness)", "10", "1", "0"], ["# BGCs (RiPP, Complete)", "0", "0", "1"], ["# BGCs (RiPP, Incomplete)", "0", "0", "1"], ["# BGCs (RiPP, Unknown completeness)", "3", "2", "0"], ["# BGCs (Terpene, Complete)", "0", "0", "1"], ["# BGCs (Terpene, Incomplete)", "0", "0", "1"], ["# BGCs (Terpene, Unknown completeness)", "3", "1", "0"], ["# BGCs (Saccharide, Unknown completeness)", "1", "0", "0"], ["# BGCs (Hybrid, Unknown completeness)", "2", "0", "0"], ["# BGCs (Unknown product, Unknown completeness)", "20", "1", "0"], ["Mean BGC length (Total)", "9561.225", "24412.833", "29313"], ["Mean BGC length (NRPS)", "37111", "40548", "52045"], ["Mean BGC length (PKS)", "9333.9", "19842", "39844"], ["Mean BGC length (RiPP)", "9398", "11938", "17261"], ["Mean BGC length (Terpene)", "11034.333", "21181", "24733.5"], ["Mean BGC length (Saccharide)", "27939", "0", "0"], ["Mean BGC length (Hybrid)", "6820", "0", "0"], ["Mean BGC length (Unknown product)", "7456.15", "41030", "0"], ["Mean BGC length (Complete)", "0", "0", "26235"], ["Mean BGC length (Incomplete)", "0", "0", "30852"], ["Mean BGC length (Unknown completeness)", "9561.225", "24412.833", "0"], ["Mean BGC length (NRPS, Incomplete)", "0", "0", "52045"], ["Mean BGC length (NRPS, Unknown completeness)", "37111", "40548", "0"], ["Mean BGC length (PKS, Incomplete)", "0", "0", "39844"], ["Mean BGC length (PKS, Unknown completeness)", "9333.9", "19842", "0"], ["Mean BGC length (RiPP, Complete)", "0", "0", "24559"], ["Mean BGC length (RiPP, Incomplete)", "0", "0", "9963"], ["Mean BGC length (RiPP, Unknown completeness)", "9398", "11938", "0"], ["Mean BGC length (Terpene, Complete)", "0", "0", "27911"], ["Mean BGC length (Terpene, Incomplete)", "0", "0", "21556"], ["Mean BGC length (Terpene, Unknown completeness)", "11034.333", "21181", "0"], ["Mean BGC length (Saccharide, Unknown completeness)", "27939", "0", "0"], ["Mean BGC length (Hybrid, Unknown completeness)", "6820", "0", "0"], ["Mean BGC length (Unknown product, Unknown completeness)", "7456.15", "41030", "0"], ["Unique BGCs (Total)", "26", "1", "6"], ["Unique BGCs (NRPS)", "0", "0", "1"], ["Unique BGCs (PKS)", "8", "0", "1"], ["Unique BGCs (RiPP)", "1", "0", "2"], ["Unique BGCs (Terpene)", "3", "0", "2"], ["Unique BGCs (Saccharide)", "1", "0", "0"], ["Unique BGCs (Hybrid)", "1", "0", "0"], ["Unique BGCs (Unknown product)", "12", "1", "0"], ["Unique BGCs (Complete)", "0", "0", "2"], ["Unique BGCs (Incomplete)", "0", "0", "4"], ["Unique BGCs (Unknown completeness)", "26", "1", "0"], ["Unique BGCs (NRPS, Incomplete)", "0", "0", "1"], ["Unique BGCs (NRPS, Unknown completeness)", "0", "0", "0"], ["Unique BGCs (PKS, Incomplete)", "0", "0", "1"], ["Unique BGCs (PKS, Unknown completeness)", "8", "0", "0"], ["Unique BGCs (RiPP, Complete)", "0", "0", "1"], ["Unique BGCs (RiPP, Incomplete)", "0", "0", "1"], ["Unique BGCs (RiPP, Unknown completeness)", "1", "0", "0"], ["Unique BGCs (Terpene, Complete)", "0", "0", "1"], ["Unique BGCs (Terpene, Incomplete)", "0", "0", "1"], ["Unique BGCs (Terpene, Unknown completeness)", "3", "0", "0"], ["Unique BGCs (Saccharide, Unknown completeness)", "1", "0", "0"], ["Unique BGCs (Hybrid, Unknown completeness)", "1", "0", "0"], ["Unique BGCs (Unknown product, Unknown completeness)", "12", "1", "0"], ["Unique recovery rate (Total)", "0.65", "0.167", "1"], ["Unique recovery rate (NRPS)", "0", "0", "1"], ["Unique recovery rate (PKS)", "0.8", "0", "1"], ["Unique recovery rate (RiPP)", "0.333", "0", "1"], ["Unique recovery rate (Terpene)", "1", "0", "1"], ["Unique recovery rate (Saccharide)", "1", "0", "0"], ["Unique recovery rate (Hybrid)", "0.5", "0", "0"], ["Unique recovery rate (Unknown product)", "0.6", "1", "0"], ["Unique recovery rate (Complete)", "0", "0", "1"], ["Unique recovery rate (Incomplete)", "0", "0", "1"], ["Unique recovery rate (Unknown completeness)", "0.65", "0.167", "0"], ["Unique recovery rate (NRPS, Incomplete)", "0", "0", "1"], ["Unique recovery rate (NRPS, Unknown completeness)", "0", "0", "0"], ["Unique recovery rate (PKS, Incomplete)", "0", "0", "1"], ["Unique recovery rate (PKS, Unknown completeness)", "0.8", "0", "0"], ["Unique recovery rate (RiPP, Complete)", "0", "0", "1"], ["Unique recovery rate (RiPP, Incomplete)", "0", "0", "1"], ["Unique recovery rate (RiPP, Unknown completeness)", "0.333", "0", "0"], ["Unique recovery rate (Terpene, Complete)", "0", "0", "1"], ["Unique recovery rate (Terpene, Incomplete)", "0", "0", "1"], ["Unique recovery rate (Terpene, Unknown completeness)", "1", "0", "0"], ["Unique recovery rate (Saccharide, Unknown completeness)", "1", "0", "0"], ["Unique recovery rate (Hybrid, Unknown completeness)", "0.5", "0", "0"], ["Unique recovery rate (Unknown product, Unknown completeness)", "0.6", "1", "0"]];
+        const reportMode = "compare_tools";
+        const reportMetadata = {"requested_mode": "compare_tools", "running_mode": "compare_tools", "results_count": 3, "min_bgc_length": 0, "bgc_completeness_margin": 100, "compare_tools_overlap_threshold": 0.9, "totals_by_run": {"assembly_10 [antiSMASH]": {"unique": 6, "non_unique": 0, "total": 6}, "deepBGC [deepBGC]": {"unique": 26, "non_unique": 14, "total": 40}, "assembly_10 [GECCO]": {"unique": 1, "non_unique": 5, "total": 6}}, "pairwise_by_run": {"assembly_10 [antiSMASH]": {"deepBGC [deepBGC]": {"unique": 6, "non_unique": 0}, "assembly_10 [GECCO]": {"unique": 6, "non_unique": 0}}, "deepBGC [deepBGC]": {"assembly_10 [antiSMASH]": {"unique": 30, "non_unique": 10}, "assembly_10 [GECCO]": {"unique": 31, "non_unique": 9}}, "assembly_10 [GECCO]": {"assembly_10 [antiSMASH]": {"unique": 2, "non_unique": 4}, "deepBGC [deepBGC]": {"unique": 3, "non_unique": 3}}}, "label_renaming_log": []};
+    </script>
+    <script>
+    /* global Chart */
+
+/* ---------------------------------------------------------------------------
+ * BGC-QUAST RUN SUMMARY
+ * ------------------------------------------------------------------------- */
+
+function renderRunSummary(meta) {
+    const el = document.getElementById('runSummary');
+    if (!el) return;
+
+    const requested = meta.requested_mode;
+    const resolved  = meta.running_mode;
+
+    let modeText;
+    if (requested === 'auto') {
+        modeText = `The running mode is <code>auto</code> that determined the mode as <code>${resolved}</code>.`;
+    } else {
+        modeText = `The running mode is <code>${resolved}</code>.`;
+    }
+
+    let text = `${modeText} All statistics are based on BGCs of size ≥ <code>${meta.min_bgc_length}</code> bp `;
+
+    const margin = meta.bgc_completeness_margin;
+    if (margin != null) {
+        text += `and with <code>${margin}</code> bp margin from contig edges.`;
+    }
+
+    if (resolved === 'compare_tools' && meta.compare_tools_overlap_threshold != null) {
+        const pct = Math.round(meta.compare_tools_overlap_threshold * 100);
+        text += ` The BGC overlap threshold is set to <code>${pct}%</code>.`;
+    }
+
+    el.innerHTML = text;
+}
+
+
+/* ---------------------------------------------------------------------------
+ * HEATMAP UTILITIES
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Compute the median of a sorted numeric array
+ * @param {number[]} arr
+ *  @returns {number}
+ */
+function getMedian(arr) {
+    const mid = Math.floor(arr.length / 2); // Calculate the middle index of the array
+    return arr.length % 2 === 0
+        ? (arr[mid - 1] + arr[mid]) / 2
+        : arr[mid];
+}
+
+// Color helpers: hex <-> rgb + mixing
+// Convert hex → RGB
+function hexToRgb(hex) {
+    const c = hex.replace('#', '');
+    return {
+        r: parseInt(c.substring(0, 2), 16),
+        g: parseInt(c.substring(2, 4), 16),
+        b: parseInt(c.substring(4, 6), 16)
+    };
+}
+
+// Convert RGB → hex
+function rgbToHex({ r, g, b }) {
+    const toHex = x => x.toString(16).padStart(2, '0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+/**
+ * Mix a base color with white.
+ * factor = 0   → white
+ * factor = 1   → base color
+ */
+function mixColorWithWhite(baseHex, factor) {
+    const base = hexToRgb(baseHex);
+    const white = { r: 255, g: 255, b: 255 };
+
+    return rgbToHex({
+        r: Math.round(white.r + (base.r - white.r) * factor),
+        g: Math.round(white.g + (base.g - white.g) * factor),
+        b: Math.round(white.b + (base.b - white.b) * factor)
+    });
+}
+
+/**
+ * Wrapper: returns a hex color that is a lighter/darker
+ * version of baseHex, controlled by factor [0..1].
+ */
+function getColorHex(baseHex, factor) {
+    return mixColorWithWhite(baseHex, factor);
+}
+
+// Base colors for the heatmap:
+const LOW_COLOR_HEX  = "#80852a";  // olive green-yellow
+const HIGH_COLOR_HEX = "#396B9E";  // denim blue
+
+const FACT_WHITE = 0.0;   // ~100% lightness (white)
+const FACT_MIN   = 0.3;   // ~75% lightness
+const FACT_INNER = 0.55;  // ~65% lightness
+const FACT_OUTER = 0.8;   // ~55% lightness
+
+/**
+ * Draw the heatmap legend (smallest → median → largest) above the table.
+ * Uses LOW_COLOR_HEX and HIGH_COLOR_HEX.
+ */
+function drawHeatmapLegend() {
+    const canvas = document.getElementById('gradientHeatmap');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    const gradient = ctx.createLinearGradient(0, 0, width, 0);
+
+    // Smallest → median → largest
+    gradient.addColorStop(0,   getColorHex(LOW_COLOR_HEX, FACT_INNER));
+    gradient.addColorStop(0.5, "#FFFFFF"); // median
+    gradient.addColorStop(1,   getColorHex(HIGH_COLOR_HEX, FACT_INNER));
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
+}
+
+/**
+ * Apply background color to cells in a single row based on outliers/statistics.
+ * @param {HTMLTableCellElement[]} cells
+ * @param {number[]} values
+ * @param {'more_is_better'|'less_is_better'} [direction='more_is_better']
+ */
+function heatMapOneRow(cells, values, direction = 'more_is_better') {
+    // Skip if too few values or all are the same (no variation to color)
+    if (values.length < 2 || new Set(values).size === 1) return;
+
+    // Sort values and calculate statistical parameters
+    const sorted = [...values].sort((a, b) => a - b);
+    const median = getMedian(sorted);
+    const q1 = sorted[Math.floor((sorted.length - 1) / 4)];
+    const q3 = sorted[Math.floor((sorted.length - 1) * 3 / 4)];
+    const iqr = q3 - q1;
+
+    // Calculate "fences" for mild/extreme outliers
+    const lowOuter = q1 - 3 * iqr;
+    const lowInner = q1 - 1.5 * iqr;
+    const topInner = q3 + 1.5 * iqr;
+    const topOuter = q3 + 3 * iqr;
+
+
+    // Choose which side is "low" and which is "high" based on metric direction
+    const [lowColorHex, topColorHex] =
+        direction === 'less_is_better'
+            ? [HIGH_COLOR_HEX, LOW_COLOR_HEX]  // reversed
+            : [LOW_COLOR_HEX,  HIGH_COLOR_HEX];
+
+    // Apply coloring logic per cell
+    for (let i = 0; i < cells.length; i++) {
+        const cell = cells[i];
+        const num = values[i];
+        if (num == null || Number.isNaN(num)) continue;
+
+        if (num < lowOuter) {
+            // Extreme low outlier
+            cell.style.backgroundColor = getColorHex(lowColorHex, FACT_OUTER);
+            cell.style.color = 'white';
+        } else if (num < lowInner) {
+            // Mild low outlier
+            cell.style.backgroundColor = getColorHex(lowColorHex, FACT_INNER);
+        } else if (num < median) {
+            // Between lowInner and median → interpolate white → lowColor
+            const denom = (median - lowInner) || 1;
+            const k = (FACT_MIN - FACT_WHITE) / denom;
+            const factor = FACT_MIN - (median - num) * k;
+            cell.style.backgroundColor = getColorHex(lowColorHex, factor);
+        } else if (num > topOuter) {
+            // Extreme high outlier
+            cell.style.backgroundColor = getColorHex(topColorHex, FACT_OUTER);
+            cell.style.color = 'white';
+        } else if (num > topInner) {
+            // Mild high outlier
+            cell.style.backgroundColor = getColorHex(topColorHex, FACT_INNER);
+        } else if (num > median) {
+            // Between median and topInner → interpolate white → topColor
+            const denom = (topInner - median) || 1;
+            const k = (FACT_MIN - FACT_WHITE) / denom;
+            const factor = FACT_MIN - (num - median) * k;
+            cell.style.backgroundColor = getColorHex(topColorHex, factor);
+        }
+        // num === median → stays white
+    }
+}
+
+/**
+ * Global store to re-apply/remove heatmap colors when toggling the heatmap.
+ * Each entry: { cells: HTMLTableCellElement[], values: number[] }
+ */
+const allNumericCells = [];
+let extendedReportShown = false;
+
+function applyExtendedState() {
+    const extendedRows = document.querySelectorAll('.extended-row');
+    extendedRows.forEach(row => {
+        row.style.display = extendedReportShown ? 'table-row' : 'none';
+    });
+
+    const toggleBtn = document.getElementById('toggleExtendedBtn');
+    if (toggleBtn) {
+        toggleBtn.textContent = extendedReportShown ? 'Hide extended report' : 'Show extended report';
+        toggleBtn.classList.toggle('is-collapsed', extendedReportShown);
+    }
+
+    const layout = document.getElementById('reportLayout');
+    if (layout) {
+        if (extendedReportShown) layout.classList.add('extended-locked');
+        else layout.classList.remove('extended-locked');
+    }
+}
+
+/* ---------------------------------------------------------------------------
+ * TABLE BUILDER (main report table + extended rows)
+ * ------------------------------------------------------------------------- */
+const isReferenceMode = (typeof reportMode !== 'undefined' && reportMode === "compare_to_reference");
+let includeReferenceInHeatmap = false;
+/**
+ * Build the main report table and insert it into #reportTableContainer.
+ * @param {Array[]} data - 2D array representing the report pivot table.
+ */
+function buildTable(data) {
+    allNumericCells.length = 0;
+    const container = document.getElementById('reportTableContainer');
+    const table = document.createElement('table');
+    const headerRow = document.createElement('tr');
+
+    // Build column headers
+    headerRow.appendChild(document.createElement('th')); // top-left empty cell
+    data[0].slice(1).forEach((col, idx) => {
+        const th = document.createElement('th');
+        th.textContent = col;
+
+        // idx=0 corresponds to j===1 (first data column) -> reference in reference mode
+        if (isReferenceMode && idx === 0) {
+            th.classList.add('ref-col-header');
+        }
+
+        headerRow.appendChild(th);
+    });
+    headerRow.classList.add('column-header-row');
+    table.appendChild(headerRow);
+
+    // Loop over each data row
+    for (let i = 1; i < data.length; i++) {
+        const row = document.createElement('tr');
+        const rowData = data[i];
+
+        // Hide extended rows by default (only show "total" by default)
+        const label = String(rowData[0] ?? '').toLowerCase();
+        const isTotal = label.includes('(total)');
+        const isMiningTool = label === 'genome mining tool';
+        if (!isTotal && !isMiningTool) {
+            row.classList.add('extended-row');
+        }
+
+
+        const numericCells = [];
+        const numericValues = [];
+
+        // Build each cell in the row
+        data[i].forEach((cell, j) => {
+            const isRowHeader = (j === 0);
+            const td = document.createElement(isRowHeader ? 'th' : 'td');
+
+            if (isRowHeader) {
+                let labelText = (String(cell).toLowerCase() === 'genome mining tool')
+                    ? 'Genome mining tool'
+                    : String(cell ?? '');
+
+                td.textContent = labelText;
+                if (labelText === 'Genome mining tool') {
+                    td.classList.add('row-label-total');
+                }
+
+                const isTotalLabel = labelText.trim().toLowerCase().endsWith('(total)');
+
+                if (isTotalLabel) {
+                    td.classList.add('row-label-total');
+                } else {
+                    td.classList.add('row-label');
+                }
+
+                const rawLabel = String(cell ?? '');
+
+                // Compare-tools mode-specific rows
+                const isCompareToolsSpecific =
+                    rawLabel.startsWith('Unique BGCs') ||
+                    rawLabel.startsWith('Unique recovery rate');
+
+                // Compare-reference mode-specific rows
+                const isCompareRefSpecific =
+                    rawLabel.startsWith('Fully recovered BGCs') ||
+                    rawLabel.startsWith('Partially recovered BGCs') ||
+                    rawLabel.startsWith('Missed BGCs') ||
+                    rawLabel.startsWith('Fragmented BGCs') ||
+                    rawLabel.startsWith('Misclassified product type') ||
+                    rawLabel.startsWith('Recovery rate');
+
+                if ((reportMode === 'compare_tools' && isCompareToolsSpecific) ||
+                    (reportMode === 'compare_to_reference' && isCompareRefSpecific)) {
+                    td.classList.add('mode-specific-metric');
+                }
+
+            } else {
+                td.textContent = cell;
+            }
+
+            // Only collect numeric values for heatmap
+            if (j > 0) {
+                const num = parseFloat(cell);
+
+                // Only consider numeric cells for heatmap
+                if (!Number.isNaN(num)) {
+                    // In COMPARE_TO_REFERENCE mode, the first data column (j === 1)
+                    // is the reference column
+                    const isReferenceColumn = isReferenceMode && (j === 1);
+
+                    if (isReferenceColumn && !includeReferenceInHeatmap) {
+                        // Reference column stays uncolored (white) when heatmap is on.
+                    } else {
+                        // Normal numeric cell, or reference when included:
+                        // participate in the heatmap.
+                        numericCells.push(td);
+                        numericValues.push(num);
+                    }
+                }
+            }
+
+            row.appendChild(td);
+        });
+
+        // Apply the statistical heatmap coloring
+        heatMapOneRow(numericCells, numericValues);
+        allNumericCells.push({ cells: numericCells, values: numericValues });
+
+        table.appendChild(row);
+    }
+
+    container.appendChild(table);
+}
+
+/* ---------------------------------------------------------------------------
+ * BAR CHART BUILDER (Chart.js) – totals / by type / by completeness
+ * ------------------------------------------------------------------------- */
+
+//product colors (modifiable
+const productColors = {
+    'NRPS': '#2e8b57',
+    'PKS': '#f4a460',
+    'RiPP': '#4169e1',
+    'Hybrid': '#689cba',
+    'Terpene': '#800080',
+    'Saccharide': '#f0c107',
+    'Alkaloid': '#dda0dd',
+    'Other': '#666666'
+};
+
+/**
+ * Lighten a HEX color toward white by a factor in [0, 1].
+ * @param {string} hex
+ * @param {number} [factor=0.5]
+ * @returns {string}
+ */
+function lighten(hex, factor = 0.5) {
+    const num = parseInt(hex.slice(1), 16);
+    let r = (num >> 16) & 0xff;
+    let g = (num >> 8) & 0xff;
+    let b = num & 0xff;
+    r = Math.round(r + (255 - r) * factor);
+    g = Math.round(g + (255 - g) * factor);
+    b = Math.round(b + (255 - b) * factor);
+    return `rgb(${r}, ${g}, ${b})`;
+}
+
+/**
+ * Build the dynamic product checkboxes (NRPS/PKS/RiPP/...) in #typeFilterGroup.
+ * @param {string[]} types
+ */
+function renderTypeFilters(types) {
+    const group = document.getElementById('typeFilterGroup');
+    if (!group) return;
+
+    // Preserve the legend if present
+    const legend = group.querySelector('legend');
+    group.innerHTML = '';
+    if (legend) group.appendChild(legend);
+
+    const frag = document.createDocumentFragment();
+    types.forEach(type => {
+        const id = `type_${type.replace(/\W+/g, '_')}`;
+        const label = document.createElement('label');
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = id;
+        input.dataset.type = type;
+        input.checked = true; // default: include
+        label.appendChild(input);
+        label.append(` ${type}`);
+        frag.appendChild(label);
+    });
+    group.appendChild(frag);
+}
+
+/**
+ * Build the dynamic completeness checkboxes (Complete/Incomplete/Unknown completeness)
+ * based only on what appears in the table.
+ * @param {string[]} statuses
+ */
+function renderCompletenessFilters(statuses) {
+    const group = document.getElementById('completenessFilterGroup');
+    if (!group) return;
+
+    // Preserve the <legend>
+    const legend = group.querySelector('legend');
+    group.innerHTML = '';
+    if (legend) group.appendChild(legend);
+
+    const frag = document.createDocumentFragment();
+    statuses.forEach(status => {
+        const id = 'status_' + status.replace(/\s+/g, '_');
+        const label = document.createElement('label');
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = id;
+        input.checked = true; // default ON
+        label.appendChild(input);
+        // Capitalize
+        let niceLabel;
+        if (status === 'unknown completeness') {
+            niceLabel = 'Unknown completeness';
+        } else {
+            niceLabel = status.charAt(0).toUpperCase() + status.slice(1);
+}
+        label.append(` ${niceLabel}`);
+        frag.appendChild(label);
+    });
+
+    group.appendChild(frag);
+}
+
+/**
+ * Return which product types are currently selected in the UI.
+ * Missing checkboxes default to "on".
+ * @param {string[]} allTypes
+ * @returns {string[]}
+ */
+function selectedTypesFromUI(allTypes) {
+    return allTypes.filter(t => {
+        const el = document.getElementById(`type_${t.replace(/\W+/g, '_')}`);
+        return !el || el.checked; // include if missing or checked
+    });
+}
+
+/**
+ * Return completeness statuses that are currently selected in the UI.
+ * @returns {('complete'|'incomplete'|'unknown completeness')[]}
+ */
+function selectedStatusesFromUI() {
+  const on = [];
+  if (document.getElementById('status_complete')?.checked)   on.push('complete');
+  if (document.getElementById('status_incomplete')?.checked) on.push('incomplete');
+  if (document.getElementById('status_unknown_completeness')?.checked) on.push('unknown completeness');
+  // If none selected, return empty array (chart will show nothing for completeness parts)
+  return on;
+}
+
+/**
+ * Enable/disable controls depending on bar chart mode and "show by" choices.
+ */
+function syncShowByDisabled() {
+    const isTotal   = document.getElementById('barModeTotal').checked;
+    const showBy    = document.getElementById('barModeShowBy').checked;
+    const byTypeOn  = document.getElementById('byType').checked;
+    const byCompOn  = document.getElementById('byCompleteness').checked;
+
+    const showByGroup = document.getElementById('showByGroup');
+    if (showByGroup) showByGroup.disabled = isTotal;
+
+    const typeFilterGroup = document.getElementById('typeFilterGroup');
+    if (typeFilterGroup) typeFilterGroup.disabled = isTotal || !showBy || !byTypeOn;
+
+    const completenessFilterGroup = document.getElementById('completenessFilterGroup');
+    if (completenessFilterGroup) completenessFilterGroup.disabled = isTotal || !showBy || !byCompOn;
+}
+
+/** Keep an empty variable so we can update/destroy the chart cleanly. */
+let bgcChart = null;
+
+/**
+ * Find a row in the data by its label (first column).
+ * @param {Array[]} data
+ * @param {string} label
+ * @returns {Array|null}
+ */
+function getRowByLabel(data, label) {
+    return data.find(r => r[0] === label) || null;
+}
+
+/**
+ * Return all product types that exist in the table (excluding "total"/pure
+ * completeness rows). Types are parsed from labels like "# BGCs (NRPS, Complete)".
+ * @param {Array[]} data
+ * @returns {string[]}
+ */
+function detectTypes(data) {
+  const types = new Set();
+
+  for (const r of data) {
+    const s = String(r[0] ?? '');
+    // Match labels that start with "# BGCs ( ... )"
+    const m = /^#\s*BGCs?\s*\(\s*([^)]+)\s*\)\s*$/i.exec(s);
+    if (!m) continue;
+
+    // inside is: "NRPS" or "NRPS, Complete" or "Complete" etc.
+    const inside = m[1].trim();
+
+    // take only the part before the first comma (the product)
+    const [typeRaw] = inside.split(',', 1);
+    const type = (typeRaw || '').trim();
+    if (!type) continue;
+
+    // skip non-product tokens that appear as totals
+    const lc = type.toLowerCase();
+    if (lc === 'total' || lc === 'complete' || lc === 'incomplete' || lc === 'unknown completeness') continue;
+
+    types.add(type);
+  }
+
+  // Preferred order + fallback to 'Other' if nothing detected
+  const preferred = ['NRPS','PKS','RiPP','Terpene','Saccharide','Alkaloid','Hybrid'];
+  const detected = Array.from(types);
+  const ordered = [
+    ...preferred.filter(t => detected.includes(t)),
+    ...detected.filter(t => !preferred.includes(t))
+  ];
+  return ordered.length ? ordered : ['Other'];
+}
+
+/**
+ * Detect which completeness statuses exist in the table.
+ * Looks for rows like "# BGCs (Complete)" or "# BGCs (Type, Unknown completeness)".
+ * @param {Array[]} data
+ * @returns {string[]}
+ */
+function detectCompleteness(data) {
+    const allowed = ['complete', 'incomplete', 'unknown completeness'];
+    const set = new Set();
+
+    data.forEach(row => {
+        const label = String(row[0] || '').trim();
+
+        // total rows, e.g. "# BGCs (Unknown completeness)"
+        let m = /^#\s*BGCs\s*\(\s*([^)]+)\s*\)$/i.exec(label);
+        if (m) {
+            const inside = m[1]
+                .split(',')
+                .map(s => s.trim().toLowerCase());
+
+            inside.forEach(v => {
+                if (allowed.includes(v)) {
+                    set.add(v);
+                }
+            });
+        }
+
+        // typed rows, e.g. "# BGCs (NRPS, Unknown completeness)"
+        m = /^#\s*BGCs\s*\(\s*([^,]+),\s*([^)]+)\)$/i.exec(label);
+        if (m) {
+            const status = m[2].trim().toLowerCase();
+            if (allowed.includes(status)) {
+                set.add(status);
+            }
+        }
+    });
+
+    return Array.from(set);
+}
+
+// Which metric labels exist for each running mode
+const METRIC_TABS_BY_MODE = {
+    compare_to_reference: ['bgcs', 'fully', 'partial', 'missed'],
+    compare_tools:        ['bgcs', 'unique', 'pyplots'],
+    compare_samples:      ['bgcs']  // Overview only
+};
+
+// Which metric are we plotting (# BGCs, Fully recovered, etc.)
+const METRIC_BASE = {
+    bgcs:   '# BGCs',                 // existing behaviour
+    fully:  'Fully recovered BGCs',
+    partial:'Partially recovered BGCs',
+    missed: 'Missed BGCs',
+    unique: "Unique BGCs",
+    // pyplots: no metricBase → handled specially
+};
+
+let currentMetricKey = 'bgcs';
+
+function metricLabel(base, inside) {
+    // e.g. base="# BGCs", inside="Total"
+    return `${base} (${inside})`;
+}
+
+
+function renderExternalLegend(chart) {
+    const legendContainer = document.getElementById('bgcLegend');
+    if (!legendContainer) return;
+
+    legendContainer.innerHTML = '';
+
+    chart.data.datasets.forEach(ds => {
+        const values = Array.isArray(ds.data) ? ds.data : [];
+        const hasNonZero = values.some(v => v !== 0);
+
+        // Skip legend entries for datasets that are entirely zero
+        if (!hasNonZero) return;
+
+        const item = document.createElement('div');
+        item.style.display = 'flex';
+        item.style.alignItems = 'center';
+        item.style.gap = '6px';
+
+        const swatch = document.createElement('span');
+        swatch.className = 'plot-legend-swatch';
+        swatch.style.backgroundColor = ds.backgroundColor;
+
+        const label = document.createElement('span');
+        label.textContent = ds.label;
+
+        item.appendChild(swatch);
+        item.appendChild(label);
+        legendContainer.appendChild(item);
+    });
+}
+
+/**
+ * Build or rebuild the bar plot based on the current UI state.
+ * @param {Array[]} data
+ */
+function buildBarPlotDynamic(data) {
+    // If the current tab does not use a bar chart (e.g. "pyplots"), do nothing
+    if (!METRIC_BASE[currentMetricKey]) {
+        return;
+    }
+
+    const metricBase = METRIC_BASE[currentMetricKey];
+
+    // In COMPARE_TO_REFERENCE, drop the reference column from the plot for all tabs except Overview (totals)
+    const hideReferenceForThisMetric = isReferenceMode && currentMetricKey !== 'bgcs';
+    const colStart = hideReferenceForThisMetric ? 2 : 1;
+
+    // labels are Assembly+Tool
+    const tools = data[1].slice(colStart);
+    const assemblies = data[0].slice(colStart);
+    const labels = tools.map((tool, i) => `${tool}\n${assemblies[i]}`);
+
+    // read UI
+    const mode = document.getElementById('barModeShowBy').checked ? 'showby' : 'total';
+    const byCompleteness = document.getElementById('byCompleteness').checked;
+    const byType = document.getElementById('byType').checked;
+
+    let datasets = [];
+
+    if (mode === 'total') {
+        const row = getRowByLabel(data, metricLabel(metricBase, 'Total'));
+        if (row) {
+            const counts = row.slice(colStart).map(v => parseInt(v, 10));
+            datasets.push({
+                label: metricLabel(metricBase, 'Total'),
+                data: counts,
+                backgroundColor: '#322b7a'
+            });
+        }
+    } else {
+        // SHOW BY...
+        if (byCompleteness && byType) {
+            // stacks are (type x completeness)
+            const allTypes = detectTypes(data);
+            const types = selectedTypesFromUI(allTypes);
+            const statuses = selectedStatusesFromUI();
+
+            for (const type of types) {
+                const baseColor = productColors[type] || productColors['Other'];
+                // const rowComplete = getRowByLabel(data, `# BGCs (${type}, Complete)`);
+                const rowComplete = getRowByLabel(data, metricLabel(metricBase, `${type}, Complete`));
+                const rowIncomplete = getRowByLabel(data, metricLabel(metricBase, `${type}, Incomplete`));
+                const rowUnknown    = getRowByLabel(data, metricLabel(metricBase, `${type}, Unknown completeness`));
+
+                if (statuses.includes('complete') && rowComplete) {
+                    datasets.push({
+                        label: `${type} complete`,
+                        data: rowComplete.slice(colStart).map(v => parseInt(v, 10)),
+                        backgroundColor: baseColor
+                    });
+                }
+                if (statuses.includes('incomplete') && rowIncomplete) {
+                    datasets.push({
+                        label: `${type} incomplete`,
+                        data: rowIncomplete.slice(colStart).map(v => parseInt(v, 10)),
+                        backgroundColor: lighten(baseColor, 0.45) // lighter shade
+                    });
+                }
+                if (statuses.includes('unknown completeness') && rowUnknown) {
+                    datasets.push({
+                        label: `${type} unknown completeness`,
+                        data: rowUnknown.slice(colStart).map(v => parseInt(v, 10)),
+                        backgroundColor: lighten(baseColor, 0.75) // even lighter shade
+                    });
+                }
+            }
+
+        } else if (byCompleteness) {
+            // stacks are complete vs incomplete (total)
+            const rowComplete   = getRowByLabel(data, metricLabel(metricBase, 'Complete'));
+            const rowIncomplete = getRowByLabel(data, metricLabel(metricBase, 'Incomplete'));
+            const rowUnknown    = getRowByLabel(data, metricLabel(metricBase, 'Unknown completeness'));
+            const statuses = selectedStatusesFromUI();
+
+            if (statuses.includes('complete') && rowComplete) {
+                datasets.push({
+                    label: 'Complete',
+                    data: rowComplete.slice(colStart).map(v => parseInt(v, 10)),
+                    backgroundColor: '#578c18'
+                });
+            }
+            if (statuses.includes('incomplete') && rowIncomplete) {
+                datasets.push({
+                    label: 'Incomplete',
+                    data: rowIncomplete.slice(colStart).map(v => parseInt(v, 10)),
+                    backgroundColor: '#ccca3d'
+                });
+            }
+            if (statuses.includes('unknown completeness') && rowUnknown) {
+                datasets.push({
+                    label: 'Unknown completeness',
+                    data: rowUnknown.slice(colStart).map(v => parseInt(v, 10)),
+                    backgroundColor: '#999999'
+                });
+            }
+
+        } else if (byType) {
+            // stacks are by type (totals per type)
+            const allTypes = detectTypes(data);
+            const types = selectedTypesFromUI(allTypes);
+            for (const type of types) {
+                const row = getRowByLabel(data, metricLabel(metricBase, type));
+                if (row) {
+                    datasets.push({
+                        label: type,
+                        data: row.slice(colStart).map(v => parseInt(v, 10)),
+                        backgroundColor: productColors[type] || productColors['Other']
+                    });
+                }
+            }
+        } else {
+            // fallback: if user selected "Show by" but no boxes,
+            // just show the *current metric* total to avoid an empty chart.
+            const row = getRowByLabel(data, metricLabel(metricBase, 'Total'));
+            if (row) {
+                const counts = row.slice(colStart).map(v => parseInt(v, 10));
+                datasets.push({
+                    label: metricLabel(metricBase, 'Total'),
+                    data: counts,
+                    backgroundColor: '#322b7a'
+                });
+            }
+        }
+    }
+
+    // cleanup previous chart
+    if (bgcChart) {
+        bgcChart.destroy();  // clean up the old chart instance
+        bgcChart = null;
+    }
+
+    // stacked if more than one dataset
+    const stacked = datasets.length > 1;
+
+
+    bgcChart = new Chart(document.getElementById('bgcBarPlot'), { // save the new chart in the same variable
+        type: 'bar',
+        data: { labels, datasets },
+        options: {
+            responsive: false,
+            maintainAspectRatio: false,
+            devicePixelRatio: 2,
+            layout: {
+                padding: { top: 10, right: 180, bottom: 10, left: 0 }
+            },
+            animation: {
+                duration: 800,
+                easing: 'easeOutQuart'
+            },
+
+            transitions: {
+                // don't animate on resize at all,
+                // in case something does trigger a resize
+                resize: { animation: { duration: 0 } }
+            },
+
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    animation: { duration: 0 },
+                    callbacks: {
+                        label: ctx => `${ctx.dataset.label}: ${ctx.raw}`
+                    }
+                }
+            },
+
+            scales: {
+                x: {
+                    stacked,
+                    ticks: {
+                        autoSkip: true,
+                        autoSkipPadding: 10,
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                },
+                y: { beginAtZero: true, stacked }
+            }
+        }
+    });
+    renderExternalLegend(bgcChart);
+}
+
+
+
+/* ---------------------------------------------------------------------------
+ * VENN DIAGRAM BUILDER
+ * ------------------------------------------------------------------------- */
+// Normalize tool names so they display consistently in the Venn diagram
+function normalizeToolLabel(name) {
+    if (!name) return '';
+    const s = String(name).trim();
+    const low = s.toLowerCase();
+    if (low.startsWith('deepbgc'))   return 'deepBGC';
+    if (low.startsWith('antismash')) return 'antiSMASH';
+    if (low.startsWith('gecco'))     return 'GECCO';
+    return s;
+}
+
+// Draw a 2-set Venn diagram inside the given <svg> element.
+// The diagram uses:
+//  - left circle  = unique + non_unique from A→B
+//  - right circle = unique + non_unique from B→A
+//  - intersection = “A_non_unique / B_non_unique”
+function drawVenn(svg, toolA, toolB, pairwiseByTool, threshold) {
+    const pair = pairwiseByTool || {};
+
+    const fromA = (pair[toolA] && pair[toolA][toolB]) || {};
+    const fromB = (pair[toolB] && pair[toolB][toolA]) || {};
+
+    const leftUnique  = Number(fromA.unique     || 0);
+    const leftNonUni  = Number(fromA.non_unique || 0);
+    const rightUnique = Number(fromB.unique     || 0);
+    const rightNonUni = Number(fromB.non_unique || 0);
+
+    const labelA = normalizeToolLabel(toolA);
+    const labelB = normalizeToolLabel(toolB);
+
+    // Clear the SVG before drawing a new diagram
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    svg.setAttribute('viewBox', '0 0 260 220');
+
+    const NS = 'http://www.w3.org/2000/svg';
+
+    const makeCircle = (cx, cy, r, fill) => {
+        const c = document.createElementNS(NS, 'circle');
+        c.setAttribute('cx', cx);
+        c.setAttribute('cy', cy);
+        c.setAttribute('r', r);
+        c.setAttribute('fill', fill);
+        c.setAttribute('fill-opacity', '0.7');
+        c.setAttribute('stroke', '#333333');
+        c.setAttribute('stroke-width', '1');
+        svg.appendChild(c);
+    };
+
+    const makeText = (x, y, text, size = 16) => {
+        const t = document.createElementNS(NS, 'text');
+        t.setAttribute('x', x);
+        t.setAttribute('y', y);
+        t.setAttribute('text-anchor', 'middle');
+        t.setAttribute('dominant-baseline', 'middle');
+        t.setAttribute('font-size', size);
+        t.setAttribute('font-family', 'Arial, sans-serif');
+        t.textContent = text;
+        svg.appendChild(t);
+    };
+
+    // circles
+    makeCircle(100, 110, 75, '#2e808f');  // left
+    makeCircle(160, 110, 75, '#FFBC42');  // right
+
+    // counts
+    makeText(70, 110,  String(leftUnique));
+    makeText(190, 110, String(rightUnique));
+    makeText(130, 110, `${leftNonUni} | ${rightNonUni}`);
+
+    // labels
+    makeText(60, 200, labelA, 10);
+    makeText(200, 200, labelB, 10);
+
+    // title
+    const wrapper = svg.closest('.venn-wrapper');
+    if (wrapper) {
+        const titleEl = wrapper.querySelector('.venn-title');
+        if (titleEl) {
+            const thrPct = (typeof threshold === 'number') ? Math.round(threshold * 100) : null;
+            titleEl.textContent =
+                `Overlap between ${labelA} and ${labelB}` +
+                (thrPct != null ? ` (overlap threshold = ${thrPct}%)` : '');
+        }
+    }
+}
+
+// Create the full Venn panel (checkboxes + title + SVG).
+function initVennPanel(panel, metadata) {
+    const pairwise = metadata && metadata.pairwise_by_run;
+    if (!pairwise) {
+        panel.textContent = 'No overlap information available.';
+        return;
+    }
+
+    const tools = Object.keys(pairwise);
+    if (!tools.length) {
+        panel.textContent = 'No overlap information available.';
+        return;
+    }
+
+    panel.innerHTML = '';
+
+    // Container for all Venn-related UI
+    const wrapper = document.createElement('div');
+    wrapper.className = 'venn-wrapper';
+
+    // Checkbox controls
+    const controls = document.createElement('fieldset');
+    controls.className = 'venn-controls';
+
+    const label = document.createElement('legend');
+    label.textContent = 'Genome mining tools (max. 2)';
+    controls.appendChild(label);
+
+    const boxContainer = document.createElement('span');
+    boxContainer.className = 'venn-checkboxes';
+    controls.appendChild(boxContainer);
+
+    // Title above the SVG (also updated by drawVenn)
+    const title = document.createElement('div');
+    title.className = 'venn-title';
+    title.textContent = 'Select two tools to see overlap.';
+
+    // The SVG that will hold the circles/text
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.classList.add('venn-svg');
+
+    // Track which tools are selected, and the current filename for download
+    const selected = [];
+    let currentFilename = 'bgc-quast_venn.png';
+
+    // Download button for the Venn plot
+    const downloadBtn = document.createElement('button');
+    downloadBtn.id = 'downloadVennPlot';
+    downloadBtn.textContent = 'Download plot';
+    downloadBtn.addEventListener('click', () => {
+        // Do nothing if no diagram yet (no tools selected or not 2 selected)
+        if (!svg.firstChild) return;
+        exportSvgAsPng(svg, currentFilename);
+    });
+
+    // Assemble UI
+    // Left column: the SVG
+    const mainRow = document.createElement('div');
+    mainRow.className = 'venn-main-row';
+
+    const leftCol = document.createElement('div');
+    leftCol.className = 'venn-left';
+    leftCol.appendChild(svg);
+
+    const rightCol = document.createElement('div');
+    rightCol.className = 'venn-right';
+    rightCol.appendChild(controls);
+
+    mainRow.appendChild(leftCol);
+    mainRow.appendChild(rightCol);
+
+    wrapper.appendChild(title);
+    wrapper.appendChild(mainRow);
+
+    // Insert download button BELOW the legend inside the right column
+    rightCol.appendChild(downloadBtn);
+
+    // Finally attach wrapper to panel
+    panel.appendChild(wrapper);
+
+    // Create one checkbox per tool
+    tools.forEach(tool => {
+        const lbl = document.createElement('label');
+        const cb  = document.createElement('input');
+        cb.type   = 'checkbox';
+        cb.value  = tool;
+
+        const txt = document.createElement('span');
+        txt.textContent = normalizeToolLabel(tool);
+
+        lbl.appendChild(cb);
+        lbl.appendChild(txt);
+        boxContainer.appendChild(lbl);
+
+        cb.addEventListener('change', () => {
+            if (cb.checked) {
+                if (selected.length >= 2) {
+                    cb.checked = false;
+                    return;
+                }
+                selected.push(tool);
+            } else {
+                const idx = selected.indexOf(tool);
+                if (idx !== -1) selected.splice(idx, 1);
+            }
+
+            const all = boxContainer.querySelectorAll('input[type="checkbox"]');
+            all.forEach(other => {
+                if (!other.checked) {
+                    other.disabled = (selected.length >= 2);
+                } else {
+                    other.disabled = false;
+                }
+            });
+
+            if (selected.length === 2) {
+                drawVenn(
+                    svg,
+                    selected[0],
+                    selected[1],
+                    pairwise,
+                    metadata && metadata.compare_tools_overlap_threshold
+                );
+
+                const thr = metadata && metadata.compare_tools_overlap_threshold;
+                const thrPct = (typeof thr === 'number') ? Math.round(thr * 100) : null;
+
+                const safeA = normalizeToolLabel(selected[0]).replace(/\s+/g, '');
+                const safeB = normalizeToolLabel(selected[1]).replace(/\s+/g, '');
+
+                currentFilename = (thrPct != null)
+                    ? `venn_${safeA}_vs_${safeB}_${thrPct}.png`
+                    : `venn_${safeA}_vs_${safeB}.png`;
+
+            } else {
+                while (svg.firstChild) svg.removeChild(svg.firstChild);
+                title.textContent = 'Select two tools to see overlap.';
+                currentFilename = 'bgc-quast_venn.png';
+            }
+        });
+    });
+}
+
+
+/* ---------------------------------------------------------------------------
+ * BARPLOT DOWNLOADING
+ * ------------------------------------------------------------------------- */
+function exportPlotWithLegend() {
+    const chartCanvas = document.getElementById('bgcBarPlot');
+    const legendContainer = document.getElementById('bgcLegend');
+
+    if (!chartCanvas || !legendContainer) return;
+    if (!bgcChart) return;
+
+    const legendItems = Array.from(legendContainer.querySelectorAll('div'));
+    const hasLegend = legendItems.length > 0;
+
+    // Base dimensions from the existing chart canvas
+    const chartWidth = 1200;   // actual pixel width
+    const chartHeight = chartCanvas.height; // actual pixel height
+
+    // Simple layout constants for the legend area
+    const legendPaddingX = 0;
+    const legendPaddingY = 150;
+    const legendLineHeight = 50;
+    const legendSwatchSize = 14;
+    const legendWidth = 650
+
+    // Create an off-screen canvas
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = chartWidth + (hasLegend ? legendWidth + legendPaddingX : 0);
+    exportCanvas.height = chartHeight;
+
+    const ctx = exportCanvas.getContext('2d');
+
+    // White background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+    // Draw the barplot
+    ctx.drawImage(chartCanvas, 0, 0);
+
+    // Draw the legend on the right
+    if (hasLegend) {
+        let x0 = chartWidth + legendPaddingX;
+        let y0 = legendPaddingY;
+
+        ctx.font = '32px Arial';
+        ctx.textBaseline = 'middle';
+
+        legendItems.forEach((item, idx) => {
+            const swatch = item.querySelector('.plot-legend-swatch');
+            if (!swatch) return;
+
+            const color = window.getComputedStyle(swatch).backgroundColor;
+            const labelText = item.textContent.trim();
+            const y = y0 + idx * legendLineHeight;
+
+            // Swatch
+            ctx.fillStyle = color;
+            ctx.fillRect(x0, y - legendSwatchSize / 2, legendSwatchSize, legendSwatchSize);
+            ctx.strokeStyle = '#696969';
+            ctx.strokeRect(x0, y - legendSwatchSize / 2, legendSwatchSize, legendSwatchSize);
+
+            // Text
+            ctx.fillStyle = '#000000';
+            ctx.fillText(labelText, x0 + legendSwatchSize + 6, y);
+        });
+    }
+
+    // Trigger browser download
+    const link = document.createElement('a');
+    link.href = exportCanvas.toDataURL('image/png');
+    link.download = 'bgc-quast_barplot.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+/* ---------------------------------------------------------------------------
+ * VENN DIAGRAM DOWNLOADING
+ * ------------------------------------------------------------------------- */
+// Export a single SVG element (e.g. the Venn diagram) as a PNG file
+function exportSvgAsPng(svgElement, filename) {
+    if (!svgElement) return;
+
+    // Use viewBox if present; otherwise fall back to rendered size
+    const width  = 700;
+    const height = 600;
+
+    // Serialize SVG to a string
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(svgElement);
+
+    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+
+    const img = new Image();
+    img.onload = function () {
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        // White background so exported PNG isn’t transparent
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+
+        URL.revokeObjectURL(url);
+
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = filename || 'bgc-quast_venn.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    img.src = url;
+}
+
+
+
+
+/* ---------------------------------------------------------------------------
+ * PAGE INITIALIZATION & EVENT WIRING
+ * ------------------------------------------------------------------------- */
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof Chart !== 'undefined') {
+        Chart.defaults.font.size = 13;
+        Chart.defaults.font.family = "'Arial', sans-serif";
+    }
+    renderRunSummary(reportMetadata);
+    buildTable(reportData);
+    renderTypeFilters(detectTypes(reportData));
+    renderCompletenessFilters(detectCompleteness(reportData));
+
+    buildBarPlotDynamic(reportData);
+
+    // Extended report toggle visibility (show/hide extra rows)
+    const toggleBtn = document.getElementById('toggleExtendedBtn');
+    toggleBtn.addEventListener('click', () => {
+        extendedReportShown = !extendedReportShown;
+        applyExtendedState();
+    });
+
+    // Heatmap toggle
+    const heatmapToggle = document.getElementById('heatmapToggle');
+    heatmapToggle.addEventListener('change', () => {
+        const show = heatmapToggle.checked;
+        allNumericCells.forEach(({ cells, values }) => {
+            if (show) {
+                heatMapOneRow(cells, values);
+            } else {
+                cells.forEach(cell => {
+                    cell.style.backgroundColor = '';
+                    cell.style.color = '';
+                });
+            }
+        });
+    });
+
+    // Include-reference toggle
+    const includeRefToggle = document.getElementById('heatmapIncludeRef');
+    if (includeRefToggle) {
+        const includeRefLabel = includeRefToggle.closest('label');
+        if (!isReferenceMode) {
+            // Hide the whole label+checkbox outside reference mode
+            if (includeRefLabel) includeRefLabel.style.display = 'none';
+        } else {
+            includeRefToggle.addEventListener('change', () => {
+                includeReferenceInHeatmap = includeRefToggle.checked;
+                const container = document.getElementById('reportTableContainer');
+                container.innerHTML = '';
+                buildTable(reportData);
+                applyExtendedState(); // <-- keep extended state
+            });
+        }
+    }
+
+
+    // Metric tabs: which ones are visible depends on running mode
+    const allMetricTabs = Array.from(document.querySelectorAll('.metric-tab'));
+    const mode = (typeof reportMode === 'string') ? reportMode : 'compare_samples';
+    const allowedKeys = METRIC_TABS_BY_MODE[mode] || ['bgcs'];
+
+    // Populate pythonPlotsPanel (compare_tools mode only)
+    if (mode === 'compare_tools') {
+        const panel = document.getElementById('pythonPlotsPanel');
+        if (panel && reportMetadata) {
+            initVennPanel(panel, reportMetadata);
+        }
+    }
+
+    // Show/hide buttons according to mode
+    allMetricTabs.forEach(btn => {
+        const key = btn.dataset.metric;
+        const visible = allowedKeys.includes(key);
+        btn.style.display = visible ? '' : 'none';
+    });
+
+    // The default active tab is always "Overview"
+    currentMetricKey = 'bgcs';
+    const overviewBtn = allMetricTabs.find(b => b.dataset.metric === 'bgcs');
+    if (overviewBtn) {
+        allMetricTabs.forEach(b => b.classList.toggle('active', b === overviewBtn));
+    }
+
+    // Click handling (bar chart vs python plots)
+    allMetricTabs.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const key = btn.dataset.metric;
+            if (!allowedKeys.includes(key)) return;
+
+            currentMetricKey = key;
+
+            allMetricTabs.forEach(b => b.classList.toggle('active', b === btn));
+
+            const controls    = document.querySelector('.barplot-controls');
+            const plotRow     = document.querySelector('.plot-flex-row');
+            const pythonPanel = document.getElementById('pythonPlotsPanel');
+            const plotContainer = document.querySelector('.plot-and-controls');
+
+            if (key === 'pyplots') {
+                // Show python-generated PNGs, hide bar chart
+                if (pythonPanel) pythonPanel.style.display = 'block';
+                if (controls)    controls.style.display    = 'none';
+                if (plotRow)    plotRow.style.display    = 'none';
+                if (plotContainer) plotContainer.classList.add('pyplots-mode');
+
+                // Optional: destroy existing chart
+                if (bgcChart) {
+                    bgcChart.destroy();
+                    bgcChart = null;
+                }
+            } else {
+                // Show bar chart, hide python PNGs
+                if (pythonPanel) pythonPanel.style.display = 'none';
+                if (controls)    controls.style.display    = '';
+                if (plotRow)    plotRow.style.display    = 'flex';
+                if (plotContainer) plotContainer.classList.remove('pyplots-mode');
+
+                buildBarPlotDynamic(reportData);
+            }
+        });
+    });
+
+
+    // Bar plot controls listeners
+    // "Show by" controls: radio buttons & "by ..." checkboxes
+    ['barModeTotal','barModeShowBy','byCompleteness','byType'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', () => {
+            syncShowByDisabled();
+            buildBarPlotDynamic(reportData);
+        });
+    });
+
+    // Product type checkbox changes
+    const typeGroup = document.getElementById('typeFilterGroup');
+    if (typeGroup) {
+        typeGroup.addEventListener('change', (e) => {
+            if (e.target && e.target.matches('input[type="checkbox"]')) {
+                buildBarPlotDynamic(reportData);
+            }
+        });
+    }
+
+    // Completeness checkbox changes
+    const compGroup = document.getElementById('completenessFilterGroup');
+    if (compGroup) {
+        compGroup.addEventListener('change', (e) => {
+            if (e.target && e.target.matches('input[type="checkbox"]')) {
+                buildBarPlotDynamic(reportData);
+            }
+        });
+    }
+
+    // Download button: export plot + legend as a single PNG
+    const dlBtn = document.getElementById('downloadPlotWithLegend');
+    if (dlBtn) {
+        dlBtn.addEventListener('click', exportPlotWithLegend);
+    }
+
+    // Initialize disabled/enabled state on first load
+    syncShowByDisabled();
+
+    // Draw heatmap gradient
+    drawHeatmapLegend();  // yellow to purple
+
+
+});
+
+    </script>
+</body>
+</html>
+
