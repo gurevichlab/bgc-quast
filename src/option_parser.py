@@ -99,7 +99,6 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
         type=str,
         default=None,
         metavar="NAME1,NAME2",
-        nargs="*",
         help=(
             "Custom names for the input genome mining results in reports.\n"
             "Comma-separated; use quotes if names contain spaces. "
