@@ -1,4 +1,4 @@
-default_output_dir_root: bgc_quast_results
+default_output_dir_root: bgc-quast-results
 symlink_to_latest: latest
 
 report_txt: report.txt
