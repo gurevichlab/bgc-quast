@@ -55,7 +55,7 @@ class PipelineHelper:
             self.args = get_command_line_args(default_cfg)
         except ValidationError as e:
             self.log.error(
-                f"Command-line argument validation failed: {str(e)}",
+                f"The command-line argument validation failed: {str(e)}",
                 to_stderr=True,
             )
             raise e
@@ -63,7 +63,7 @@ class PipelineHelper:
         try:
             self.config = load_config(self.args)
         except ValueError as e:
-            self.log.error(f"Configuration loading failed: {str(e)}", to_stderr=True)
+            self.log.error(f"The configuration loading failed: {str(e)}", to_stderr=True)
             raise e
 
         self.set_up_output_dir()
@@ -76,8 +76,8 @@ class PipelineHelper:
 
         if output_dir.exists():
             self.log.warning(
-                f"Output directory ({output_dir}) already exists! "
-                f"The content will be overwritten."
+                f"The output directory ({output_dir}) already exists! "
+                f"Existing files may be overwritten."
             )
         else:
             output_dir.mkdir(parents=True)
@@ -102,7 +102,7 @@ class PipelineHelper:
             relative_target = target_dir.relative_to(symlink_path.parent)
             symlink_path.symlink_to(relative_target, target_is_directory=True)
         except OSError as e:
-            self.log.warning(f"Failed to update latest symlink '{symlink_path}' -> '{target_dir}': {e}")
+            self.log.warning(f"Failed to update the latest symlink '{symlink_path}' -> '{target_dir}': {e}")
 
 
     def parse_input(self) -> None:
@@ -116,15 +116,15 @@ class PipelineHelper:
         # for validating input correctness
         if self.args.quast_output_dir and not self.args.reference_mining_result:
             error_message = (
-                "Reference genome mining result is required when QUAST"
-                " output directory is specified."
+                "The reference genome mining result is required in the compare-to-reference mode.\n"
+                "Please specify it using --reference-mining-result FILE or -r FILE."
             )
             self.log.error(error_message)
             raise ValidationError(error_message)
         if not self.args.quast_output_dir and self.args.reference_mining_result:
             error_message = (
-                "QUAST output directory is required when Reference genome"
-                " mining result is specified."
+                "The QUAST output directory is required in the compare-to-reference mode.\n"
+                "Please specify it using --quast-output-dir DIR or -q DIR."
             )
             self.log.error(error_message)
             raise ValidationError(error_message)
@@ -191,7 +191,7 @@ class PipelineHelper:
             self.log.error(str(e))
             raise
 
-        self.log.info(f"Running mode set to: {self.running_mode}")
+        self.log.info(f"The running mode is set to: {self.running_mode}")
 
     def compute_stats(self) -> None:
         """
@@ -258,9 +258,5 @@ class PipelineHelper:
                     f"{path}: '{old_label}' ===> '{new_label}'",
                     indent=2,
                 )
-
-        if self.running_mode == RunningMode.COMPARE_TOOLS:
-            venn_dir = self.config.output_config.output_dir / "venn_overlaps"
-            self.log.info(f"Venn diagrams are saved to {venn_dir}", indent=1)
 
         self.log.finish()  # TODO: Create a separate method for this and "cleaning up"

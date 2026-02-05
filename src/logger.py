@@ -39,10 +39,10 @@ class Logger(object):
     def error(self, msg, to_stderr=False, is_exception=False):
         if msg:
             if is_exception:
-                msg = 'EXCEPTION! ' + str(msg)
+                msg = 'EXCEPTION: ' + str(msg)
             else:
-                msg = 'ERROR! ' + str(msg)
-            msg += "\nIn case you have troubles running our tool, " \
+                msg = 'ERROR: ' + str(msg)
+            msg += "\n\nIn case you have troubles running our tool, " \
                    "you can post an issue on https://github.com/gurevichlab/bgc-quast/issues " \
                    "or write to alexey.gurevich@helmholtz-hips.de"
 
