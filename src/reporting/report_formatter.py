@@ -23,6 +23,10 @@ class DataFrameTableBuilder:
 
         df = data.metrics_df.copy()
 
+        # Preserve the input order of file_label as it appears in the original df
+        # (pd.unique preserves first-seen order)
+        file_order = list(pd.unique(df["file_label"]))
+
         # Create hierarchical row labels and sort keys
         df["row_label"], df["sort_key"] = zip(
             *[self._create_row_label_and_sort_key(row) for _, row in df.iterrows()]
@@ -34,9 +38,7 @@ class DataFrameTableBuilder:
         # Always use file_label as columns
         pivot_table = df.pivot_table(
             index="row_label",
-            columns=["file_label", "Genome mining tool"]
-            if "file_label" in df.columns
-            else None,
+            columns=["file_label", "Genome mining tool"] if "file_label" in df.columns else None,
             values="value",
             aggfunc="first",
             sort=False,
@@ -44,6 +46,11 @@ class DataFrameTableBuilder:
 
         pivot_table.index.name = None
         pivot_table = pivot_table.fillna(0)
+
+        # Reorder MultiIndex columns by file_label order (keep tool order as-is)
+        rank = {lbl: i for i, lbl in enumerate(file_order)}
+        cols_sorted = sorted(pivot_table.columns, key=lambda c: (rank.get(c[0], 10 ** 9), str(c[1])))
+        pivot_table = pivot_table.reindex(columns=cols_sorted)
 
         return pivot_table
 
