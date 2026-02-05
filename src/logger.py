@@ -3,6 +3,7 @@ import logging
 import datetime
 import platform
 import os
+import traceback
 
 
 class Logger(object):
@@ -39,7 +40,7 @@ class Logger(object):
     def error(self, msg, to_stderr=False, is_exception=False):
         if msg:
             if is_exception:
-                msg = 'EXCEPTION: ' + str(msg)
+                msg = 'EXCEPTION: ' + str(msg) + ' (see the traceback in bgc-quast.log or run with --debug)'
             else:
                 msg = 'ERROR: ' + str(msg)
             msg += "\n\nIn case you have troubles running our tool, " \
@@ -48,12 +49,19 @@ class Logger(object):
 
         if to_stderr or self._logger is None or not self._logger.handlers:
             sys.stderr.write('\n' + msg + '\n')
+
+            if is_exception:
+                sys.stderr.write('\n')
+                traceback.print_exc(file=sys.stderr)
         else:
             self._logger.error('')
-            # if is_exception:
-            #     self._logger.exception(msg)
-            # else:
             self._logger.error(msg)
+
+            # Exception path: log traceback as DEBUG so it goes:
+            # - always to file (file handler DEBUG)
+            # - to console only when --debug enabled (console handler DEBUG)
+            if is_exception:
+                self._logger.debug('\n' + traceback.format_exc())
 
         sys.exit(1)
 

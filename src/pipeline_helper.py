@@ -68,6 +68,8 @@ class PipelineHelper:
 
         self.set_up_output_dir()
         self.log.set_up_file_handler(self.config.output_config.output_dir)
+        if self.args.debug:
+            self.log.enable_debug_mode()
         self.log.start()
 
     def set_up_output_dir(self) -> None:

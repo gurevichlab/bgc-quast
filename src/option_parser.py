@@ -213,7 +213,7 @@ def get_command_line_args(default_cfg: Config) -> CommandLineArgs:
         help_message = StringIO()
         parser.print_help(help_message)
         error_message = str(e) if str(e) else "Options validation failed!"
-        raise ValidationError(error_message + "\n" + help_message.getvalue())
+        raise ValidationError(error_message + "\n\n" + help_message.getvalue())
     return parsed_args
 
 
