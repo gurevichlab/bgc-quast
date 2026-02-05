@@ -136,9 +136,11 @@ class PipelineHelper:
         if self.args.reference_mining_result is not None:
             all_gm_paths.append(self.args.reference_mining_result)
 
-        input_utils.validate_no_duplicate_paths(
-            all_gm_paths,
-        )
+        try:
+            input_utils.validate_no_duplicate_paths(all_gm_paths)
+        except ValidationError as e:
+            self.log.error(f"{str(e)}")
+            raise e
 
         # Parse genome mining results.
         try:
