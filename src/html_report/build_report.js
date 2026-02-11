@@ -18,11 +18,11 @@ function renderRunSummary(meta) {
         modeText = `The running mode is <code>${resolved}</code>.`;
     }
 
-    let text = `${modeText} All statistics are based on BGCs of size ≥ <code>${meta.min_bgc_length}</code> bp `;
+    let text = `${modeText} All statistics are based on BGCs of size ≥ <code>${meta.min_bgc_length}</code> bp. `;
 
     const margin = meta.bgc_completeness_margin;
     if (margin != null) {
-        text += `and with <code>${margin}</code> bp margin from contig edges.`;
+        text += `BGCs are considered complete if located at least <code>${margin}</code> bp from contig edges.`;
     }
 
     if (resolved === 'compare_tools' && meta.compare_tools_overlap_threshold != null) {
