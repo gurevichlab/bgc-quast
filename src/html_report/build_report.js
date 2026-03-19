@@ -359,7 +359,8 @@ const productColors = {
     'Terpene': '#800080',
     'Saccharide': '#f0c107',
     'Alkaloid': '#dda0dd',
-    'Other': '#666666'
+    'Other': '#b56576',
+    'Unknown product': '#000000',
 };
 
 /**
