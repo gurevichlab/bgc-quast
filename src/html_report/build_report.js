@@ -909,8 +909,8 @@ function drawVenn(svg, toolA, toolB, pairwiseByTool, threshold) {
     makeText(130, 110, `${leftNonUni} | ${rightNonUni}`);
 
     // labels
-    makeText(60, 200, labelA, 10);
-    makeText(200, 200, labelB, 10);
+    makeText(60, 200, labelA, 9);
+    makeText(200, 200, labelB, 9);
 
     // title
     const wrapper = svg.closest('.venn-wrapper');
