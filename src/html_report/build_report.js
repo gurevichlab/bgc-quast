@@ -292,7 +292,7 @@ function buildTable(data) {
                 // Compare-tools mode-specific rows
                 const isCompareToolsSpecific =
                     rawLabel.startsWith('Unique BGCs') ||
-                    rawLabel.startsWith('Unique recovery rate');
+                    rawLabel.startsWith('Unique rate');
 
                 // Compare-reference mode-specific rows
                 const isCompareRefSpecific =
