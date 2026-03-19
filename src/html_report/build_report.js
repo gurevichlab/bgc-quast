@@ -170,7 +170,7 @@ function heatMapOneRow(cells, values, direction = 'more_is_better') {
             // Between lowInner and median → interpolate white → lowColor
             const denom = (median - lowInner) || 1;
             const k = (FACT_MIN - FACT_WHITE) / denom;
-            const factor = FACT_MIN - (median - num) * k;
+            const factor = FACT_WHITE + (median - num) * k;
             cell.style.backgroundColor = getColorHex(lowColorHex, factor);
         } else if (num > topOuter) {
             // Extreme high outlier
@@ -183,7 +183,7 @@ function heatMapOneRow(cells, values, direction = 'more_is_better') {
             // Between median and topInner → interpolate white → topColor
             const denom = (topInner - median) || 1;
             const k = (FACT_MIN - FACT_WHITE) / denom;
-            const factor = FACT_MIN - (num - median) * k;
+            const factor = FACT_WHITE + (num - median) * k;
             cell.style.backgroundColor = getColorHex(topColorHex, factor);
         }
         // num === median → stays white
