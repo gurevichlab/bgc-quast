@@ -1,5 +1,6 @@
 from src.compare_to_ref_data import (
     Intersection,
+    RecoveryContiguity,
     ReferenceBgc,
     Status,
 )
@@ -133,6 +134,26 @@ def compute_reference_coverage(
         ref_bgcs.append(ref_bgc)
     return ref_bgcs
 
+def count_recovery_blocks(ref_bgc: ReferenceBgc, allowed_gap: int) -> int:
+    """
+    Count disjoint recovery blocks for the reference BGC.
+
+    Intersections separated by more than allowed_gap are treated as distinct recovery
+    blocks. This does not change recovery logic; it only annotates whether recovery is
+    single-contig or multi-contig.
+    """
+    if not ref_bgc.intersecting_assembly_bgcs:
+        return 0
+
+    block_count = 1
+    max_end = ref_bgc.intersecting_assembly_bgcs[0].end_in_ref
+    for intersection in ref_bgc.intersecting_assembly_bgcs[1:]:
+        if intersection.start_in_ref > max_end + allowed_gap:
+            block_count += 1
+        max_end = max(max_end, intersection.end_in_ref)
+
+    return block_count
+
 
 def determine_ref_bgc_status(ref_bgc: ReferenceBgc, allowed_gap: int) -> Status:
     """
@@ -141,10 +162,10 @@ def determine_ref_bgc_status(ref_bgc: ReferenceBgc, allowed_gap: int) -> Status:
     If there are no intersecting assembly BGCs, the status is MISSED.
     If there is at least one intersecting assembly BGC that fully covers the reference BGC,
     the status is FULLY_RECOVERED.
-    If multiple intersecting assembly BGCs fully cover the reference BGC,
-    the status is FRAGMENTED_RECOVERY.
-    If there are intersecting assembly BGCs but none fully cover the reference BGC,
-    the status is PARTIALLY_COVERED.
+    If recovery comes from multiple disjoint recovery blocks and reaches full coverage,
+    the status is still FULLY_RECOVERED, but recovery_contiguity is MULTI_CONTIG.
+    If there are intersecting assembly BGCs but coverage is only partial,
+    the status is PARTIALLY_RECOVERED with contiguity annotation.
 
     Args:
         ref_bgc (ReferenceBgc): Reference BGC to determine status for.
@@ -164,10 +185,13 @@ def determine_ref_bgc_status(ref_bgc: ReferenceBgc, allowed_gap: int) -> Status:
         if coverage >= 0.95 * (ref_bgc.end - ref_bgc.start):
             ref_bgc.main_covering_assembly_bgc = intersection.assembly_bgc
             ref_bgc.recovered_product_types = intersection.assembly_bgc.product_types
+            ref_bgc.recovery_contiguity = RecoveryContiguity.SINGLE_CONTIG
             return Status.FULLY_RECOVERED
 
-    # Check for FRAGMENTED_RECOVERY or PARTIALLY_RECOVERED
+    # Check for fully or partially recovered status using the existing multi-block logic.
     # Note: this assumes that intersecting_assembly_bgcs are sorted by start_in_ref.
+    block_count = count_recovery_blocks(ref_bgc, allowed_gap)
+
     min_start = ref_bgc.intersecting_assembly_bgcs[0].start_in_ref
     max_end = ref_bgc.intersecting_assembly_bgcs[0].end_in_ref
     product_types = ref_bgc.intersecting_assembly_bgcs[0].assembly_bgc.product_types
@@ -180,11 +204,19 @@ def determine_ref_bgc_status(ref_bgc: ReferenceBgc, allowed_gap: int) -> Status:
     total_coverage = min(ref_bgc.end, max_end) - max(ref_bgc.start, min_start)
     coverage_percentage = total_coverage / (ref_bgc.end - ref_bgc.start)
 
+    recovery_contiguity = (
+        RecoveryContiguity.SINGLE_CONTIG
+        if block_count == 1
+        else RecoveryContiguity.MULTI_CONTIG
+    )
+
     if coverage_percentage >= 0.95:
         ref_bgc.recovered_product_types = product_types
-        return Status.FRAGMENTED_RECOVERY
+        ref_bgc.recovery_contiguity = recovery_contiguity
+        return Status.FULLY_RECOVERED
     if 0.10 <= coverage_percentage < 0.95:
         ref_bgc.recovered_product_types = product_types
+        ref_bgc.recovery_contiguity = recovery_contiguity
         return Status.PARTIALLY_RECOVERED
 
     return Status.MISSED

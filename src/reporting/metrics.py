@@ -2,7 +2,7 @@ from statistics import mean
 from typing import Any, Callable, Iterable, Optional
 
 from src.genome_mining_result import Bgc
-from src.compare_to_ref_data import ReferenceBgc, Status
+from src.compare_to_ref_data import RecoveryContiguity, ReferenceBgc, Status
 
 
 class GroupingKeyRegistry:
@@ -136,6 +136,27 @@ def fully_recovered_bgcs(bgcs: Iterable[ReferenceBgc]) -> int:
         and any(x in bgc.product_types for x in bgc.recovered_product_types)
     )
 
+@metric("fully_recovered_single_contig_bgcs_count")
+def fully_recovered_single_contig_bgcs(bgcs: Iterable[ReferenceBgc]) -> int:
+    """Count fully recovered single-contig BGCs."""
+    return sum(
+        1
+        for bgc in bgcs
+        if bgc.status == Status.FULLY_RECOVERED
+        and bgc.recovery_contiguity == RecoveryContiguity.SINGLE_CONTIG
+        and any(x in bgc.product_types for x in bgc.recovered_product_types)
+    )
+
+@metric("fully_recovered_multi_contig_bgcs_count")
+def fully_recovered_multi_contig_bgcs(bgcs: Iterable[ReferenceBgc]) -> int:
+    """Count fully recovered multi-contig BGCs."""
+    return sum(
+        1
+        for bgc in bgcs
+        if bgc.status == Status.FULLY_RECOVERED
+        and bgc.recovery_contiguity == RecoveryContiguity.MULTI_CONTIG
+        and any(x in bgc.product_types for x in bgc.recovered_product_types)
+    )
 
 @metric("partially_recovered_bgcs_count")
 def partially_recovered_bgcs(bgcs: Iterable[ReferenceBgc]) -> int:
@@ -147,17 +168,28 @@ def partially_recovered_bgcs(bgcs: Iterable[ReferenceBgc]) -> int:
         and any(x in bgc.product_types for x in bgc.recovered_product_types)
     )
 
-
-@metric("fragmented_recovery_count")
-def fragmented_recovery(bgcs: Iterable[ReferenceBgc]) -> int:
-    """Count total number of fragmented recovered BGCs."""
+@metric("partially_recovered_single_contig_bgcs_count")
+def partially_recovered_single_contig_bgcs(bgcs: Iterable[ReferenceBgc]) -> int:
+    """Count partially recovered single-contig BGCs."""
     return sum(
         1
         for bgc in bgcs
-        if bgc.status == Status.FRAGMENTED_RECOVERY
+        if bgc.status == Status.PARTIALLY_RECOVERED
+        and bgc.recovery_contiguity == RecoveryContiguity.SINGLE_CONTIG
         and any(x in bgc.product_types for x in bgc.recovered_product_types)
     )
 
+
+@metric("partially_recovered_multi_contig_bgcs_count")
+def partially_recovered_multi_contig_bgcs(bgcs: Iterable[ReferenceBgc]) -> int:
+    """Count partially recovered multi-contig BGCs."""
+    return sum(
+        1
+        for bgc in bgcs
+        if bgc.status == Status.PARTIALLY_RECOVERED
+        and bgc.recovery_contiguity == RecoveryContiguity.MULTI_CONTIG
+        and any(x in bgc.product_types for x in bgc.recovered_product_types)
+    )
 
 @metric("missed_bgcs_count")
 def missed_bgcs(bgcs: Iterable[ReferenceBgc]) -> int:
@@ -165,14 +197,44 @@ def missed_bgcs(bgcs: Iterable[ReferenceBgc]) -> int:
     return sum(1 for bgc in bgcs if bgc.status == Status.MISSED)
 
 
+def get_mapped_assembly_bgcs(
+    bgcs: Iterable[ReferenceBgc],
+) -> dict[int, tuple[Bgc, list[ReferenceBgc]]]:
+    """
+    Collect assembly BGCs that map to reference BGCs.
+
+    Returns:
+        dict where:
+            key   = id(assembly_bgc)
+            value = (assembly_bgc, [mapped reference BGCs])
+    """
+    mapped_assembly_bgcs: dict[int, tuple[Bgc, list[ReferenceBgc]]] = {}
+
+    for ref_bgc in bgcs:
+        for intersection in ref_bgc.intersecting_assembly_bgcs:
+            assembly_bgc = intersection.assembly_bgc
+            assembly_bgc_id = id(assembly_bgc)
+
+            if assembly_bgc_id not in mapped_assembly_bgcs:
+                mapped_assembly_bgcs[assembly_bgc_id] = (assembly_bgc, [ref_bgc])
+            else:
+                mapped_assembly_bgcs[assembly_bgc_id][1].append(ref_bgc)
+
+    return mapped_assembly_bgcs
+
 @metric("misclassified_product_type_count")
 def misclassified_product_type(bgcs: Iterable[ReferenceBgc]) -> int:
-    """Count total number of misclassified BGCs."""
+    """Count assembly BGCs mapped to reference BGCs with no overlapping product type."""
+    mapped_assembly_bgcs = get_mapped_assembly_bgcs(bgcs)
+
     return sum(
         1
-        for bgc in bgcs
-        if bgc.status != Status.MISSED
-        and not any(x in bgc.product_types for x in bgc.recovered_product_types)
+        for assembly_bgc, mapped_ref_bgcs in mapped_assembly_bgcs.values()
+        if not any(
+            ref_product_type in assembly_bgc.product_types
+            for ref_bgc in mapped_ref_bgcs
+            for ref_product_type in ref_bgc.product_types
+        )
     )
 
 

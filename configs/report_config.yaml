@@ -34,20 +34,32 @@ compare_to_reference:
       display_name: "Fully recovered BGCs"
       description: "Reference BGCs where >95% of the region is covered by at least one
        assembly BGC with the same product type"
+    - name: "fully_recovered_single_contig_bgcs_count"
+      display_name: "Fully recovered single-contig BGCs"
+      description: "Reference BGCs where >95% of the region is covered by one contiguous
+       assembly recovery block with the same product type"
+    - name: "fully_recovered_multi_contig_bgcs_count"
+      display_name: "Fully recovered multi-contig BGCs"
+      description: "Reference BGCs where >95% of the region is covered by multiple
+       disjoint assembly recovery blocks with the same product type"
     - name: "partially_recovered_bgcs_count"
       display_name: "Partially recovered BGCs"
       description: "Reference BGCs where 10-95% of the region is covered by assembly
        BGCs"
+    - name: "partially_recovered_single_contig_bgcs_count"
+      display_name: "Partially recovered single-contig BGCs"
+      description: "Reference BGCs where 10-95% of the region is covered by one contiguous
+       assembly recovery block with the same product type"
+    - name: "partially_recovered_multi_contig_bgcs_count"
+      display_name: "Partially recovered multi-contig BGCs"
+      description: "Reference BGCs where 10-95% of the region is covered by multiple
+       disjoint assembly recovery blocks with the same product type"
     - name: "missed_bgcs_count"
       display_name: "Missed BGCs"
       description: "Reference BGCs with <10% coverage by any assembly BGC"
-    - name: "fragmented_recovery_count"
-      display_name: "Fragmented BGCs"
-      description: "Reference BGCs recovered by multiple disjoint assembly BGCs"
     - name: "misclassified_product_type_count"
       display_name: "Misclassified product type"
-      description: "Recovered reference BGCs predicted with a wrong product type in
-       the assembly"
+      description: "Assembly BGCs mapped to reference BGCs but predicted with another product type"
     - name: "recovery_rate"
       display_name: "Recovery rate"
       description: "Percentage of reference BGCs that are fully or partially recovered"

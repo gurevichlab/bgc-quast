@@ -197,6 +197,12 @@ class ReportFormatter:
             if metric.startswith("Recovery rate"):
                 pivot_table.at[idx, ref_col] = 1
 
+            elif metric.startswith("Fully recovered single-contig BGCs"):
+                bgc_metric = metric.replace("Fully recovered single-contig BGCs", "# BGCs")
+                bgc_idx = (bgc_metric,) + idx[1:] if isinstance(idx, tuple) else bgc_metric
+                if bgc_idx in pivot_table.index:
+                    pivot_table.at[idx, ref_col] = pivot_table.at[bgc_idx, ref_col]
+
             elif metric.startswith("Fully recovered BGCs"):
                 bgc_metric = metric.replace("Fully recovered BGCs", "# BGCs")
                 bgc_idx = (bgc_metric,) + idx[1:] if isinstance(idx, tuple) else bgc_metric
