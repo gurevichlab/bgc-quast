@@ -302,6 +302,7 @@ function buildTable(data) {
                     rawLabel.startsWith('Partially recovered BGCs') ||
                     rawLabel.startsWith('Missed BGCs') ||
                     rawLabel.startsWith('Misclassified product type') ||
+                    rawLabel.startsWith('Unmapped assembly BGCs') ||
                     rawLabel.startsWith('Recovery rate');
 
                 if ((reportMode === 'compare_tools' && isCompareToolsSpecific) ||
