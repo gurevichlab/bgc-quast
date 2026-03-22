@@ -300,8 +300,6 @@ function buildTable(data) {
                     rawLabel.startsWith('Fully recovered single-contig BGCs') ||
                     rawLabel.startsWith('Fully recovered multi-contig BGCs') ||
                     rawLabel.startsWith('Partially recovered BGCs') ||
-                    rawLabel.startsWith('Partially recovered single-contig BGCs') ||
-                    rawLabel.startsWith('Partially recovered multi-contig BGCs') ||
                     rawLabel.startsWith('Missed BGCs') ||
                     rawLabel.startsWith('Misclassified product type') ||
                     rawLabel.startsWith('Recovery rate');
