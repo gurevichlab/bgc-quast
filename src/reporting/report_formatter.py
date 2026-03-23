@@ -126,9 +126,19 @@ class DataFrameTableBuilder:
 
         # Create the label
         if grouping_parts:
-            label = f"{metric_display} ({', '.join(grouping_parts)})"
+            grouping_text = ", ".join(grouping_parts)
+            grouping_text = grouping_text.replace("Complete", "complete")
+            grouping_text = grouping_text.replace("Incomplete", "incomplete")
+            grouping_text = grouping_text.replace("Unknown completeness", "unknown")
+            grouping_text = grouping_text.replace("Unknown product", "unknown product")
+            grouping_text = grouping_text.replace("Other", "other")
+            grouping_text = grouping_text.replace("Terpene", "terpene")
+            grouping_text = grouping_text.replace("Alkaloid", "alkaloid")
+            grouping_text = grouping_text.replace("Saccharide", "saccharide")
+            grouping_text = grouping_text.replace("Hybrid", "hybrid")
+            label = f"{metric_display} ({grouping_text})"
         else:
-            label = f"{metric_display} (Total)"
+            label = metric_display
 
         return label, tuple(sort_key_parts)
 
@@ -194,11 +204,17 @@ class ReportFormatter:
         for idx in pivot_table.index:
             metric = idx[0] if isinstance(idx, tuple) else idx
 
-            if metric.startswith("Recovery rate"):
+            if metric.startswith("Ref. BGC recovery rate"):
                 pivot_table.at[idx, ref_col] = 1
 
-            elif metric.startswith("Fully recovered BGCs"):
-                bgc_metric = metric.replace("Fully recovered BGCs", "# BGCs")
+            elif metric.startswith("# full ref. BGCs, single-contig"):
+                bgc_metric = metric.replace("# full ref. BGCs, single-contig", "# BGCs")
+                bgc_idx = (bgc_metric,) + idx[1:] if isinstance(idx, tuple) else bgc_metric
+                if bgc_idx in pivot_table.index:
+                    pivot_table.at[idx, ref_col] = pivot_table.at[bgc_idx, ref_col]
+
+            elif metric.startswith("# full ref. BGCs"):
+                bgc_metric = metric.replace("# full ref. BGCs", "# BGCs")
                 bgc_idx = (bgc_metric,) + idx[1:] if isinstance(idx, tuple) else bgc_metric
                 if bgc_idx in pivot_table.index:
                     pivot_table.at[idx, ref_col] = pivot_table.at[bgc_idx, ref_col]

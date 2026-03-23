@@ -224,6 +224,9 @@ class CompareToRefMetricsCalculator(BasicMetricsCalculator):
             List of all calculated MetricValue objects
         """
         metric_names = [m.name for m in self.config.metrics]
+        registry_metric_names = [
+            name for name in metric_names if name != "unmapped_assembly_bgcs_count"
+        ]
         all_metrics = []
 
         # Generate all combinations of grouping dimensions
@@ -237,10 +240,32 @@ class CompareToRefMetricsCalculator(BasicMetricsCalculator):
                         reference_bgcs,
                         result.input_file,
                         result.mining_tool,
-                        metric_names,
+                        registry_metric_names,
                         grouping_dims,
                     )
                     all_metrics.extend(metrics)
+
+                    if (
+                        "unmapped_assembly_bgcs_count" in metric_names
+                        and not grouping_dims
+                    ):
+                        mapped_assembly_ids = {
+                            id(intersection.assembly_bgc)
+                            for ref_bgc in reference_bgcs
+                            for intersection in ref_bgc.intersecting_assembly_bgcs
+                        }
+                        unmapped_count = sum(
+                            1 for bgc in result.bgcs if id(bgc) not in mapped_assembly_ids
+                        )
+                        all_metrics.append(
+                            MetricValue(
+                                file_path=result.input_file,
+                                mining_tool=result.mining_tool,
+                                metric_name="unmapped_assembly_bgcs_count",
+                                value=unmapped_count,
+                                grouping={},
+                            )
+                        )
 
                 except Exception as e:
                     print(

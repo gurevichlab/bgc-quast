@@ -175,9 +175,10 @@ th.mode-specific-metric {
     margin-top: 10px;
 }
 
-#toggleExtendedBtn {
+#toggleProductBtn,
+#toggleCompletenessBtn {
   padding: 6px 14px;
-  border-radius: 999px;        /* bacilli-shaped */
+  border-radius: 999px;
   border: none;
   background: #322b7a;
   color: #fff;
@@ -188,29 +189,41 @@ th.mode-specific-metric {
               box-shadow 0.15s ease;
 }
 
-#toggleExtendedBtn:hover {
+#toggleProductBtn:hover,
+#toggleCompletenessBtn:hover {
   background: #3d3495;
-  transform: translateY(-1px); /* lift up a bit */
+  transform: translateY(-1px);
   box-shadow: 0 2px 6px rgba(0,0,0,0.35);
 }
 
-#toggleExtendedBtn:active {
+#toggleProductBtn:active,
+#toggleCompletenessBtn:active {
   transform: translateY(0);
   box-shadow: 0 1px 3px rgba(0,0,0,0.25);
 }
 
-#toggleExtendedBtn:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+#toggleProductBtn:focus-visible,
+#toggleCompletenessBtn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
 }
 
-#toggleExtendedBtn.is-collapsed {
+#toggleProductBtn.is-collapsed,
+#toggleCompletenessBtn.is-collapsed {
   background: #6c757d;
 }
 
-#toggleExtendedBtn.is-collapsed:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+#toggleProductBtn.is-collapsed:focus-visible,
+#toggleCompletenessBtn.is-collapsed:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+}
+
+.extended-btn-wrapper {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 /*Heatmap */
