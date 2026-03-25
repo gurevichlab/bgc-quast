@@ -11,8 +11,7 @@ Annotations in the GenBank format (`.gbff`) were created with [bakta](https://gi
 Complete outputs of all tools on one assembly are saved in `full_output_example/assembly_10_mining/`. The test data in the root directory contain only files essential for running BGC-QUAST. 
 
 ### antiSMASH
-We applied [the antiSMASH web server](https://antismash.secondarymetabolites.org/#!/start) using all default settings (as of 10.04.2025) 
-plus "Enable antiSMASH v.8 beta" to the reference and both assemblies.
+We applied [the antiSMASH web server](https://antismash.secondarymetabolites.org/#!/start) using all default settings (version 8.0.4 as of 25.03.2026) to the reference and both assemblies.
 The corresponding output JSON and GenBank files were compressed with GZIP and saved in the `<sequence_filename>_mining/antiSMASH` directories.
 
 ### GECCO
