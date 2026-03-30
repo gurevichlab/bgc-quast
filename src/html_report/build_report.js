@@ -207,7 +207,7 @@ function classifyRowLabel(rawLabel) {
     }
 
     const insideParts = m[2].split(',').map(s => s.trim().toLowerCase());
-    const hasCompleteness = insideParts.some(v => ['complete', 'incomplete', 'unknown'].includes(v));
+    const hasCompleteness = insideParts.some(v => ['complete', 'incomplete', 'unknown completeness'].includes(v));
 
     if (insideParts.length === 1) {
         if (hasCompleteness) {
@@ -414,7 +414,7 @@ const productColors = {
     'saccharide': '#f0c107',
     'alkaloid': '#dda0dd',
     'other': '#b56576',
-    'unknown product': '#000000',
+    'unknown': '#000000',
 };
 
 /**
@@ -486,14 +486,7 @@ function renderCompletenessFilters(statuses) {
         input.id = id;
         input.checked = true; // default ON
         label.appendChild(input);
-        // Capitalize
-        let niceLabel;
-        if (status === 'unknown') {
-            niceLabel = 'unknown';
-        } else {
-            niceLabel = status.charAt(0).toUpperCase() + status.slice(1);
-}
-        label.append(` ${niceLabel}`);
+        label.append(` ${status}`);
         frag.appendChild(label);
     });
 
@@ -515,13 +508,13 @@ function selectedTypesFromUI(allTypes) {
 
 /**
  * Return completeness statuses that are currently selected in the UI.
- * @returns {('complete'|'incomplete'|'unknown')[]}
+ * @returns {('complete'|'incomplete'|'unknown completeness')[]}
  */
 function selectedStatusesFromUI() {
   const on = [];
   if (document.getElementById('status_complete')?.checked)   on.push('complete');
   if (document.getElementById('status_incomplete')?.checked) on.push('incomplete');
-  if (document.getElementById('status_unknown')?.checked) on.push('unknown');
+  if (document.getElementById('status_unknown_completeness')?.checked) on.push('unknown completeness');
   // If none selected, return empty array (chart will show nothing for completeness parts)
   return on;
 }
@@ -532,8 +525,15 @@ function selectedStatusesFromUI() {
 function syncShowByDisabled() {
     const isTotal   = document.getElementById('barModeTotal').checked;
     const showBy    = document.getElementById('barModeShowBy').checked;
-    const byTypeOn  = document.getElementById('byType').checked;
-    const byCompOn  = document.getElementById('byCompleteness').checked;
+
+    const byType = document.getElementById('byType');
+    const byCompleteness = document.getElementById('byCompleteness');
+
+    if (byType) byType.disabled = isTotal;
+    if (byCompleteness) byCompleteness.disabled = isTotal;
+
+    const byTypeOn  = byType ? byType.checked : false;
+    const byCompOn  = byCompleteness ? byCompleteness.checked : false;
 
     const showByGroup = document.getElementById('showByGroup');
     if (showByGroup) showByGroup.disabled = isTotal;
@@ -583,7 +583,7 @@ function detectTypes(data) {
 
     // skip non-product tokens that appear as totals
     const lc = type.toLowerCase();
-    if (lc === 'complete' || lc === 'incomplete' || lc === 'unknown') continue;
+    if (lc === 'complete' || lc === 'incomplete' || lc === 'unknown completeness') continue;
 
     types.add(type);
   }
@@ -605,7 +605,7 @@ function detectTypes(data) {
  * @returns {string[]}
  */
 function detectCompleteness(data) {
-    const allowed = ['complete', 'incomplete', 'unknown'];
+    const allowed = ['complete', 'incomplete', 'unknown completeness'];
     const set = new Set();
 
     data.forEach(row => {
@@ -727,7 +727,7 @@ function buildBarPlotDynamic(data) {
         if (row) {
             const counts = row.slice(colStart).map(v => parseInt(v, 10));
             datasets.push({
-                label: metricLabel(metricBase),
+                label: 'Total',
                 data: counts,
                 backgroundColor: '#322b7a'
             });
@@ -745,7 +745,7 @@ function buildBarPlotDynamic(data) {
                 // const rowComplete = getRowByLabel(data, `# BGCs (${type}, Complete)`);
                 const rowComplete = getRowByLabel(data, metricLabel(metricBase, `${type}, complete`));
                 const rowIncomplete = getRowByLabel(data, metricLabel(metricBase, `${type}, incomplete`));
-                const rowUnknown    = getRowByLabel(data, metricLabel(metricBase, `${type}, unknown`));
+                const rowUnknown    = getRowByLabel(data, metricLabel(metricBase, `${type}, unknown completeness`));
 
                 if (statuses.includes('complete') && rowComplete) {
                     datasets.push({
@@ -761,9 +761,9 @@ function buildBarPlotDynamic(data) {
                         backgroundColor: lighten(baseColor, 0.45) // lighter shade
                     });
                 }
-                if (statuses.includes('unknown') && rowUnknown) {
+                if (statuses.includes('unknown completeness') && rowUnknown) {
                     datasets.push({
-                        label: `${type}, unknown`,
+                        label: `${type}, unknown completeness`,
                         data: rowUnknown.slice(colStart).map(v => parseInt(v, 10)),
                         backgroundColor: lighten(baseColor, 0.75) // even lighter shade
                     });
@@ -774,7 +774,7 @@ function buildBarPlotDynamic(data) {
             // stacks are complete vs incomplete (total)
             const rowComplete   = getRowByLabel(data, metricLabel(metricBase, 'complete'));
             const rowIncomplete = getRowByLabel(data, metricLabel(metricBase, 'incomplete'));
-            const rowUnknown    = getRowByLabel(data, metricLabel(metricBase, 'unknown'));
+            const rowUnknown    = getRowByLabel(data, metricLabel(metricBase, 'unknown completeness'));
             const statuses = selectedStatusesFromUI();
 
             if (statuses.includes('complete') && rowComplete) {
@@ -791,9 +791,9 @@ function buildBarPlotDynamic(data) {
                     backgroundColor: '#ccca3d'
                 });
             }
-            if (statuses.includes('unknown') && rowUnknown) {
+            if (statuses.includes('unknown completeness') && rowUnknown) {
                 datasets.push({
-                    label: 'unknown',
+                    label: 'unknown completeness',
                     data: rowUnknown.slice(colStart).map(v => parseInt(v, 10)),
                     backgroundColor: '#999999'
                 });
@@ -815,12 +815,12 @@ function buildBarPlotDynamic(data) {
             }
         } else {
             // fallback: if user selected "Show by" but no boxes,
-            // just show the *current metric* total to avoid an empty chart.
+            // just show the total to avoid an empty chart.
             const row = getRowByLabel(data, metricLabel(metricBase, ''));
             if (row) {
                 const counts = row.slice(colStart).map(v => parseInt(v, 10));
                 datasets.push({
-                    label: metricLabel(metricBase),
+                    label: 'Total',
                     data: counts,
                     backgroundColor: '#322b7a'
                 });
@@ -860,6 +860,17 @@ function buildBarPlotDynamic(data) {
             },
 
             plugins: {
+                title: {
+                    display: true,
+                    text: '# BGCs',
+                    font: {
+                        size: 16
+                    },
+                    padding: {
+                        top: 0,
+                        bottom: 10
+                    }
+                },
                 legend: {
                     display: false
                 },
