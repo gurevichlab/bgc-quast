@@ -377,6 +377,12 @@ th.mode-specific-metric {
   font-size: 14px;
 }
 
+.filter-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 
 /* VENN DIAGRAM */
 .venn-main-row {
@@ -516,6 +522,11 @@ th.mode-specific-metric {
 input:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+}
+
+/* Grey out legend text when its toggle is disabled */
+.filter-legend:has(input:disabled) span {
+    opacity: 0.5;
 }
 
 input:disabled::after {
