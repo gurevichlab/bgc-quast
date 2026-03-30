@@ -10,10 +10,10 @@ basic_report:
       display_name: "# BGCs"
       description: "Total number of BGCs identified"
     - name: "mean_bgc_length"
-      display_name: "Mean BGC length"
+      display_name: "Mean BGC length in bp"
       description: "Average length of BGCs in base pairs"
     - name: "mean_gene_per_bgc"
-      display_name: "Mean genes per BGC"
+      display_name: "Mean BGC length in genes"
       description: "Mean gene count per BGC"
 
   grouping_dimensions:
@@ -49,15 +49,15 @@ compare_to_reference:
     - name: "missed_bgcs_count"
       display_name: "# missed ref. BGCs"
       description: "Reference BGCs with <10% coverage by any assembly BGC"
+    - name: "recovery_rate"
+      display_name: "Ref. BGC recovery rate"
+      description: "Percentage of reference BGCs that are fully or partially recovered"
     - name: "misclassified_product_type_count"
       display_name: "# product type mismatches to ref."
       description: "Assembly BGCs mapped to reference BGCs but predicted with another product type"
     - name: "unmapped_assembly_bgcs_count"
       display_name: "# unmapped BGCs to ref."
       description: "Assembly BGCs that do not map to any reference BGC"
-    - name: "recovery_rate"
-      display_name: "Ref. BGC recovery rate"
-      description: "Percentage of reference BGCs that are fully or partially recovered"
     
   grouping_dimensions:
     product_type:
@@ -98,7 +98,7 @@ compare_samples:
       display_name: "# BGCs"
       description: "Total number of BGCs identified in each sample"
     - name: "mean_bgc_length"
-      display_name: "Mean BGC length"
+      display_name: "Mean BGC length in bp"
       description: "Average length of BGCs in each sample"
     - name: "bgc_diversity"
       display_name: "BGC diversity"
