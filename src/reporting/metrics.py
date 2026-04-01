@@ -166,45 +166,6 @@ def missed_bgcs(bgcs: Iterable[ReferenceBgc]) -> int:
     return sum(1 for bgc in bgcs if bgc.status == Status.MISSED)
 
 
-def get_mapped_assembly_bgcs(
-    bgcs: Iterable[ReferenceBgc],
-) -> dict[int, tuple[Bgc, list[ReferenceBgc]]]:
-    """
-    Collect assembly BGCs that map to reference BGCs.
-
-    Returns:
-        dict where:
-            key   = id(assembly_bgc)
-            value = (assembly_bgc, [mapped reference BGCs])
-    """
-    mapped_assembly_bgcs: dict[int, tuple[Bgc, list[ReferenceBgc]]] = {}
-
-    for ref_bgc in bgcs:
-        for intersection in ref_bgc.intersecting_assembly_bgcs:
-            assembly_bgc = intersection.assembly_bgc
-            assembly_bgc_id = id(assembly_bgc)
-
-            if assembly_bgc_id not in mapped_assembly_bgcs:
-                mapped_assembly_bgcs[assembly_bgc_id] = (assembly_bgc, [ref_bgc])
-            else:
-                mapped_assembly_bgcs[assembly_bgc_id][1].append(ref_bgc)
-
-    return mapped_assembly_bgcs
-
-@metric("misclassified_product_type_count")
-def misclassified_product_type(bgcs: Iterable[ReferenceBgc]) -> int:
-    """Count mapped assembly BGCs whose product types are not a subset of any mapped reference BGC."""
-    mapped_assembly_bgcs = get_mapped_assembly_bgcs(bgcs)
-
-    return sum(
-        1
-        for assembly_bgc, mapped_ref_bgcs in mapped_assembly_bgcs.values()
-        if not any(
-            set(assembly_bgc.product_types).issubset(set(ref_bgc.product_types))
-            for ref_bgc in mapped_ref_bgcs
-        )
-    )
-
 @metric("recovery_rate")
 def recovery_rate(bgcs: Iterable[ReferenceBgc]) -> float:
     """Calculate recovery rate of reference BGCs independent of product type."""
