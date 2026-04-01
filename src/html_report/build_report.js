@@ -1042,7 +1042,7 @@ function initVennPanel(panel, metadata) {
     downloadBtn.addEventListener('click', () => {
         // Do nothing if no diagram yet (no tools selected or not 2 selected)
         if (!svg.firstChild) return;
-        exportSvgAsPng(svg, currentFilename);
+        exportSvg(svg, currentFilename);
     });
 
     // Assemble UI
@@ -1201,9 +1201,14 @@ function exportPlotWithLegend() {
     }
 
     // Trigger browser download
+    const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="${exportCanvas.width}" height="${exportCanvas.height}"> <image href="${exportCanvas.toDataURL('image/png')}" width="100%" height="100%"/></svg>`;
+
+    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+
     const link = document.createElement('a');
-    link.href = exportCanvas.toDataURL('image/png');
-    link.download = 'bgc-quast_barplot.png';
+    link.href = url;
+    link.download = 'bgc-quast_barplot.svg';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -1212,44 +1217,27 @@ function exportPlotWithLegend() {
 /* ---------------------------------------------------------------------------
  * VENN DIAGRAM DOWNLOADING
  * ------------------------------------------------------------------------- */
-// Export a single SVG element (e.g. the Venn diagram) as a PNG file
-function exportSvgAsPng(svgElement, filename) {
+// Export a single SVG element (e.g. the Venn diagram) as an SVG file
+function exportSvg(svgElement, filename) {
     if (!svgElement) return;
 
-    // Use viewBox if present; otherwise fall back to rendered size
-    const width  = 700;
-    const height = 600;
-
-    // Serialize SVG to a string
     const serializer = new XMLSerializer();
-    const svgString = serializer.serializeToString(svgElement);
+    let source = serializer.serializeToString(svgElement);
 
-    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    // Add XML header
+    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+
+    const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
 
-    const img = new Image();
-    img.onload = function () {
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename.replace('.png', '.svg');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
-        const ctx = canvas.getContext('2d');
-        // White background so exported PNG isn’t transparent
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, width, height);
-        ctx.drawImage(img, 0, 0, width, height);
-
-        URL.revokeObjectURL(url);
-
-        const link = document.createElement('a');
-        link.href = canvas.toDataURL('image/png');
-        link.download = filename || 'bgc-quast_venn.png';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
-    img.src = url;
+    URL.revokeObjectURL(url);
 }
 
 
