@@ -193,7 +193,7 @@ def get_mapped_assembly_bgcs(
 
 @metric("misclassified_product_type_count")
 def misclassified_product_type(bgcs: Iterable[ReferenceBgc]) -> int:
-    """Count assembly BGCs mapped to reference BGCs with no overlapping product type."""
+    """Count mapped assembly BGCs whose product types are not a subset of any mapped reference BGC."""
     mapped_assembly_bgcs = get_mapped_assembly_bgcs(bgcs)
 
     return sum(
@@ -203,19 +203,19 @@ def misclassified_product_type(bgcs: Iterable[ReferenceBgc]) -> int:
             set(assembly_bgc.product_types).issubset(set(ref_bgc.product_types))
             for ref_bgc in mapped_ref_bgcs
         )
-
+    )
 
 @metric("recovery_rate")
 def recovery_rate(bgcs: Iterable[ReferenceBgc]) -> float:
-    """Calculate recovery rate of BGCs."""
+    """Calculate recovery rate of reference BGCs independent of product type."""
     total = sum(1 for _ in bgcs)
     if total == 0:
         return 0.0
+
     recovered = sum(
         1
         for bgc in bgcs
         if bgc.status != Status.MISSED
-        and any(x in bgc.product_types for x in bgc.recovered_product_types)
     )
     return recovered / total
 
