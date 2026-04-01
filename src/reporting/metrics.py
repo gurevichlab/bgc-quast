@@ -200,11 +200,9 @@ def misclassified_product_type(bgcs: Iterable[ReferenceBgc]) -> int:
         1
         for assembly_bgc, mapped_ref_bgcs in mapped_assembly_bgcs.values()
         if not any(
-            ref_product_type in assembly_bgc.product_types
+            set(assembly_bgc.product_types).issubset(set(ref_bgc.product_types))
             for ref_bgc in mapped_ref_bgcs
-            for ref_product_type in ref_bgc.product_types
         )
-    )
 
 
 @metric("recovery_rate")
