@@ -172,7 +172,7 @@ def add_mode_specific_arguments(parser: argparse.ArgumentParser):
         type=float,
         metavar="FLOAT",
         default=None,
-        help="BGC overlap threshold percentage in (0,1] for COMPARE-TOOLS mode [default: 0.9]",
+        help="BGC overlap threshold percentage as a fraction (0,1] [default: 0.9]",
     )
 
 def add_other_arguments(parser: argparse.ArgumentParser):
