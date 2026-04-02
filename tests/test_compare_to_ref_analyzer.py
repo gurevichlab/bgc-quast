@@ -13,7 +13,8 @@ from src.compare_to_ref_analyzer import (
     get_asm_bgc_coords_on_ref,
     get_intersecting_bgcs_from_alignment,
 )
-from src.compare_to_ref_data import Intersection
+from src.compare_to_ref_data import Intersection, RecoveryContiguity
+
 from src.genome_mining_result import AlignmentInfo, Bgc, GenomeMiningResult, QuastResult
 
 # ====================== Helper Create Functions ======================
@@ -196,7 +197,8 @@ def test_determine_status_covered_by_fragments():
         start=100, end=200, intersecting_assembly_bgcs=[intersection1, intersection2]
     )
     status = determine_ref_bgc_status(ref_bgc, allowed_gap=100)
-    assert status == Status.FRAGMENTED_RECOVERY
+    assert status == Status.FULLY_RECOVERED
+    assert ref_bgc.recovery_contiguity == RecoveryContiguity.SINGLE_CONTIG
 
 
 def test_determine_status_covered_by_fragments_extra_intersections():
@@ -223,7 +225,8 @@ def test_determine_status_covered_by_fragments_extra_intersections():
         intersecting_assembly_bgcs=[intersection1, intersection2, intersection3],
     )
     status = determine_ref_bgc_status(ref_bgc, allowed_gap=100)
-    assert status == Status.FRAGMENTED_RECOVERY
+    assert status == Status.FULLY_RECOVERED
+    assert ref_bgc.recovery_contiguity == RecoveryContiguity.SINGLE_CONTIG
 
 
 # ====================== Tests for map_coordinates ======================
@@ -383,7 +386,8 @@ def test_compute_reference_coverage_covered_by_fragments_with_gap_closed():
     result_ref_bgc = reference_bgcs[0]
     # The union of the two intersections covers the reference even though neither does
     # individually.
-    assert result_ref_bgc.status == Status.FRAGMENTED_RECOVERY
+    assert result_ref_bgc.status == Status.FULLY_RECOVERED
+    assert result_ref_bgc.recovery_contiguity == RecoveryContiguity.SINGLE_CONTIG
     assert result_ref_bgc.intersecting_assembly_bgcs[0].start_in_ref == 80
     assert result_ref_bgc.intersecting_assembly_bgcs[0].end_in_ref == 180
     assert result_ref_bgc.intersecting_assembly_bgcs[0].reversed is False
@@ -440,7 +444,8 @@ def test_compute_reference_coverage_multiple_alignments_different_asm_seq():
     result_ref_bgc = reference_bgcs[0]
     # The intersections from both alignments should merge and be recognized as covering
     # fragments.
-    assert result_ref_bgc.status == Status.FRAGMENTED_RECOVERY
+    assert result_ref_bgc.status == Status.FULLY_RECOVERED
+    assert result_ref_bgc.recovery_contiguity == RecoveryContiguity.SINGLE_CONTIG
     assert len(result_ref_bgc.intersecting_assembly_bgcs) == 2
     assert result_ref_bgc.intersecting_assembly_bgcs[0].start_in_ref == 80
     assert result_ref_bgc.intersecting_assembly_bgcs[0].end_in_ref == 180
@@ -452,6 +457,29 @@ def test_compute_reference_coverage_multiple_alignments_different_asm_seq():
     assert result_ref_bgc.intersecting_assembly_bgcs[1].reversed is False
     assert result_ref_bgc.intersecting_assembly_bgcs[1].assembly_bgc == asm_bgc2
 
+
+def test_partial_multi_contig_case():
+    intersection1 = Intersection(
+        start_in_ref=100,
+        end_in_ref=130,
+        assembly_bgc=create_bgc(start=0, end=30),
+    )
+    intersection2 = Intersection(
+        start_in_ref=200,
+        end_in_ref=230,
+        assembly_bgc=create_bgc(start=100, end=130),
+    )
+
+    ref_bgc = create_reference_bgc(
+        start=100,
+        end=300,
+        intersecting_assembly_bgcs=[intersection1, intersection2],
+    )
+
+    status = determine_ref_bgc_status(ref_bgc, allowed_gap=10)
+
+    assert status == Status.PARTIALLY_RECOVERED
+    assert ref_bgc.recovery_contiguity == RecoveryContiguity.MULTI_CONTIG
 
 # ====================== Tests for compute_coverage ======================
 

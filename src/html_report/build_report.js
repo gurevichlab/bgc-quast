@@ -170,7 +170,7 @@ function heatMapOneRow(cells, values, direction = 'more_is_better') {
             // Between lowInner and median → interpolate white → lowColor
             const denom = (median - lowInner) || 1;
             const k = (FACT_MIN - FACT_WHITE) / denom;
-            const factor = FACT_MIN - (median - num) * k;
+            const factor = FACT_WHITE + (median - num) * k;
             cell.style.backgroundColor = getColorHex(lowColorHex, factor);
         } else if (num > topOuter) {
             // Extreme high outlier
@@ -183,7 +183,7 @@ function heatMapOneRow(cells, values, direction = 'more_is_better') {
             // Between median and topInner → interpolate white → topColor
             const denom = (topInner - median) || 1;
             const k = (FACT_MIN - FACT_WHITE) / denom;
-            const factor = FACT_MIN - (num - median) * k;
+            const factor = FACT_WHITE + (num - median) * k;
             cell.style.backgroundColor = getColorHex(topColorHex, factor);
         }
         // num === median → stays white
@@ -195,23 +195,77 @@ function heatMapOneRow(cells, values, direction = 'more_is_better') {
  * Each entry: { cells: HTMLTableCellElement[], values: number[] }
  */
 const allNumericCells = [];
-let extendedReportShown = false;
+let showProductRows = false;
+let showCompletenessRows = false;
+
+function classifyRowLabel(rawLabel) {
+    const label = String(rawLabel ?? '').trim();
+    const m = /^(.*?)\s*\((.*)\)$/.exec(label);
+
+    if (!m) {
+        return { isTotal: true, isProductOnly: false, isCompletenessOnly: false, isFull: false };
+    }
+
+    const insideParts = m[2].split(',').map(s => s.trim().toLowerCase());
+    const hasCompleteness = insideParts.some(v => ['complete', 'incomplete', 'unknown completeness'].includes(v));
+
+    if (insideParts.length === 1) {
+        if (hasCompleteness) {
+            return { isTotal: false, isProductOnly: false, isCompletenessOnly: true, isFull: false };
+        }
+        return { isTotal: false, isProductOnly: true, isCompletenessOnly: false, isFull: false };
+    }
+
+    return { isTotal: false, isProductOnly: false, isCompletenessOnly: false, isFull: true };
+}
 
 function applyExtendedState() {
-    const extendedRows = document.querySelectorAll('.extended-row');
-    extendedRows.forEach(row => {
-        row.style.display = extendedReportShown ? 'table-row' : 'none';
+    const rows = document.querySelectorAll('#reportTableContainer table tr');
+
+    rows.forEach((row, idx) => {
+        if (idx === 0) return; // header row
+
+        const headerCell = row.querySelector('th');
+        if (!headerCell) return;
+
+        const rawLabel = headerCell.textContent || '';
+        if (rawLabel === 'Genome mining tool') {
+            row.style.display = 'table-row';
+            return;
+        }
+
+        const cls = classifyRowLabel(rawLabel);
+
+        if (cls.isTotal) {
+            row.style.display = 'table-row';
+        } else if (cls.isProductOnly) {
+            row.style.display = showProductRows ? 'table-row' : 'none';
+        } else if (cls.isCompletenessOnly) {
+            row.style.display = showCompletenessRows ? 'table-row' : 'none';
+        } else if (cls.isFull) {
+            row.style.display = (showProductRows && showCompletenessRows) ? 'table-row' : 'none';
+        }
     });
 
-    const toggleBtn = document.getElementById('toggleExtendedBtn');
-    if (toggleBtn) {
-        toggleBtn.textContent = extendedReportShown ? 'Hide extended report' : 'Show extended report';
-        toggleBtn.classList.toggle('is-collapsed', extendedReportShown);
+    const productBtn = document.getElementById('toggleProductBtn');
+    if (productBtn) {
+        productBtn.textContent = showProductRows
+            ? 'Hide stratification by product'
+            : 'Show stratification by product';
+        productBtn.classList.toggle('is-collapsed', showProductRows);
+    }
+
+    const completenessBtn = document.getElementById('toggleCompletenessBtn');
+    if (completenessBtn) {
+        completenessBtn.textContent = showCompletenessRows
+            ? 'Hide stratification by completeness'
+            : 'Show stratification by completeness';
+        completenessBtn.classList.toggle('is-collapsed', showCompletenessRows);
     }
 
     const layout = document.getElementById('reportLayout');
     if (layout) {
-        if (extendedReportShown) layout.classList.add('extended-locked');
+        if (showProductRows || showCompletenessRows) layout.classList.add('extended-locked');
         else layout.classList.remove('extended-locked');
     }
 }
@@ -253,10 +307,9 @@ function buildTable(data) {
         const rowData = data[i];
 
         // Hide extended rows by default (only show "total" by default)
-        const label = String(rowData[0] ?? '').toLowerCase();
-        const isTotal = label.includes('(total)');
-        const isMiningTool = label === 'genome mining tool';
-        if (!isTotal && !isMiningTool) {
+        const label = String(rowData[0] ?? '');
+        const isMiningTool = label.trim().toLowerCase() === 'genome mining tool';
+        if (!isMiningTool) {
             row.classList.add('extended-row');
         }
 
@@ -279,9 +332,9 @@ function buildTable(data) {
                     td.classList.add('row-label-total');
                 }
 
-                const isTotalLabel = labelText.trim().toLowerCase().endsWith('(total)');
+                const rowClass = classifyRowLabel(labelText);
 
-                if (isTotalLabel) {
+                if (rowClass.isTotal || labelText === 'Genome mining tool') {
                     td.classList.add('row-label-total');
                 } else {
                     td.classList.add('row-label');
@@ -291,17 +344,18 @@ function buildTable(data) {
 
                 // Compare-tools mode-specific rows
                 const isCompareToolsSpecific =
-                    rawLabel.startsWith('Unique BGCs') ||
-                    rawLabel.startsWith('Unique recovery rate');
+                    rawLabel.startsWith('# unique BGCs') ||
+                    rawLabel.startsWith('Unique BGC rate');
 
-                // Compare-reference mode-specific rows
                 const isCompareRefSpecific =
-                    rawLabel.startsWith('Fully recovered BGCs') ||
-                    rawLabel.startsWith('Partially recovered BGCs') ||
-                    rawLabel.startsWith('Missed BGCs') ||
-                    rawLabel.startsWith('Fragmented BGCs') ||
-                    rawLabel.startsWith('Misclassified product type') ||
-                    rawLabel.startsWith('Recovery rate');
+                    rawLabel.startsWith('# full ref. BGCs') ||
+                    rawLabel.startsWith('# full ref. BGCs, single-contig') ||
+                    rawLabel.startsWith('# full ref. BGCs, multi-contig') ||
+                    rawLabel.startsWith('# partial ref. BGCs') ||
+                    rawLabel.startsWith('# missed ref. BGCs') ||
+                    rawLabel.startsWith('# product type mismatches to ref.') ||
+                    rawLabel.startsWith('# unmapped BGCs to ref.') ||
+                    rawLabel.startsWith('Ref. BGC recovery rate');
 
                 if ((reportMode === 'compare_tools' && isCompareToolsSpecific) ||
                     (reportMode === 'compare_to_reference' && isCompareRefSpecific)) {
@@ -355,11 +409,12 @@ const productColors = {
     'NRPS': '#2e8b57',
     'PKS': '#f4a460',
     'RiPP': '#4169e1',
-    'Hybrid': '#689cba',
-    'Terpene': '#800080',
-    'Saccharide': '#f0c107',
-    'Alkaloid': '#dda0dd',
-    'Other': '#666666'
+    'hybrid': '#689cba',
+    'terpene': '#800080',
+    'saccharide': '#f0c107',
+    'alkaloid': '#dda0dd',
+    'other': '#b56576',
+    'unknown': '#000000',
 };
 
 /**
@@ -431,14 +486,7 @@ function renderCompletenessFilters(statuses) {
         input.id = id;
         input.checked = true; // default ON
         label.appendChild(input);
-        // Capitalize
-        let niceLabel;
-        if (status === 'unknown completeness') {
-            niceLabel = 'Unknown completeness';
-        } else {
-            niceLabel = status.charAt(0).toUpperCase() + status.slice(1);
-}
-        label.append(` ${niceLabel}`);
+        label.append(` ${status}`);
         frag.appendChild(label);
     });
 
@@ -477,8 +525,15 @@ function selectedStatusesFromUI() {
 function syncShowByDisabled() {
     const isTotal   = document.getElementById('barModeTotal').checked;
     const showBy    = document.getElementById('barModeShowBy').checked;
-    const byTypeOn  = document.getElementById('byType').checked;
-    const byCompOn  = document.getElementById('byCompleteness').checked;
+
+    const byType = document.getElementById('byType');
+    const byCompleteness = document.getElementById('byCompleteness');
+
+    if (byType) byType.disabled = isTotal;
+    if (byCompleteness) byCompleteness.disabled = isTotal;
+
+    const byTypeOn  = byType ? byType.checked : false;
+    const byCompOn  = byCompleteness ? byCompleteness.checked : false;
 
     const showByGroup = document.getElementById('showByGroup');
     if (showByGroup) showByGroup.disabled = isTotal;
@@ -528,19 +583,19 @@ function detectTypes(data) {
 
     // skip non-product tokens that appear as totals
     const lc = type.toLowerCase();
-    if (lc === 'total' || lc === 'complete' || lc === 'incomplete' || lc === 'unknown completeness') continue;
+    if (lc === 'complete' || lc === 'incomplete' || lc === 'unknown completeness') continue;
 
     types.add(type);
   }
 
   // Preferred order + fallback to 'Other' if nothing detected
-  const preferred = ['NRPS','PKS','RiPP','Terpene','Saccharide','Alkaloid','Hybrid'];
+  const preferred = ['NRPS','PKS','RiPP','terpene','saccharide','alkaloid','hybrid'];
   const detected = Array.from(types);
   const ordered = [
     ...preferred.filter(t => detected.includes(t)),
     ...detected.filter(t => !preferred.includes(t))
   ];
-  return ordered.length ? ordered : ['Other'];
+  return ordered.length ? ordered : ['other'];
 }
 
 /**
@@ -592,11 +647,11 @@ const METRIC_TABS_BY_MODE = {
 
 // Which metric are we plotting (# BGCs, Fully recovered, etc.)
 const METRIC_BASE = {
-    bgcs:   '# BGCs',                 // existing behaviour
-    fully:  'Fully recovered BGCs',
-    partial:'Partially recovered BGCs',
-    missed: 'Missed BGCs',
-    unique: "Unique BGCs",
+    bgcs:   '# BGCs',
+    fully:  '# full ref. BGCs',
+    partial:'# partial ref. BGCs',
+    missed: '# missed ref. BGCs',
+    unique: '# unique BGCs',
     // pyplots: no metricBase → handled specially
 };
 
@@ -604,7 +659,7 @@ let currentMetricKey = 'bgcs';
 
 function metricLabel(base, inside) {
     // e.g. base="# BGCs", inside="Total"
-    return `${base} (${inside})`;
+    return inside ? `${base} (${inside})` : base;
 }
 
 
@@ -668,11 +723,11 @@ function buildBarPlotDynamic(data) {
     let datasets = [];
 
     if (mode === 'total') {
-        const row = getRowByLabel(data, metricLabel(metricBase, 'Total'));
+        const row = getRowByLabel(data, metricLabel(metricBase, ''));
         if (row) {
             const counts = row.slice(colStart).map(v => parseInt(v, 10));
             datasets.push({
-                label: metricLabel(metricBase, 'Total'),
+                label: 'Total',
                 data: counts,
                 backgroundColor: '#322b7a'
             });
@@ -688,27 +743,27 @@ function buildBarPlotDynamic(data) {
             for (const type of types) {
                 const baseColor = productColors[type] || productColors['Other'];
                 // const rowComplete = getRowByLabel(data, `# BGCs (${type}, Complete)`);
-                const rowComplete = getRowByLabel(data, metricLabel(metricBase, `${type}, Complete`));
-                const rowIncomplete = getRowByLabel(data, metricLabel(metricBase, `${type}, Incomplete`));
-                const rowUnknown    = getRowByLabel(data, metricLabel(metricBase, `${type}, Unknown completeness`));
+                const rowComplete = getRowByLabel(data, metricLabel(metricBase, `${type}, complete`));
+                const rowIncomplete = getRowByLabel(data, metricLabel(metricBase, `${type}, incomplete`));
+                const rowUnknown    = getRowByLabel(data, metricLabel(metricBase, `${type}, unknown completeness`));
 
                 if (statuses.includes('complete') && rowComplete) {
                     datasets.push({
-                        label: `${type} complete`,
+                        label: `${type}, complete`,
                         data: rowComplete.slice(colStart).map(v => parseInt(v, 10)),
                         backgroundColor: baseColor
                     });
                 }
                 if (statuses.includes('incomplete') && rowIncomplete) {
                     datasets.push({
-                        label: `${type} incomplete`,
+                        label: `${type}, incomplete`,
                         data: rowIncomplete.slice(colStart).map(v => parseInt(v, 10)),
                         backgroundColor: lighten(baseColor, 0.45) // lighter shade
                     });
                 }
                 if (statuses.includes('unknown completeness') && rowUnknown) {
                     datasets.push({
-                        label: `${type} unknown completeness`,
+                        label: `${type}, unknown completeness`,
                         data: rowUnknown.slice(colStart).map(v => parseInt(v, 10)),
                         backgroundColor: lighten(baseColor, 0.75) // even lighter shade
                     });
@@ -717,28 +772,28 @@ function buildBarPlotDynamic(data) {
 
         } else if (byCompleteness) {
             // stacks are complete vs incomplete (total)
-            const rowComplete   = getRowByLabel(data, metricLabel(metricBase, 'Complete'));
-            const rowIncomplete = getRowByLabel(data, metricLabel(metricBase, 'Incomplete'));
-            const rowUnknown    = getRowByLabel(data, metricLabel(metricBase, 'Unknown completeness'));
+            const rowComplete   = getRowByLabel(data, metricLabel(metricBase, 'complete'));
+            const rowIncomplete = getRowByLabel(data, metricLabel(metricBase, 'incomplete'));
+            const rowUnknown    = getRowByLabel(data, metricLabel(metricBase, 'unknown completeness'));
             const statuses = selectedStatusesFromUI();
 
             if (statuses.includes('complete') && rowComplete) {
                 datasets.push({
-                    label: 'Complete',
+                    label: 'complete',
                     data: rowComplete.slice(colStart).map(v => parseInt(v, 10)),
                     backgroundColor: '#578c18'
                 });
             }
             if (statuses.includes('incomplete') && rowIncomplete) {
                 datasets.push({
-                    label: 'Incomplete',
+                    label: 'incomplete',
                     data: rowIncomplete.slice(colStart).map(v => parseInt(v, 10)),
                     backgroundColor: '#ccca3d'
                 });
             }
             if (statuses.includes('unknown completeness') && rowUnknown) {
                 datasets.push({
-                    label: 'Unknown completeness',
+                    label: 'unknown completeness',
                     data: rowUnknown.slice(colStart).map(v => parseInt(v, 10)),
                     backgroundColor: '#999999'
                 });
@@ -754,18 +809,18 @@ function buildBarPlotDynamic(data) {
                     datasets.push({
                         label: type,
                         data: row.slice(colStart).map(v => parseInt(v, 10)),
-                        backgroundColor: productColors[type] || productColors['Other']
+                        backgroundColor: productColors[type] || productColors['other']
                     });
                 }
             }
         } else {
             // fallback: if user selected "Show by" but no boxes,
-            // just show the *current metric* total to avoid an empty chart.
-            const row = getRowByLabel(data, metricLabel(metricBase, 'Total'));
+            // just show the total to avoid an empty chart.
+            const row = getRowByLabel(data, metricLabel(metricBase, ''));
             if (row) {
                 const counts = row.slice(colStart).map(v => parseInt(v, 10));
                 datasets.push({
-                    label: metricLabel(metricBase, 'Total'),
+                    label: 'Total',
                     data: counts,
                     backgroundColor: '#322b7a'
                 });
@@ -805,6 +860,17 @@ function buildBarPlotDynamic(data) {
             },
 
             plugins: {
+                title: {
+                    display: true,
+                    text: '# BGCs',
+                    font: {
+                        size: 16
+                    },
+                    padding: {
+                        top: 0,
+                        bottom: 10
+                    }
+                },
                 legend: {
                     display: false
                 },
@@ -870,7 +936,7 @@ function drawVenn(svg, toolA, toolB, pairwiseByTool, threshold) {
 
     // Clear the SVG before drawing a new diagram
     while (svg.firstChild) svg.removeChild(svg.firstChild);
-    svg.setAttribute('viewBox', '0 0 260 220');
+    svg.setAttribute('viewBox', '0 0 290 250');
 
     const NS = 'http://www.w3.org/2000/svg';
 
@@ -899,17 +965,17 @@ function drawVenn(svg, toolA, toolB, pairwiseByTool, threshold) {
     };
 
     // circles
-    makeCircle(100, 110, 75, '#2e808f');  // left
-    makeCircle(160, 110, 75, '#FFBC42');  // right
+    makeCircle(115, 110, 75, '#2e808f');  // left
+    makeCircle(175, 110, 75, '#FFBC42');  // right
 
     // counts
-    makeText(70, 110,  String(leftUnique));
-    makeText(190, 110, String(rightUnique));
-    makeText(130, 110, `${leftNonUni} | ${rightNonUni}`);
+    makeText(85, 110,  String(leftUnique));
+    makeText(205, 110, String(rightUnique));
+    makeText(145, 110, `${leftNonUni} | ${rightNonUni}`);
 
     // labels
-    makeText(60, 200, labelA, 10);
-    makeText(200, 200, labelB, 10);
+    makeText(75, 200, labelA, 9);
+    makeText(215, 200, labelB, 9);
 
     // title
     const wrapper = svg.closest('.venn-wrapper');
@@ -976,7 +1042,7 @@ function initVennPanel(panel, metadata) {
     downloadBtn.addEventListener('click', () => {
         // Do nothing if no diagram yet (no tools selected or not 2 selected)
         if (!svg.firstChild) return;
-        exportSvgAsPng(svg, currentFilename);
+        exportSvg(svg, currentFilename);
     });
 
     // Assemble UI
@@ -1135,9 +1201,14 @@ function exportPlotWithLegend() {
     }
 
     // Trigger browser download
+    const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="${exportCanvas.width}" height="${exportCanvas.height}"> <image href="${exportCanvas.toDataURL('image/png')}" width="100%" height="100%"/></svg>`;
+
+    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+
     const link = document.createElement('a');
-    link.href = exportCanvas.toDataURL('image/png');
-    link.download = 'bgc-quast_barplot.png';
+    link.href = url;
+    link.download = 'bgc-quast_barplot.svg';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -1146,44 +1217,27 @@ function exportPlotWithLegend() {
 /* ---------------------------------------------------------------------------
  * VENN DIAGRAM DOWNLOADING
  * ------------------------------------------------------------------------- */
-// Export a single SVG element (e.g. the Venn diagram) as a PNG file
-function exportSvgAsPng(svgElement, filename) {
+// Export a single SVG element (e.g. the Venn diagram) as an SVG file
+function exportSvg(svgElement, filename) {
     if (!svgElement) return;
 
-    // Use viewBox if present; otherwise fall back to rendered size
-    const width  = 700;
-    const height = 600;
-
-    // Serialize SVG to a string
     const serializer = new XMLSerializer();
-    const svgString = serializer.serializeToString(svgElement);
+    let source = serializer.serializeToString(svgElement);
 
-    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    // Add XML header
+    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+
+    const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
 
-    const img = new Image();
-    img.onload = function () {
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename.replace('.png', '.svg');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
-        const ctx = canvas.getContext('2d');
-        // White background so exported PNG isn’t transparent
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, width, height);
-        ctx.drawImage(img, 0, 0, width, height);
-
-        URL.revokeObjectURL(url);
-
-        const link = document.createElement('a');
-        link.href = canvas.toDataURL('image/png');
-        link.download = filename || 'bgc-quast_venn.png';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
-    img.src = url;
+    URL.revokeObjectURL(url);
 }
 
 
@@ -1205,11 +1259,23 @@ document.addEventListener('DOMContentLoaded', () => {
     buildBarPlotDynamic(reportData);
 
     // Extended report toggle visibility (show/hide extra rows)
-    const toggleBtn = document.getElementById('toggleExtendedBtn');
-    toggleBtn.addEventListener('click', () => {
-        extendedReportShown = !extendedReportShown;
-        applyExtendedState();
-    });
+    const productBtn = document.getElementById('toggleProductBtn');
+    if (productBtn) {
+        productBtn.addEventListener('click', () => {
+            showProductRows = !showProductRows;
+            applyExtendedState();
+        });
+    }
+
+    const completenessBtn = document.getElementById('toggleCompletenessBtn');
+    if (completenessBtn) {
+        completenessBtn.addEventListener('click', () => {
+            showCompletenessRows = !showCompletenessRows;
+            applyExtendedState();
+        });
+    }
+
+    applyExtendedState()
 
     // Heatmap toggle
     const heatmapToggle = document.getElementById('heatmapToggle');

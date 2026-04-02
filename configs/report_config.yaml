@@ -4,17 +4,17 @@
 basic_report:
   metrics:
     - name: "filtered_bgcs_by_length"
-      display_name: "# Filtered BGCs by length"
+      display_name: "# BGCs filtered by length"
       description: "BGCs shorter than the set threshold"
     - name: "total_bgc_count"
       display_name: "# BGCs"
       description: "Total number of BGCs identified"
     - name: "mean_bgc_length"
-      display_name: "Mean BGC length"
+      display_name: "Mean BGC length in bp"
       description: "Average length of BGCs in base pairs"
     - name: "mean_gene_per_bgc"
-      display_name: "Mean genes per BGC"
-      description: "Average number of genes per BGC"
+      display_name: "Mean BGC length in genes"
+      description: "Mean gene count per BGC"
 
   grouping_dimensions:
     product_type:
@@ -31,26 +31,33 @@ basic_report:
 compare_to_reference:
   metrics:
     - name: "fully_recovered_bgcs_count"
-      display_name: "Fully recovered BGCs"
+      display_name: "# full ref. BGCs"
       description: "Reference BGCs where >95% of the region is covered by at least one
-       assembly BGC with the same product type"
+       assembly BGC"
+    - name: "fully_recovered_single_contig_bgcs_count"
+      display_name: "# full ref. BGCs, single-contig"
+      description: "Reference BGCs where >95% of the region is covered by one contiguous
+       assembly BGC"
+    - name: "fully_recovered_multi_contig_bgcs_count"
+      display_name: "# full ref. BGCs, multi-contig"
+      description: "Reference BGCs where >95% of the region is covered by multiple
+       disjoint assembly BGCs"
     - name: "partially_recovered_bgcs_count"
-      display_name: "Partially recovered BGCs"
-      description: "Reference BGCs where 10-95% of the region is covered by assembly
+      display_name: "# partial ref. BGCs"
+      description: "Reference BGCs where 10-95% of the region is covered by 1 or multiple assembly
        BGCs"
     - name: "missed_bgcs_count"
-      display_name: "Missed BGCs"
+      display_name: "# missed ref. BGCs"
       description: "Reference BGCs with <10% coverage by any assembly BGC"
-    - name: "fragmented_recovery_count"
-      display_name: "Fragmented BGCs"
-      description: "Reference BGCs recovered by multiple disjoint assembly BGCs"
-    - name: "misclassified_product_type_count"
-      display_name: "Misclassified product type"
-      description: "Recovered reference BGCs predicted with a wrong product type in
-       the assembly"
     - name: "recovery_rate"
-      display_name: "Recovery rate"
+      display_name: "Ref. BGC recovery rate"
       description: "Percentage of reference BGCs that are fully or partially recovered"
+    - name: "misclassified_product_type_count"
+      display_name: "# product type mismatches to ref."
+      description: "Assembly BGCs mapped to reference BGCs but predicted with another product type"
+    - name: "unmapped_assembly_bgcs_count"
+      display_name: "# unmapped BGCs to ref."
+      description: "Assembly BGCs that do not map to any reference BGC"
     
   grouping_dimensions:
     product_type:
@@ -67,10 +74,10 @@ compare_to_reference:
 compare_tools:
   metrics:
     - name: "unique_bgcs"
-      display_name: "Unique BGCs"
+      display_name: "# unique BGCs"
       description: "Number of BGCs found by only one tool"
     - name: "unique_recovery_rate"
-      display_name: "Unique recovery rate"
+      display_name: "Unique BGC rate"
       description: "Percentage of unique BGCs"
 
   grouping_dimensions:
@@ -91,7 +98,7 @@ compare_samples:
       display_name: "# BGCs"
       description: "Total number of BGCs identified in each sample"
     - name: "mean_bgc_length"
-      display_name: "Mean BGC length"
+      display_name: "Mean BGC length in bp"
       description: "Average length of BGCs in each sample"
     - name: "bgc_diversity"
       display_name: "BGC diversity"
@@ -100,10 +107,10 @@ compare_samples:
       display_name: "Sample similarity"
       description: "Similarity between samples based on BGC content"
     - name: "core_bgcs"
-      display_name: "Core BGCs"
+      display_name: "# core BGCs"
       description: "Number of BGCs present in all samples"
     - name: "accessory_bgcs"
-      display_name: "Accessory BGCs"
+      display_name: "# accessory BGCs"
       description: "Number of BGCs present in some but not all samples"
       
   grouping_dimensions:
