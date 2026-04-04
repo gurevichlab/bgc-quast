@@ -3,7 +3,7 @@ from src.reporting.report_config import ReportConfigManager
 config_manager = ReportConfigManager()
 
 report_modes = [
-    ("compare-samples", config_manager.get_config("basic_report")),
+    ("all", config_manager.get_config("basic_report")),
     ("compare-to-reference", config_manager.get_config("compare_to_reference")),
     ("compare-tools", config_manager.get_config("compare_tools")),
 ]
