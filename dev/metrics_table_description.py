@@ -1,3 +1,4 @@
+from pathlib import Path
 from src.reporting.report_config import ReportConfigManager
 
 config_manager = ReportConfigManager()
@@ -23,5 +24,7 @@ for mode_name, report in report_modes:
 
 metrics_md = "\n".join(metrics_table)
 
-with open("METRICS.md", "w", encoding="utf-8") as f:
+repo_root = Path(__file__).resolve().parents[1]
+output_path = repo_root / "METRICS.md"
+with open(output_path, "w", encoding="utf-8") as f:
     f.write(metrics_md)
