@@ -123,7 +123,7 @@ For a detailed description of all reported metrics, see
 ### Basic metrics
 The following BGC prediction quality metrics are computed in **all running modes**:  
 - **Counts**  
-  Number of detected BGCs, reported overall and stratified by product type and completeness (complete vs fragmented BGCs based on proximity to contig edges), reported overall and per product type.  
+  Number of detected BGCs, reported overall and stratified by product type and completeness (complete vs fragmented BGCs based on proximity to contig edges).  
 - **Length statistics**  
   Mean BGC length, reported overall and stratified by product type and completeness.  
 - **Gene count statistics**  
