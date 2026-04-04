@@ -23,5 +23,5 @@ for mode_name, report in report_modes:
 
 metrics_md = "\n".join(metrics_table)
 
-with open("metrics_description.md", "w", encoding="utf-8") as f:
+with open("METRICS.md", "w", encoding="utf-8") as f:
     f.write(metrics_md)
