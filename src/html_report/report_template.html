@@ -51,7 +51,8 @@
             </div>
 
             <div class="extended-btn-wrapper">
-                <button id="toggleExtendedBtn">Show extended report</button>
+                <button id="toggleProductBtn">Show stratification by product</button>
+                <button id="toggleCompletenessBtn">Show stratification by completeness</button>
             </div>
 
             <div id="reportTableContainer"></div>
@@ -63,10 +64,10 @@
             <div class="plot-and-controls">
                 <div class="chart-wrap">
                     <div class="metric-tabs">
-                        <button class="metric-tab active" data-metric="bgcs">Overview</button>
-                        <button class="metric-tab" data-metric="fully">Fully recovered BGCs</button>
-                        <button class="metric-tab" data-metric="partial">Partially recovered BGCs</button>
-                        <button class="metric-tab" data-metric="missed">Missed BGCs</button>
+                        <button class="metric-tab active" data-metric="bgcs">All BGCs</button>
+                        <button class="metric-tab" data-metric="fully">Full ref. BGCs</button>
+                        <button class="metric-tab" data-metric="partial">Partial ref. BGCs</button>
+                        <button class="metric-tab" data-metric="missed">Missed ref. BGCs</button>
                         <button class="metric-tab" data-metric="unique">Unique BGCs</button>
                         <button class="metric-tab" data-metric="pyplots">BGC overlap plots</button>
                     </div>
@@ -84,24 +85,23 @@
                 <div class="barplot-controls">
                     <div class="barplot-mode">
                         <label><input type="radio" name="barMode" value="total" id="barModeTotal" checked> Total</label>
-                        <label><input type="radio" name="barMode" value="showby" id="barModeShowBy"> Show by:</label>
+                        <label><input type="radio" name="barMode" value="showby" id="barModeShowBy"> Show by</label>
                     </div>
 
-                    <!-- Show-by group (completeness + type) -->
-                    <fieldset id="showByGroup">
-                        <label><input type="checkbox" id="byCompleteness"> by completeness</label>
-                        <label><input type="checkbox" id="byType"> by product</label>
-                    </fieldset>
-
-
                     <fieldset id="completenessFilterGroup">
-                        <legend>Completeness</legend>
+                        <legend class="filter-legend">
+                            <span>completeness</span>
+                            <input type="checkbox" id="byCompleteness">
+                        </legend>
                         <!-- JS fills in checkboxes here -->
                     </fieldset>
 
                     <!-- Dynamic product filters (NRP/PKS/RiPP/...) -->
                     <fieldset id="typeFilterGroup">
-                        <legend>Products</legend>
+                        <legend class="filter-legend">
+                            <span>product</span>
+                            <input type="checkbox" id="byType">
+                        </legend>
                         <!-- JS fills in checkboxes here -->
                     </fieldset>
 

@@ -224,6 +224,10 @@ class CompareToRefMetricsCalculator(BasicMetricsCalculator):
             List of all calculated MetricValue objects
         """
         metric_names = [m.name for m in self.config.metrics]
+        registry_metric_names = [
+            name for name in metric_names
+            if name not in {"unmapped_assembly_bgcs_count", "misclassified_product_type_count"}
+        ]
         all_metrics = []
 
         # Generate all combinations of grouping dimensions
@@ -237,10 +241,75 @@ class CompareToRefMetricsCalculator(BasicMetricsCalculator):
                         reference_bgcs,
                         result.input_file,
                         result.mining_tool,
-                        metric_names,
+                        registry_metric_names,
                         grouping_dims,
                     )
                     all_metrics.extend(metrics)
+
+                    mapped_assembly_bgcs = {}
+                    for ref_bgc in reference_bgcs:
+                        for intersection in ref_bgc.intersecting_assembly_bgcs:
+                            assembly_bgc = intersection.assembly_bgc
+                            assembly_id = id(assembly_bgc)
+                            if assembly_id not in mapped_assembly_bgcs:
+                                mapped_assembly_bgcs[assembly_id] = (assembly_bgc, [ref_bgc])
+                            else:
+                                mapped_assembly_bgcs[assembly_id][1].append(ref_bgc)
+
+                    if "unmapped_assembly_bgcs_count" in metric_names and not grouping_dims:
+                        unmapped_count = sum(
+                            1 for bgc in result.bgcs if id(bgc) not in mapped_assembly_bgcs
+                        )
+                        all_metrics.append(
+                            MetricValue(
+                                file_path=result.input_file,
+                                mining_tool=result.mining_tool,
+                                metric_name="unmapped_assembly_bgcs_count",
+                                value=unmapped_count,
+                                grouping={},
+                            )
+                        )
+
+                    if "misclassified_product_type_count" in metric_names:
+                        misclassified_bgcs = [
+                            assembly_bgc
+                            for assembly_bgc, mapped_ref_bgcs in mapped_assembly_bgcs.values()
+                            if not any(
+                                set(assembly_bgc.product_types).issubset(set(ref_bgc.product_types))
+                                for ref_bgc in mapped_ref_bgcs
+                            )
+                        ]
+
+                        if not grouping_dims:
+                            all_metrics.append(
+                                MetricValue(
+                                    file_path=result.input_file,
+                                    mining_tool=result.mining_tool,
+                                    metric_name="misclassified_product_type_count",
+                                    value=len(misclassified_bgcs),
+                                    grouping={},
+                                )
+                            )
+                        else:
+                            grouping_funcs = {
+                                dim: GROUPING_REGISTRY.get(dim) for dim in grouping_dims
+                            }
+                            grouped_misclassified_bgcs = self._group_bgcs(
+                                misclassified_bgcs,
+                                grouping_funcs,
+                            )
+
+                            for grouping_values, bgc_group in grouped_misclassified_bgcs.items():
+                                grouping_dict = dict(zip(grouping_dims, grouping_values))
+                                all_metrics.append(
+                                    MetricValue(
+                                        file_path=result.input_file,
+                                        mining_tool=result.mining_tool,
+                                        metric_name="misclassified_product_type_count",
+                                        value=len(bgc_group),
+                                        grouping=grouping_dict,
+                                    )
+                                )
 
                 except Exception as e:
                     print(

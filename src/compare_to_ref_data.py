@@ -26,10 +26,12 @@ class Intersection:
 # Reference BGC status enum.
 class Status(Enum):
     MISSED = 0
-    FRAGMENTED_RECOVERY = 1
-    PARTIALLY_RECOVERED = 2
-    FULLY_RECOVERED = 3
+    PARTIALLY_RECOVERED = 1
+    FULLY_RECOVERED = 2
 
+class RecoveryContiguity(Enum):
+    SINGLE_CONTIG = 0
+    MULTI_CONTIG = 1
 
 @dataclass
 class ReferenceBgc(Bgc):
@@ -44,12 +46,16 @@ class ReferenceBgc(Bgc):
         this reference BGC.
         recovered_product_types (list[str]): The recovered product types for this
         reference BGC.
+        recovery_contiguity (Optional[RecoveryContiguity]): Whether the recovered
+        reference BGC is supported by a single contiguous recovery block or by multiple
+        disjoint recovery blocks.
     """
 
     status: Status = Status.MISSED
     intersecting_assembly_bgcs: list[Intersection] = field(default_factory=list)
     main_covering_assembly_bgc: Optional[Bgc] = None
     recovered_product_types: list[str] = field(default_factory=list)
+    recovery_contiguity: Optional[RecoveryContiguity] = None
 
     @classmethod
     def from_bgc(cls, bgc: Bgc) -> "ReferenceBgc":

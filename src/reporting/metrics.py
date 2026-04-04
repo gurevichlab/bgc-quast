@@ -2,7 +2,7 @@ from statistics import mean
 from typing import Any, Callable, Iterable, Optional
 
 from src.genome_mining_result import Bgc
-from src.compare_to_ref_data import ReferenceBgc, Status
+from src.compare_to_ref_data import RecoveryContiguity, ReferenceBgc, Status
 
 
 class GroupingKeyRegistry:
@@ -129,34 +129,35 @@ def mean_gene_per_bgc(bgcs: Iterable[Bgc]) -> Optional[float]:
 @metric("fully_recovered_bgcs_count")
 def fully_recovered_bgcs(bgcs: Iterable[ReferenceBgc]) -> int:
     """Count total number of fully recovered BGCs."""
+    return sum(1 for bgc in bgcs if bgc.status == Status.FULLY_RECOVERED)
+
+
+@metric("fully_recovered_single_contig_bgcs_count")
+def fully_recovered_single_contig_bgcs(bgcs: Iterable[ReferenceBgc]) -> int:
+    """Count fully recovered single-contig BGCs."""
     return sum(
         1
         for bgc in bgcs
         if bgc.status == Status.FULLY_RECOVERED
-        and any(x in bgc.product_types for x in bgc.recovered_product_types)
+        and bgc.recovery_contiguity == RecoveryContiguity.SINGLE_CONTIG
+    )
+
+
+@metric("fully_recovered_multi_contig_bgcs_count")
+def fully_recovered_multi_contig_bgcs(bgcs: Iterable[ReferenceBgc]) -> int:
+    """Count fully recovered multi-contig BGCs."""
+    return sum(
+        1
+        for bgc in bgcs
+        if bgc.status == Status.FULLY_RECOVERED
+        and bgc.recovery_contiguity == RecoveryContiguity.MULTI_CONTIG
     )
 
 
 @metric("partially_recovered_bgcs_count")
 def partially_recovered_bgcs(bgcs: Iterable[ReferenceBgc]) -> int:
     """Count total number of partially recovered BGCs."""
-    return sum(
-        1
-        for bgc in bgcs
-        if bgc.status == Status.PARTIALLY_RECOVERED
-        and any(x in bgc.product_types for x in bgc.recovered_product_types)
-    )
-
-
-@metric("fragmented_recovery_count")
-def fragmented_recovery(bgcs: Iterable[ReferenceBgc]) -> int:
-    """Count total number of fragmented recovered BGCs."""
-    return sum(
-        1
-        for bgc in bgcs
-        if bgc.status == Status.FRAGMENTED_RECOVERY
-        and any(x in bgc.product_types for x in bgc.recovered_product_types)
-    )
+    return sum(1 for bgc in bgcs if bgc.status == Status.PARTIALLY_RECOVERED)
 
 
 @metric("missed_bgcs_count")
@@ -165,28 +166,17 @@ def missed_bgcs(bgcs: Iterable[ReferenceBgc]) -> int:
     return sum(1 for bgc in bgcs if bgc.status == Status.MISSED)
 
 
-@metric("misclassified_product_type_count")
-def misclassified_product_type(bgcs: Iterable[ReferenceBgc]) -> int:
-    """Count total number of misclassified BGCs."""
-    return sum(
-        1
-        for bgc in bgcs
-        if bgc.status != Status.MISSED
-        and not any(x in bgc.product_types for x in bgc.recovered_product_types)
-    )
-
-
 @metric("recovery_rate")
 def recovery_rate(bgcs: Iterable[ReferenceBgc]) -> float:
-    """Calculate recovery rate of BGCs."""
+    """Calculate recovery rate of reference BGCs independent of product type."""
     total = sum(1 for _ in bgcs)
     if total == 0:
         return 0.0
+
     recovered = sum(
         1
         for bgc in bgcs
         if bgc.status != Status.MISSED
-        and any(x in bgc.product_types for x in bgc.recovered_product_types)
     )
     return recovered / total
 
