@@ -115,12 +115,13 @@ usage: bgc-quast.py [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compar
 ## Running modes
 
 BGC-QUAST supports **three running modes**, each designed for a different analysis scenario.
-Each mode computes the basic BGC quality metrics listed below and may additionally produce further metrics and outputs specific to the selected mode. The `example_outputs/` directory contains precomputed BGC-QUAST reports generated on the provided test data in all three modes.
+All modes compute a set of basic BGC quality metrics and may also include extra ones depending on the selected analysis.
+The `example_outputs/` directory contains precomputed BGC-QUAST reports generated on the provided test data in all three modes.
 
 See [here](METRICS.md) the detailed description of all reported metrics.
 
 ### Basic metrics
-The following BGC prediction quality metrics are computed in **all running modes**:  
+The basic BGC quality metrics include:  
 - **Counts**  
   Number of detected BGCs, reported overall and stratified by product type and completeness (complete vs fragmented BGCs based on proximity to contig edges).  
 - **Length statistics**  
