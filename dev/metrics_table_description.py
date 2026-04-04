@@ -11,7 +11,7 @@ report_modes = [
 metrics_table = ['### Metrics description']
 
 metrics_table.append(
-    "metric | description | analysis mode\n"
+    "Metric | Description | Analysis mode\n"
     "-------|-------------|----------------"
 )
 
