@@ -117,8 +117,7 @@ usage: bgc-quast.py [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compar
 BGC-QUAST supports **three running modes**, each designed for a different analysis scenario.
 Each mode computes the basic BGC quality metrics listed below and may additionally produce further metrics and outputs specific to the selected mode. The `example_outputs/` directory contains precomputed BGC-QUAST reports generated on the provided test data in all three modes.
 
-For a detailed description of all reported metrics, see 
-[Metrics Description](metrics_description.md).
+See [here](METRICS.md) the detailed description of all reported metrics.
 
 ### Basic metrics
 The following BGC prediction quality metrics are computed in **all running modes**:  
