@@ -106,23 +106,24 @@ usage: bgc-quast.py [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compar
 | `--ref-name REF_NAME`                    | Custom name for the reference genome mining result in reports |
 
 ### Compare-tools options
-| Option                                     | Description                                           |
-|--------------------------------------------|-------------------------------------------------------|
-| `--overlap-threshold FLOAT`          | BGC overlap threshold percentage in (0,1] for COMPARE-TOOLS mode [default: 0.9]      | 
+| Option                                     | Description                                                                                |
+|--------------------------------------------|--------------------------------------------------------------------------------------------|
+| `--overlap-threshold FLOAT`          | BGC overlap threshold as a fraction in (0, 1] [default: 0.9] | 
 
 
 <a name="sec_run_modes"></a>
 ## Running modes
 
 BGC-QUAST supports **three running modes**, each designed for a different analysis scenario.
-Each mode computes the basic BGC quality metrics listed below and may additionally produce further metrics and outputs specific to the selected mode. The `example_outputs/` directory contains precomputed BGC-QUAST reports generated on the provided test data in all three modes.
+All modes compute a set of basic BGC quality metrics and may also include extra ones depending on the selected analysis.
+The `example_outputs/` directory contains precomputed BGC-QUAST reports generated on the provided test data in all three modes.
+
+See [here](METRICS.md) the detailed description of all reported metrics.
 
 ### Basic metrics
-The following BGC prediction quality metrics are computed in **all running modes**:  
+The basic BGC quality metrics include:  
 - **Counts**  
-  Total number of detected BGCs and counts per BGC product type.  
-- **Completeness**  
-  Number of complete BGCs versus fragmented BGCs (located on contig edges), reported overall and per product type.  
+  Number of detected BGCs, reported overall and stratified by product type and completeness (complete vs fragmented BGCs based on proximity to contig edges).  
 - **Length statistics**  
   Mean BGC length, reported overall and stratified by product type and completeness.  
 - **Gene count statistics**  
@@ -244,7 +245,7 @@ See the example output in
 <a name="sec_feedback"></a>
 ## Feedback and bug reports
 You can leave your comments and bug reports at [https://github.com/gurevichlab/bgc-quast/issues](https://github.com/gurevichlab/bgc-quast/issues) (*recommended way*) 
-or sent it via e-mail to [alexey.gurevich@helmholtz-hips.de](alexey.gurevich@helmholtz-hips.de).
+or send it via e-mail to [alexey.gurevich@helmholtz-hips.de](alexey.gurevich@helmholtz-hips.de).
 
 Your comments, bug reports, and suggestions are **very welcome**.
 They will help us to improve BGC-QUAST further.
