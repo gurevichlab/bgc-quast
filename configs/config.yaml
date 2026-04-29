@@ -4,6 +4,7 @@ symlink_to_latest: latest
 report_txt: report.txt
 report_tsv: report.tsv
 report_html: report.html
+bgc_annotations_basename: bgcs.gbk
 
 product_yamls:
   antismash_product_mapping: "antismash_class_mapping.yaml"

@@ -106,10 +106,10 @@ usage: bgc-quast.py [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compar
 | `--ref-name REF_NAME`                    | Custom name for the reference genome mining result in reports |
 
 ### Compare-tools options
-| Option                                     | Description                                                                                |
-|--------------------------------------------|--------------------------------------------------------------------------------------------|
-| `--overlap-threshold FLOAT`          | BGC overlap threshold as a fraction in (0, 1] [default: 0.9] | 
-
+| Option                      | Description                                                                                |
+|-----------------------------|--------------------------------------------------------------------------------------------|
+| `--overlap-threshold FLOAT` | BGC overlap threshold as a fraction in (0, 1] [default: 0.9] |
+| `--output-bgcs`             | Output BGCs predicted by all tools in an integrated GenBank file (requires `--genome` to be specified)  |
 
 <a name="sec_run_modes"></a>
 ## Running modes

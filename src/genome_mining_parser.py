@@ -130,7 +130,8 @@ def parse_gecco_tsv(
         for index, row in df.iterrows():
             sequence_id = row["sequence_id"]
             bgc_id = row["cluster_id"].split("cluster_")[-1]
-            start = row["start"]
+            # GECCO uses GenBank-like notation: 1-based coords, end inclusive
+            start = row["start"] - 1
             end = row["end"]
 
             # Get a list of products and classes

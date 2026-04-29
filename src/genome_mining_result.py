@@ -8,12 +8,15 @@ from typing import Dict, List, Literal, Optional
 class Bgc:
     """
     Class for BGCs.
+    We use 0-based coordinates, end-exclusive (same as BioPython or antiSMASH JSON).
+    In particular, this means the BGC length is simply (end - start)
+    Note: GenBank used a different notation (1-based, end-inclusive)
 
     Attributes:
         bgc_id (str): The BGC id.
         sequence_id (str): The BGC sequence id.
-        start (int): The start position of the BGC.
-        end (int): The end position of the BGC.
+        start (int): The start position of the BGC. 0-based coordinates, start is included
+        end (int): The end position of the BGC. 0-based coordinates, end is NOT included
         completeness (Literal["Complete", "Incomplete", "Unknown completeness"]): Whether the BGC is complete (Complete, Incomplete, Unknown completeness).
         product_types (list): The product types of the BGC.
         metadata (dict): The metadata of the BGC, e.g. tool-specific metadata.

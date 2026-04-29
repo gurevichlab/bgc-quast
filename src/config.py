@@ -18,6 +18,8 @@ class OutputConfig:
     html_report: Path
     tsv_report: Path
 
+    bgc_annotations_basename: str
+
 
 @dataclass
 class ProductMappingConfig:
@@ -64,6 +66,7 @@ def load_config(args: Optional[CommandLineArgs] = None) -> Config:
         report=output_dir / Path(cfg["report_txt"]),
         html_report=output_dir / Path(cfg["report_html"]),
         tsv_report=output_dir / Path(cfg["report_tsv"]),
+        bgc_annotations_basename=cfg["bgc_annotations_basename"]
     )
 
     product_mapping_config = ProductMappingConfig(
