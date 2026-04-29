@@ -3,6 +3,7 @@ from typing import List
 
 from Bio import SeqIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation
+from Bio.SeqRecord import SeqRecord
 
 from src.genome_mining_result import GenomeMiningResult
 from src.input_utils import open_file
@@ -31,22 +32,37 @@ def make_bgc_feature(bgc, tool: str) -> SeqFeature:
     )
 
 
-def load_genbank_records(genome_file: Path):
-    GENBANK_ERROR_MSG = (
-        f"Input genome file ({genome_file}) must be in GenBank format; "
+def prepare_fasta_record_for_genbank(record):
+    new_record = SeqRecord(
+        seq=record.seq,
+        id=record.id,
+        name=record.name,
+        description=record.description or record.id,
+    )
+    new_record.annotations["molecule_type"] = "DNA"
+    new_record.features = []
+    return new_record
+
+
+def load_input_genome_records(genome_file: Path):
+    format_error_msg = (
+        f"Input genome file ({genome_file}) must be in GenBank or FASTA format; "
         "other formats are currently not supported."
     )
 
-    with open_file(genome_file) as handle:
-        try:
-            records = list(SeqIO.parse(handle, "genbank"))
-        except Exception as e:
-            raise UnsupportedGenomeFormatError(GENBANK_ERROR_MSG) from e
+    for format in ("genbank", "fasta"):
+        with open_file(genome_file) as handle:
+            try:
+                records = list(SeqIO.parse(handle, format))
+            except Exception:
+                records = []
 
-    if not records:
-        raise UnsupportedGenomeFormatError(GENBANK_ERROR_MSG)
+        if records:
+            if format == "fasta":
+                records = [prepare_fasta_record_for_genbank(record) for record in records]
+            return records
 
-    return records
+    raise UnsupportedGenomeFormatError(format_error_msg)
 
 
 def write_genbank(
@@ -54,7 +70,7 @@ def write_genbank(
     genome_mining_results: List[GenomeMiningResult],
     output_path: Path,
 ):
-    records = load_genbank_records(genome_file)
+    records = load_input_genome_records(genome_file)
 
     record_by_id = {}
     for record in records:
