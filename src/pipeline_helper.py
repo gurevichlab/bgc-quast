@@ -16,6 +16,7 @@ from src.option_parser import ValidationError, get_command_line_args
 from src.reporting.report_builder import ReportBuilder
 from src.reporting.report_config import ReportConfigManager
 from src.reporting.report_data import ReportData, RunningMode
+from src.output.genbank_writer import write_genbank, UnsupportedGenomeFormatError
 
 
 class PipelineHelper:
@@ -221,6 +222,35 @@ class PipelineHelper:
         Logs the locations of the text and HTML reports.
         """
 
+        bgc_annotations_gbk_output_path = None
+        if self.args.output_bgcs:
+            if self.running_mode == RunningMode.COMPARE_TOOLS:
+                if not self.args.genome_data:
+                    self.log.warning("Cannot create GenBank file with BGC annotations since no input genome was provided")
+                elif len(self.args.genome_data) > 1:
+                    raise ValidationError("--mode compare-tools requires all genome mining tools "
+                                          "to be run on the same genome input. "
+                                          "More than one genome is provided via --genome")
+                else:
+                    bgc_annotations_gbk_output_path = (self.config.output_config.output_dir /
+                                                       ".".join([
+                                                           input_utils.get_file_label_from_path(self.args.genome_data[0]),
+                                                           "all_tools", self.config.output_config.bgc_annotations_basename]))
+                    try:
+                        write_genbank(
+                            genome_file=self.args.genome_data[0],
+                            genome_mining_results=self.assembly_genome_mining_results,
+                            output_path=bgc_annotations_gbk_output_path
+                        )
+                    except (ValueError, UnsupportedGenomeFormatError) as e:
+                        bgc_annotations_gbk_output_path = None
+                        self.log.warning(
+                            "Failed to generate integrated GenBank file with all BGC predictions. "
+                            f"Reason: {e}\n"
+                        )
+            else:
+                self.log.warning(f"--output-bgcs is supported only in {RunningMode.COMPARE_TOOLS}, the running mode is set to: {self.running_mode}")
+
         if not self.analysis_report:
             self.log.error("No analysis report available to write results.")
             return
@@ -245,6 +275,11 @@ class PipelineHelper:
             f"TSV report is saved to {self.config.output_config.tsv_report}",
             indent=1,
         )
+        if bgc_annotations_gbk_output_path is not None:
+            self.log.info(
+                f"GenBank file with all BGCs is saved to {bgc_annotations_gbk_output_path}",
+                indent=1,
+            )
 
         # Log file label renamings (if any)
         renaming_log = self.analysis_report.metadata.get("label_renaming_log") or []
