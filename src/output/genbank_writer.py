@@ -21,7 +21,7 @@ def normalize_id(x):
 
 def make_bgc_feature(bgc, tool: str) -> SeqFeature:
     return SeqFeature(
-        FeatureLocation(bgc.start, bgc.end + 1),  # Biopython uses 0-based, end-exclusive
+        FeatureLocation(bgc.start, bgc.end),
         type="BGC",
         qualifiers={
             "product": [",".join(bgc.product_types)],
@@ -113,7 +113,7 @@ def write_genbank(
                 )
                 continue
 
-            if bgc.end >= record_len:
+            if bgc.end > record_len:
                 invalid_bgcs.append(
                     f"{bgc.bgc_id}: invalid coordinates {bgc.start}..{bgc.end} "
                     f"on sequence {bgc.sequence_id} (record length = {record_len})"
@@ -128,10 +128,9 @@ def write_genbank(
             "Have you provided the same genome sequence used for the genome mining? "
             + ", ".join(sorted(missing_ids))
         )
-    # TODO: uncomment once coordinate issues are fixed in the parsing module
-    # if invalid_bgcs:
-    #     raise ValueError(
-    #         "Some BGC coordinates are invalid:\n" + "\n".join(invalid_bgcs)
-    #     )
+    if invalid_bgcs:
+        raise ValueError(
+            "Some BGC coordinates are invalid:\n" + "\n".join(invalid_bgcs)
+        )
 
     SeqIO.write(records, output_path, "genbank")
