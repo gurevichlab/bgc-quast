@@ -21,7 +21,7 @@ It provides summary statistics, comparative analyses, and interactive visualizat
 of BGC prediction results from multiple tools and datasets.
 
 BGC-QUAST is distributed under the MIT License.
-See the [LICENSE](LICENSE) file for details.
+See the [LICENSE.txt](LICENSE.txt) file for details.
 
 <a name="sec_req"></a>
 ## Requirements
