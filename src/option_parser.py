@@ -175,7 +175,7 @@ def add_mode_specific_arguments(parser: argparse.ArgumentParser):
 
     compare_tools = parser.add_argument_group("Compare-tools")
     compare_tools.add_argument(
-        "--overlap-threshold",
+        "--overlap-fraction",
         dest="compare_tools_overlap_threshold",
         type=float,
         metavar="FLOAT",
@@ -239,7 +239,7 @@ def validate_arguments(args: CommandLineArgs):
     thr = getattr(args, "compare_tools_overlap_threshold", None)
     if thr is not None:
         validate(0.0 <= thr <= 1.0,
-                 "--overlap-threshold must be between 0 and 1")
+                 "--overlap-fraction must be between 0 and 1")
 
     min_len = getattr(args, "min_bgc_length", None)
     if min_len is not None:

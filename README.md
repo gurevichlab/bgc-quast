@@ -108,7 +108,7 @@ usage: bgc-quast.py [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compar
 ### Compare-tools options
 | Option                      | Description                                                                                |
 |-----------------------------|--------------------------------------------------------------------------------------------|
-| `--overlap-threshold FLOAT` | BGC overlap threshold as a fraction in (0, 1] [default: 0.9] |
+| `--overlap-fraction FLOAT` | BGC overlap threshold as a fraction in (0, 1] [default: 0.9] |
 | `--output-bgcs`             | Output BGCs predicted by all tools in an integrated GenBank file (requires `--genome` to be specified)  |
 
 <a name="sec_run_modes"></a>
@@ -184,7 +184,7 @@ python bgc-quast.py <tool1_genome_mining_results> \
                     <tool2_genome_mining_results> \
                     ... \
   --mode compare-tools \
-  --overlap-threshold <fraction> \
+  --overlap-fraction <fraction> \
   --output-dir <output_dir>
 ```
 
