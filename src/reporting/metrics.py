@@ -99,6 +99,13 @@ def total_bgc_count(bgcs: Iterable[Bgc]) -> int:
     return len(list(bgcs))
 
 
+@metric("total_bgc_length")
+def total_bgc_count(bgcs: Iterable[Bgc]) -> int:
+    """Calculate total BGC length."""
+    lengths = [bgc.end - bgc.start for bgc in bgcs]
+    return sum(lengths)
+
+
 @metric("mean_bgc_length")
 def mean_bgc_length(bgcs: Iterable[Bgc]) -> float:
     """Calculate mean BGC length."""

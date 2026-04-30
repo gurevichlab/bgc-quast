@@ -1,3 +1,10 @@
+"""
+Utility script for generating/updating metric table descriptions.
+
+Run as:
+    python -m dev.metrics_table_description
+"""
+
 from pathlib import Path
 from src.reporting.report_config import ReportConfigManager
 

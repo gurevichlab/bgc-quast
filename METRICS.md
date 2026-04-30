@@ -3,6 +3,7 @@ Metric | Description | Analysis mode
 -------|-------------|----------------
 `# BGCs filtered by length` | Number of BGCs shorter than the minimum length threshold that are excluded from the analysis | `all`
 `# BGCs` | Total number of predicted BGCs that passed the length threshold | `all`
+`Total BGC length in bp` | Sum of lengths of all BGCs in base pairs | `all`
 `Mean BGC length in bp` | Average BGC length in base pairs | `all`
 `Mean BGC length in genes` | Average number of genes per BGC | `all`
 `# full ref. BGCs` | Number of reference BGCs with ≥95% of their length covered by at least one assembly BGC | `compare-to-reference`

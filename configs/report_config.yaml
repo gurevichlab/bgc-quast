@@ -9,6 +9,9 @@ basic_report:
     - name: "total_bgc_count"
       display_name: "# BGCs"
       description: "Total number of predicted BGCs that passed the length threshold"
+    - name: "total_bgc_length"
+      display_name: "Total BGC length in bp"
+      description: "Sum of lengths of all BGCs in base pairs"
     - name: "mean_bgc_length"
       display_name: "Mean BGC length in bp"
       description: "Average BGC length in base pairs"
@@ -87,15 +90,9 @@ compare_tools:
 
   grouping_combinations: [ [ "product_type", "completeness" ] ]
 
-
+# these metrics are planned but not implemented yet
 compare_samples:
   metrics:
-    - name: "total_bgc_count"
-      display_name: "# BGCs"
-      description: "Total number of BGCs identified in each sample"
-    - name: "mean_bgc_length"
-      display_name: "Mean BGC length in bp"
-      description: "Average length of BGCs in each sample"
     - name: "bgc_diversity"
       display_name: "BGC diversity"
       description: "Number of unique BGC types in each sample"
