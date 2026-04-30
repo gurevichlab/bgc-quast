@@ -14,6 +14,7 @@ class MetricConfig:
     name: str
     display_name: str
     description: str = ""
+    precision: int | None = None
 
 
 @dataclass
@@ -71,6 +72,7 @@ class ReportConfigManager:
                     name=metric_data["name"],
                     display_name=metric_data["display_name"],
                     description=metric_data.get("description", ""),
+                    precision=metric_data.get("precision"),
                 )
             )
 

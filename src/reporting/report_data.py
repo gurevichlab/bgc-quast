@@ -62,11 +62,7 @@ class MetricValue:
             "file_path": self.file_path,
             "mining_tool": self.mining_tool,
             "metric_name": self.metric_name,
-            "value": f"{self.value:.3f}"
-            if not self.metric_name.endswith("count") and pd.notna(self.value)
-            else str(self.value)
-            if pd.notna(self.value)
-            else "",
+            "value": self.value if pd.notna(self.value) else None,
         }
         row.update(self.grouping)
         return row

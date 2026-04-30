@@ -15,9 +15,11 @@ basic_report:
     - name: "mean_bgc_length"
       display_name: "Mean BGC length in bp"
       description: "Average BGC length in base pairs"
+      precision: 1
     - name: "mean_gene_per_bgc"
       display_name: "Mean BGC length in genes"
       description: "Average number of genes per BGC"
+      precision: 1
 
   grouping_dimensions:
     product_type:
@@ -51,6 +53,7 @@ compare_to_reference:
     - name: "recovery_rate"
       display_name: "Ref. BGC recovery rate"
       description: "Proportion of reference BGCs that are fully or partially recovered, regardless of product type"
+      precision: 2
     - name: "misclassified_product_type_count"
       display_name: "# product type mismatches to ref."
       description: "Number of assembly BGCs mapped to reference BGCs but predicted with a different product type"
@@ -78,6 +81,7 @@ compare_tools:
     - name: "unique_recovery_rate"
       display_name: "Unique BGC rate"
       description: "Proportion of BGCs detected by only one tool out of all BGCs predicted by that tool"
+      precision: 2
 
   grouping_dimensions:
     product_type:

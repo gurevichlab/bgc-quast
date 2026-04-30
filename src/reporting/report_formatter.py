@@ -8,7 +8,7 @@ import math
 import base64
 from src.reporting.report_config import ReportConfig
 from src.reporting.report_data import ReportData
-import re
+
 
 class DataFrameTableBuilder:
     """Builds pivot tables from ReportData for formatting."""
@@ -174,6 +174,31 @@ class ReportFormatter:
     def __init__(self, config: ReportConfig):
         self.config = config
         self.table_builder = DataFrameTableBuilder(config)
+        self._metric_config_by_display_name = {
+            metric.display_name: metric for metric in config.metrics
+        }
+
+    def _get_metric_precision(self, row_label: str) -> int | None:
+        """Get configured precision for a rendered row label."""
+        base_label = row_label.split(" (", 1)[0]  #FIXME: don't rely on the display name and ad hoc logic; let's keep the true metric config name in the table (as a hidden column)
+        metric_config = self._metric_config_by_display_name.get(base_label)
+        if metric_config is None:
+            return None
+        return metric_config.precision
+
+    def _format_cell_value(self, row_label: str, value) -> str:
+        """Format a single report cell according to metric precision."""
+        if value is None:
+            return "0"
+        precision = self._get_metric_precision(row_label)
+        if isinstance(value, float):
+            if math.isnan(value):
+                return "0"
+            if precision is not None:
+                return f"{value:.{precision}f}"
+            if value.is_integer():
+                return str(int(value))
+        return str(value)
 
     def _prepare_pivot_table(self, data: ReportData):
         """Build pivot table and (if compare-to-reference) move ref first + patch ref metrics."""
@@ -221,49 +246,49 @@ class ReportFormatter:
 
         return pivot_table
 
+    def _prepare_formatted_table(self, data: ReportData) -> pd.DataFrame:
+        """Prepare pivot table with all values formatted as strings for output."""
+        pivot_table = self._prepare_pivot_table(data)
+        formatted_table = pivot_table.copy().astype(object)
+
+        for row_label in pivot_table.index:
+            formatted_table.loc[row_label] = [
+                self._format_cell_value(str(row_label), value)
+                for value in pivot_table.loc[row_label]
+            ]
+
+        return formatted_table
+
     def write_txt(self, data: ReportData, output_path: Path) -> None:
         """Format and save report as plain text table."""
-        pivot_table = self._prepare_pivot_table(data)
-        txt = pivot_table.map(lambda v: int(v) if isinstance(v, float) and v.is_integer() else
-        (re.sub(r"\.?0+$", "", v) if isinstance(v, str) and re.fullmatch(r"-?\d+\.\d+", v)
-         else v)).to_string(sparsify=False)
-        output_path.write_text(txt, encoding="utf-8")
+        formatted_table = self._prepare_formatted_table(data)
+        output_path.write_text(formatted_table.to_string(sparsify=False), encoding="utf-8")
+
+    def write_tsv(self, data: ReportData, output_path: Path) -> None:
+        """Format and save report as TSV."""
+        formatted_table = self._prepare_formatted_table(data)
+        formatted_table.to_csv(output_path, sep="\t")
 
     def write_html(self, data: ReportData, output_path: Path) -> None:
         """Format and save report as HTML with basic styling."""
-        def file_to_base64(path):
-            with open(path, "rb") as f:
-                encoded = base64.b64encode(f.read()).decode("utf-8")
-            return encoded
+        def file_to_base64(path: Path) -> str:
+            return base64.b64encode(path.read_bytes()).decode("utf-8")
 
-        # Save the running mode information
         mode = data.running_mode.value
-
-        pivot_table = self._prepare_pivot_table(data)
+        formatted_table = self._prepare_formatted_table(data)
 
         file_labels = ["file_label"]
         mining_tools = ["Genome mining tool"]
-        for file_label, mining_tool in pivot_table.columns:
+        for file_label, mining_tool in formatted_table.columns:
             file_labels.append(str(file_label))
             mining_tools.append(str(mining_tool))
 
-        # Build rows array (convert blanks/NaN to "0" for numeric cells)
         rows = [file_labels, mining_tools]
-        for idx, row in pivot_table.iterrows():
-            out = [str(idx)]
-            for v in row.tolist():
-                if v is None or (isinstance(v, float) and math.isnan(v)):
-                    out.append("0")
-                else:
-                    out.append(str(int(v)) if isinstance(v, float) and v.is_integer() else (
-                        re.sub(r"\.?0+$", "", v) if isinstance(v, str)
-                                                    and re.fullmatch(r"-?\d+\.\d+", v) else str(v))
-                    )
-            rows.append(out)
+        for idx, row in formatted_table.iterrows():
+            rows.append([str(idx)] + row.tolist())
 
         # Collect metadata for modes ---
-        metadata_to_dump = data.metadata
-        metadata_json = json.dumps(metadata_to_dump, ensure_ascii=False)
+        metadata_json = json.dumps(data.metadata, ensure_ascii=False)
         # Load the assets and inject JSON
         asset_dir = Path(__file__).resolve().parent.parent / "html_report"
         logo_path = asset_dir / "github-mark-white.svg"
@@ -289,9 +314,3 @@ class ReportFormatter:
         # Write final HTML
         output_path.write_text(html_filled, encoding="utf-8")
 
-    def write_tsv(self, data: ReportData, output_path: Path) -> None:
-        """Format and save report as TSV."""
-        pivot_table = self._prepare_pivot_table(data)
-        pivot_table.map(lambda v: int(v) if isinstance(v, float) and v.is_integer() else
-        (re.sub(r"\.?0+$", "", v) if isinstance(v, str) and re.fullmatch(r"-?\d+\.\d+", v)
-         else v)).to_csv(output_path, sep="\t")
