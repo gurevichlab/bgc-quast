@@ -393,7 +393,7 @@ def parse_input_mining_result_files(
 
         # Get sequence length map for the current file.
         try:
-            seq_data_map = get_seq_data_map(genome_seq_data_maps, file_path)
+            seq_data_map = get_seq_data_map(genome_seq_data_maps, file_path, log)
         except Exception as e:
             log.warning(
                 f"Failed to get sequence length map for {file_path}  -- BGC"
@@ -456,7 +456,7 @@ def parse_input_mining_result_files(
 
 
 def get_seq_data_map(
-    genome_seq_data_maps: Dict[str, Dict[str, ContigData]], file_path: Path
+    genome_seq_data_maps: Dict[str, Dict[str, ContigData]], file_path: Path, log: Optional[Logger] = None
 ) -> Optional[Dict[str, ContigData]]:
     """
     Get sequence length map for a given file path.
@@ -465,16 +465,32 @@ def get_seq_data_map(
         genome_seq_data_maps: Dictionary mapping file label to a dict mapping sequence
         name to sequence length
         file_path: Path to the input file
+        log: Logger
 
     Returns:
         Sequence length map for the given file path, or None if not found
+
+    Priority when getting the mapping dict:
+    1. Match by genome file label (extracted from the genome mining, tool)
+    2. If matching fails but exactly one genome provided, use it as fallback (with warning)
+    3. If no genomes provided, try to extract from mining result (currently possible for antiSMASH JSONs)
     """
     seq_data_map: Optional[Dict[str, ContigData]] = None
 
     if genome_seq_data_maps is not None:
-        seq_data_map = genome_seq_data_maps.get(
-            get_file_label_from_path(file_path), None
-        )
+        label = get_file_label_from_path(file_path)
+        seq_data_map = genome_seq_data_maps.get(label)
+
+        if seq_data_map is None:
+            if len(genome_seq_data_maps) == 1:
+                only_label, only_map = next(iter(genome_seq_data_maps.items()))
+                if log is not None:
+                    log.warning(
+                        f"Could not match input file '{file_path}' to genome label '{only_label}' "
+                        f"(quite common e.g., for DeepBGC genome mining results). "
+                        f"Since only one genome was provided, using it as fallback (forced matching)."
+                    )
+                seq_data_map = only_map
 
     # If genome_seq_data_maps is None, try to get the sequence length map from the file
     # directly.
@@ -679,6 +695,9 @@ def get_completeness(
             and start >= config.bgc_completeness_margin
             else "Incomplete"
         )
+    # special case -- if we are close to the start of a contig, we don't need the contig length to say "Incomplete"
+    elif start < config.bgc_completeness_margin:
+        completeness = "Incomplete"
     else:
         completeness = "Unknown completeness"
     return completeness
