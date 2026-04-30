@@ -28,9 +28,9 @@ ANTISMASH_FILE = (
 GECCO_FILE = (
     TEST_DATA_DIR / "assembly_10_mining" / "GECCO" / "assembly_10.fasta.clusters.tsv"
 )
-DEEPBGC_TSV_FILE = TEST_DATA_DIR / "assembly_10_mining" / "deepBGC" / "deepBGC.bgc.tsv"
+DEEPBGC_TSV_FILE = TEST_DATA_DIR / "assembly_10_mining" / "DeepBGC" / "DeepBGC.bgc.tsv"
 DEEPBGC_JSON_FILE = (
-    TEST_DATA_DIR / "assembly_10_mining" / "deepBGC" / "deepBGC.antismash.json"
+    TEST_DATA_DIR / "assembly_10_mining" / "DeepBGC" / "DeepBGC.antismash.json"
 )
 QUAST_DIR = TEST_DATA_DIR / "quast_out"
 SEQ_DATA_MAP = {
@@ -124,7 +124,7 @@ def test_parse_gecco_tsv_invalid_format(tmp_path):
 
 
 def test_parse_deepbgc_tsv():
-    """Test parsing a deepBGC TSV file."""
+    """Test parsing a DeepBGC TSV file."""
     bgcs = parse_deepbgc_tsv(load_config(), DEEPBGC_TSV_FILE, SEQ_DATA_MAP)
 
     # Verify we got some BGCs
@@ -148,11 +148,11 @@ def test_parse_deepbgc_tsv_invalid_format(tmp_path):
     tsv_file.write_text(tsv_content)
     with pytest.raises(InvalidInputException) as exc_info:
         parse_deepbgc_tsv(load_config(), tsv_file, None)
-    assert "Not deepBGC TSV" in str(exc_info.value)
+    assert "Not DeepBGC TSV" in str(exc_info.value)
 
 
 def test_parse_deepbgc_json():
-    """Test parsing a deepBGC JSON file."""
+    """Test parsing a DeepBGC JSON file."""
     bgcs = parse_deepbgc_json(load_config(), DEEPBGC_JSON_FILE, SEQ_DATA_MAP)
 
     # Verify we got some BGCs
@@ -175,7 +175,7 @@ def test_parse_deepbgc_json_invalid_format(tmp_path):
     json_file.write_text("not a json")
     with pytest.raises(InvalidInputException) as exc_info:
         parse_deepbgc_json(load_config(), json_file, None)
-    assert "Failed to parse deepBGC format" in str(exc_info.value)
+    assert "Failed to parse DeepBGC format" in str(exc_info.value)
 
 
 def test_parse_quast_output_dir_valid_file():

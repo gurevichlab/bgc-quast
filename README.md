@@ -63,9 +63,9 @@ python bgc-quast.py --help
 <a name="sec_tools"></a>
 ## Supported genome mining tools
 Currently supported genome mining tools and their output formats:  
-- antiSMASH: `.json`  
-- GECCO: `.tsv`  
-- deepBGC: `.json`, `.tsv`  
+- [antiSMASH](https://antismash.secondarymetabolites.org/): `.json`  
+- [GECCO](https://gecco.embl.de/): `.tsv`  
+- [DeepBGC](https://github.com/Merck/deepbgc): `.json`, `.tsv`  
 
 Compressed files (`.gz`) are supported. See [test_data](test_data) for example files. 
 
@@ -78,7 +78,7 @@ usage: bgc-quast.py [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compar
 ```
 ### Positional Arguments
 
-- `GENOME_MINING_RESULT`: Paths to genome mining outputs (antiSMASH `.json`, GECCO `.tsv`, or deepBGC `.json`/`.tsv`)
+- `GENOME_MINING_RESULT`: Paths to genome mining outputs (antiSMASH `.json`, GECCO `.tsv`, or DeepBGC `.json`/`.tsv`)
 
 ---
 
@@ -175,7 +175,7 @@ See the example output in
 Compare BGCs predicted by different genome mining tools applied to the same genome sequence.
 
 > **Note**
-> All genome mining tools must be run on the **same input genome sequence**. If this is unclear from the input file names (e.g., deepBGC does not include the input genome name in its output), the running mode should be explicitly specified using `--mode compare-tools`.    
+> All genome mining tools must be run on the **same input genome sequence**. If this is unclear from the input file names (e.g., DeepBGC does not include the input genome name in its output), the running mode should be explicitly specified using `--mode compare-tools`.    
  
 **Command (general form)**  
 
@@ -193,7 +193,7 @@ python bgc-quast.py <tool1_genome_mining_results> \
 ```bash
 python bgc-quast.py \
   test_data/assembly_10_mining/antiSMASH/assembly_10.json.gz \
-  test_data/assembly_10_mining/deepBGC/deepBGC.bgc.tsv \
+  test_data/assembly_10_mining/DeepBGC/DeepBGC.bgc.tsv \
   test_data/assembly_10_mining/GECCO/assembly_10.clusters.tsv \
   --mode compare-tools  
 ```

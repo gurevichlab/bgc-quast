@@ -181,15 +181,15 @@ def parse_gecco_tsv(
 def parse_deepbgc_tsv(
     config: Config, file_path: Path, seq_data_map: Union[Dict[str, ContigData], None]
 ) -> List[Bgc]:
-    """Parse deepBGC TSV format."""
+    """Parse DeepBGC TSV format."""
     product_to_class = load_reverse_mapping(
         config.product_mapping_config.product_yamls["deepbgc_product_mapping"]
     )
     try:
         df = pd.read_csv(file_path, sep="\t")
-        # Check if this is a deepBGC TSV output
+        # Check if this is a DeepBGC TSV output
         if "product_class" not in df.columns.tolist():
-            raise InvalidInputException("Not deepBGC TSV - product_class is missing")
+            raise InvalidInputException("Not DeepBGC TSV - product_class is missing")
 
         # Replace NaN in the product_class
         df["product_class"] = df["product_class"].fillna("Unknown product")
@@ -256,13 +256,13 @@ def parse_deepbgc_tsv(
             bgcs.append(bgc)
         return bgcs
     except Exception as e:
-        raise InvalidInputException(f"Failed to parse deepBGC TSV format: {str(e)}")
+        raise InvalidInputException(f"Failed to parse DeepBGC TSV format: {str(e)}")
 
 
 def parse_deepbgc_json(
     config: Config, file_path: Path, seq_data_map: Union[Dict[str, ContigData], None]
 ) -> List[Bgc]:
-    """Parse deepBGC JSON format."""
+    """Parse DeepBGC JSON format."""
     product_to_class = load_reverse_mapping(
         config.product_mapping_config.product_yamls["deepbgc_product_mapping"]
     )
@@ -318,7 +318,7 @@ def parse_deepbgc_json(
                 bgcs.append(bgc)
         return bgcs
     except Exception as e:
-        raise InvalidInputException(f"Failed to parse deepBGC format: {str(e)}")
+        raise InvalidInputException(f"Failed to parse DeepBGC format: {str(e)}")
 
 
 def parse_input_mining_result_files(
@@ -352,8 +352,8 @@ def parse_input_mining_result_files(
     parsers = {
         parse_antismash_json: "antiSMASH",
         parse_gecco_tsv: "GECCO",
-        parse_deepbgc_tsv: "deepBGC",
-        parse_deepbgc_json: "deepBGC",
+        parse_deepbgc_tsv: "DeepBGC",
+        parse_deepbgc_json: "DeepBGC",
     }
 
     results = []

@@ -909,7 +909,7 @@ function normalizeToolLabel(name) {
     if (!name) return '';
     const s = String(name).trim();
     const low = s.toLowerCase();
-    if (low.startsWith('deepbgc'))   return 'deepBGC';
+    if (low.startsWith('deepbgc'))   return 'DeepBGC';
     if (low.startsWith('antismash')) return 'antiSMASH';
     if (low.startsWith('gecco'))     return 'GECCO';
     return s;
