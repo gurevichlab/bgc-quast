@@ -73,7 +73,7 @@ Compressed files (`.gz`) are supported. See [test_data](test_data) for example f
 ## Command-line Options
 ```bash
 usage: bgc-quast.py [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-to-reference,compare-tools,compare-samples}]
-                    [--min-bgc-length INT] [--names NAME1,NAME2 ...] [--genome FILE ...] [--debug]
+                    [--merge-distance INT] [--min-bgc-length INT] [--names NAME1,NAME2 ...] [--genome FILE ...] [--debug]
                     [mode-specific options] <GENOME_MINING_RESULT>
 ```
 ### Positional Arguments
@@ -84,17 +84,18 @@ usage: bgc-quast.py [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compar
 
 ### Basic options
 
-| Option                        | Description                                                                                                           |
-|-------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| `-h, --help`                  | Show help message and exit                                                                                            |
-| `--output-dir DIR, -o DIR`   | Output directory [default: ./bgc-quast-results/<date_time>]                                                                        |
-| `--threads INT, -t INT`      | Number of threads [default: 1]                                                                                        |
-| `--debug`                    | Keep intermediate files                                                                                               |
+| Option                        | Description                                                                                                         |
+|-------------------------------|---------------------------------------------------------------------------------------------------------------------|
+| `-h, --help`                  | Show help message and exit                                                                                          |
+| `--output-dir DIR, -o DIR`   | Output directory [default: ./bgc-quast-results/<date_time>]                                                         |
+| `--threads INT, -t INT`      | Number of threads [default: 1]                                                                                      |
+| `--debug`                    | Keep intermediate files                                                                                             |
 | `--genome, -g [FILE ...]`     | Path to the genome FASTA/GenBank file; can accept multiple paths; required for `--min-bgc-length` and `edge-distance` |
-| `--names NAME1,NAME2 ...` | Custom names for the input genome mining results in reports                                                           |
-| `--min-bgc-length INT` | Minimum BGC length in bp.  [default: 0]                                                                               |
-| `--edge-distance INT` | Margin (in bp) from contig edges used to classify BGC completeness                                                    |
-| `--mode {auto,compare-to-reference,compare-tools,compare-samples}` | [Running mode](#sec_run_modes) that controls how BGC-QUAST interprets the inputs                                                   |
+| `--names NAME1,NAME2 ...` | Custom names for the input genome mining results in reports                                                         |
+| `--merge-distance INT` | Merge nearby BGCs if the gap between them <= this distance (bp); 0 disables merging [default: 0]       |
+| `--min-bgc-length INT` | Filter out BGCs shorter than this length (bp) [default: 0]                                                                            |
+| `--edge-distance INT` | Margin (in bp) from contig edges used to classify BGC completeness                                                  |
+| `--mode {auto,compare-to-reference,compare-tools,compare-samples}` | [Running mode](#sec_run_modes) that controls how BGC-QUAST interprets the inputs                                    |
 
 ### Compare-to-reference options
 

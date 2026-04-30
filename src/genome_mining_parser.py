@@ -31,15 +31,70 @@ class InvalidInputException(Exception):
     pass
 
 
-def _count_genes_in_bgc(bgc: Bgc, contig_data: Optional[ContigData]) -> int:
-    """Counts the number of genes in a BGC."""
-    if not contig_data:
-        return 0
-    count = 0
-    for gene_start, gene_end in contig_data.genes:
-        if bgc.start <= gene_start and gene_end <= bgc.end:
-            count += 1
-    return count
+def merge_nearby_bgcs(
+    config: Config, bgcs: List[Bgc], seq_data_map: Optional[Dict[str, ContigData]] = None,
+) -> List[Bgc]:
+    if config.merge_distance <= 0:
+        return bgcs
+
+    merged_bgcs = []
+    bgcs_by_seq = defaultdict(list)
+    for bgc in bgcs:
+        bgcs_by_seq[bgc.sequence_id].append(bgc)
+
+    for sequence_id, seq_bgcs in bgcs_by_seq.items():
+        seq_bgcs = sorted(seq_bgcs, key=lambda b: (b.start, b.end))
+
+        current_cluster = [seq_bgcs[0]]
+        for bgc in seq_bgcs[1:]:
+            prev = current_cluster[-1]
+            gap = bgc.start - prev.end
+
+            if gap <= config.merge_distance:
+                current_cluster.append(bgc)
+            else:
+                merged_bgcs.append(_merge_bgc_cluster(config, current_cluster, seq_data_map))
+                current_cluster = [bgc]
+
+        merged_bgcs.append(_merge_bgc_cluster(config, current_cluster, seq_data_map))
+    return merged_bgcs
+
+
+def _merge_bgc_cluster(
+    config: Config, cluster: list[Bgc], seq_data_map: Optional[Dict[str, ContigData]] = None,
+) -> Bgc:
+    """
+    Merge a non-empty cluster of nearby BGCs from the same contig (sequence_id), already sorted by coordinates.
+    """
+    if len(cluster) == 1:
+        return cluster[0]
+
+    sequence_id = cluster[0].sequence_id
+    start = cluster[0].start
+    end = cluster[-1].end
+
+    # keep the order of product types (just in case, not sure whether it is needed)
+    product_types = list(dict.fromkeys(
+        product_type
+        for bgc in cluster
+        for product_type in bgc.product_types
+    ))
+
+    metadata = {
+        "merged_from": [bgc.bgc_id for bgc in cluster],
+        "source_metadata": [bgc.metadata for bgc in cluster],
+    }
+
+    return Bgc(
+        bgc_id=f"{cluster[0].bgc_id}_merged_till_{cluster[-1].bgc_id}",
+        sequence_id=sequence_id,
+        start=start,
+        end=end,
+        completeness=get_completeness(config, seq_data_map, sequence_id, start, end),
+        gene_count=get_gene_count(seq_data_map, sequence_id, start, end),
+        product_types=product_types,
+        metadata=metadata,
+    )
 
 
 def parse_antismash_json(
@@ -80,22 +135,16 @@ def parse_antismash_json(
                     bgc_id = (
                         sequence_id + "." + qualifiers.get("region_number", ["1"])[0]
                     )
-                    completeness = get_completeness(
-                        config, seq_data_map, sequence_id, start, end
-                    )
                     bgc = Bgc(
                         bgc_id=bgc_id,
                         sequence_id=sequence_id,
                         start=start,
                         end=end,
-                        completeness=completeness,
+                        completeness=get_completeness(config, seq_data_map, sequence_id, start, end),
+                        gene_count=get_gene_count(seq_data_map, sequence_id, start, end),
                         product_types=mapped_products,
                         metadata=metadata,
                     )
-                    if seq_data_map and sequence_id in seq_data_map:
-                        bgc.gene_count = _count_genes_in_bgc(
-                            bgc, seq_data_map.get(sequence_id)
-                        )
                     bgcs.append(bgc)
         return bgcs
     except Exception as e:
@@ -155,23 +204,17 @@ def parse_gecco_tsv(
                     "probability": round(max_val, 3),
                 }
 
-            completeness = get_completeness(
-                config, seq_data_map, sequence_id, start, end
-            )
-
             # Create the Bgc object
             bgc = Bgc(
                 bgc_id=f"{sequence_id}_{bgc_id}",
                 sequence_id=sequence_id,
                 start=start,
                 end=end,
-                completeness=completeness,
+                completeness=get_completeness(config, seq_data_map, sequence_id, start, end),
+                gene_count=get_gene_count(seq_data_map, sequence_id, start, end),
                 product_types=mapped_product,
                 metadata=metadata,
             )
-            if seq_data_map and sequence_id in seq_data_map:
-                bgc.gene_count = _count_genes_in_bgc(bgc, seq_data_map.get(sequence_id))
-
             bgcs.append(bgc)
         return bgcs
     except Exception as e:
@@ -236,23 +279,17 @@ def parse_deepbgc_tsv(
                     "probability": round(max_val, 3),
                 }
 
-            completeness = get_completeness(
-                config, seq_data_map, sequence_id, start, end
-            )
-
             # Create a Bgc object
             bgc = Bgc(
                 bgc_id=bgc_id,
                 sequence_id=sequence_id,
                 start=start,
                 end=end,
-                completeness=completeness,
+                completeness=get_completeness(config, seq_data_map, sequence_id, start, end),
+                gene_count=get_gene_count(seq_data_map, sequence_id, start, end),
                 product_types=mapped_product,
                 metadata=metadata,
             )
-            if seq_data_map and sequence_id in seq_data_map:
-                bgc.gene_count = _count_genes_in_bgc(bgc, seq_data_map.get(sequence_id))
-
             bgcs.append(bgc)
         return bgcs
     except Exception as e:
@@ -295,26 +332,18 @@ def parse_deepbgc_json(
                     mapped_product = map_products(products_raw, product_to_class)
 
                 # Build metadata
-                metadata = {}
-                metadata["product_details"] = product_class_raw
-                completeness = get_completeness(
-                    config, seq_data_map, sequence_id, start, end
-                )
+                metadata = {"product_details": product_class_raw}
 
                 bgc = Bgc(
                     bgc_id=f"{sequence_id}_{idx}",
                     sequence_id=sequence_id,
                     start=start,
                     end=end,
-                    completeness=completeness,
+                    completeness=get_completeness(config, seq_data_map, sequence_id, start, end),
+                    gene_count=get_gene_count(seq_data_map, sequence_id, start, end),
                     product_types=mapped_product,
                     metadata=metadata,
                 )
-                if seq_data_map and sequence_id in seq_data_map:
-                    bgc.gene_count = _count_genes_in_bgc(
-                        bgc, seq_data_map.get(sequence_id)
-                    )
-
                 bgcs.append(bgc)
         return bgcs
     except Exception as e:
@@ -376,6 +405,7 @@ def parse_input_mining_result_files(
         for parser, tool_name in parsers.items():
             try:
                 bgcs = parser(config, file_path, seq_data_map)
+                bgcs = merge_nearby_bgcs(config, bgcs, seq_data_map)
 
                 # Apply length-based filtering
                 min_len = config.min_bgc_length
@@ -652,3 +682,19 @@ def get_completeness(
     else:
         completeness = "Unknown completeness"
     return completeness
+
+
+def get_gene_count(
+    seq_data_map: Union[dict[str, ContigData], None],
+    sequence_id: str,
+    start: int,
+    end: int,
+) -> int:
+    """Count the number of genes fully contained within a genomic region."""
+    if not seq_data_map or sequence_id not in seq_data_map:
+        return 0
+    count = 0
+    for gene_start, gene_end in seq_data_map[sequence_id].genes:
+        if start <= gene_start and gene_end <= end:
+            count += 1
+    return count

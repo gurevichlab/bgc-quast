@@ -31,6 +31,7 @@ class Config:
     output_config: OutputConfig
     product_mapping_config: ProductMappingConfig
     allowed_gap_for_fragmented_recovery: int
+    merge_distance: int
     min_bgc_length: int
     bgc_completeness_margin: int
     compare_tools_overlap_threshold: float
@@ -78,6 +79,7 @@ def load_config(args: Optional[CommandLineArgs] = None) -> Config:
     conf = Config(
         output_config=output_config,
         product_mapping_config=product_mapping_config,
+        merge_distance=cfg["merge_distance"],
         min_bgc_length=cfg["min_bgc_length"],
         bgc_completeness_margin=cfg["bgc_completeness_margin"],
         allowed_gap_for_fragmented_recovery=cfg["allowed_gap_for_fragmented_recovery"],
@@ -90,6 +92,9 @@ def load_config(args: Optional[CommandLineArgs] = None) -> Config:
 
     if args is not None and getattr(args, "bgc_completeness_margin", None) is not None:
         conf.bgc_completeness_margin = args.bgc_completeness_margin
+
+    if args is not None and getattr(args, "merge_distance", None) is not None:
+        conf.merge_distance = args.merge_distance
 
     if args is not None and getattr(args, "min_bgc_length", None) is not None:
         conf.min_bgc_length = args.min_bgc_length
