@@ -31,6 +31,15 @@ class InvalidInputException(Exception):
     pass
 
 
+def normalize_sequence_id(sequence_id: str) -> str:
+    """
+    Normalize sequence IDs for matching across inputs.
+    A typical example CONTIG_1 --> contig_1
+    FASTA files often contain extra metadata after a space in the entry name field
+    """
+    return sequence_id.split()[0].strip().lower()
+
+
 def merge_nearby_bgcs(
     config: Config, bgcs: List[Bgc], seq_data_map: Optional[Dict[str, ContigData]] = None,
 ) -> List[Bgc]:
@@ -604,7 +613,7 @@ def parse_genome_data(file_paths: List[Path]) -> Dict[str, Dict[str, ContigData]
             try:
                 with open_file(file_path) as handle:
                     for record in SeqIO.parse(handle, "fasta"):
-                        contigs[record.id] = ContigData(seq_len=len(record.seq))
+                        contigs[normalize_sequence_id(record.id)] = ContigData(seq_len=len(record.seq))
             except Exception as e:
                 raise Exception(f"Error parsing FASTA file {file_path}: {str(e)}")
         elif base_extension in [".gb", ".gbff", ".gbk"]:
@@ -616,7 +625,7 @@ def parse_genome_data(file_paths: List[Path]) -> Dict[str, Dict[str, ContigData]
                             for f in record.features
                             if f.type in ["gene", "CDS"]
                         ]
-                        contigs[record.id] = ContigData(
+                        contigs[normalize_sequence_id(record.id)] = ContigData(
                             seq_len=len(record.seq), genes=genes
                         )
             except Exception as e:
@@ -671,7 +680,7 @@ def get_genome_data_from_mining_result(
 def get_completeness(
     config: Config,
     seq_data_map: Union[dict[str, ContigData], None],
-    sequence_id: str,
+    raw_sequence_id: str,
     start: int,
     end: int,
 ) -> Literal["Complete", "Incomplete", "Unknown completeness"]:
@@ -688,6 +697,7 @@ def get_completeness(
     Returns:
         str: "Complete", "Incomplete", or "Unknown completeness" based on the BGC's completeness.
     """
+    sequence_id = normalize_sequence_id(raw_sequence_id)
     if seq_data_map and sequence_id in seq_data_map:
         completeness = (
             "Complete"
@@ -705,11 +715,12 @@ def get_completeness(
 
 def get_gene_count(
     seq_data_map: Union[dict[str, ContigData], None],
-    sequence_id: str,
+    raw_sequence_id: str,
     start: int,
     end: int,
 ) -> int:
     """Count the number of genes fully contained within a genomic region."""
+    sequence_id = normalize_sequence_id(raw_sequence_id)
     if not seq_data_map or sequence_id not in seq_data_map:
         return 0
     count = 0
