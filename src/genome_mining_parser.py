@@ -486,7 +486,7 @@ def get_seq_data_map(
     """
     seq_data_map: Optional[Dict[str, ContigData]] = None
 
-    if genome_seq_data_maps is not None:
+    if genome_seq_data_maps:
         label = get_file_label_from_path(file_path)
         seq_data_map = genome_seq_data_maps.get(label)
 
@@ -669,7 +669,7 @@ def get_genome_data_from_mining_result(
                     for f in record.get("features", [])
                     if f.get("type") == "gene"
                 ]
-                contigs[record["id"]] = ContigData(
+                contigs[normalize_sequence_id(record["id"])] = ContigData(
                     seq_len=len(record["seq"]["data"]), genes=genes
                 )
         return contigs if contigs else None
