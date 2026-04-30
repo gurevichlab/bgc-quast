@@ -196,6 +196,7 @@ python bgc-quast.py \
   test_data/assembly_10_mining/antiSMASH/assembly_10.json.gz \
   test_data/assembly_10_mining/DeepBGC/DeepBGC.bgc.tsv \
   test_data/assembly_10_mining/GECCO/assembly_10.clusters.tsv \
+  -g test_data/assembly_10.gbff.gz --output-bgcs \
   --mode compare-tools  
 ```
 The BGC-QUAST reports will be saved in `./bgc-quast-results/latest/`.

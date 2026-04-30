@@ -181,9 +181,10 @@ th.mode-specific-metric {
     margin-top: 10px;
 }
 
-#toggleExtendedBtn {
+#toggleProductBtn,
+#toggleCompletenessBtn {
   padding: 6px 14px;
-  border-radius: 999px;        /* bacilli-shaped */
+  border-radius: 999px;
   border: none;
   background: #322b7a;
   color: #fff;
@@ -194,29 +195,41 @@ th.mode-specific-metric {
               box-shadow 0.15s ease;
 }
 
-#toggleExtendedBtn:hover {
+#toggleProductBtn:hover,
+#toggleCompletenessBtn:hover {
   background: #3d3495;
-  transform: translateY(-1px); /* lift up a bit */
+  transform: translateY(-1px);
   box-shadow: 0 2px 6px rgba(0,0,0,0.35);
 }
 
-#toggleExtendedBtn:active {
+#toggleProductBtn:active,
+#toggleCompletenessBtn:active {
   transform: translateY(0);
   box-shadow: 0 1px 3px rgba(0,0,0,0.25);
 }
 
-#toggleExtendedBtn:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+#toggleProductBtn:focus-visible,
+#toggleCompletenessBtn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
 }
 
-#toggleExtendedBtn.is-collapsed {
+#toggleProductBtn.is-collapsed,
+#toggleCompletenessBtn.is-collapsed {
   background: #6c757d;
 }
 
-#toggleExtendedBtn.is-collapsed:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+#toggleProductBtn.is-collapsed:focus-visible,
+#toggleCompletenessBtn.is-collapsed:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+}
+
+.extended-btn-wrapper {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 /*Heatmap */
@@ -370,6 +383,12 @@ th.mode-specific-metric {
   font-size: 14px;
 }
 
+.filter-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 
 /* VENN DIAGRAM */
 .venn-main-row {
@@ -509,6 +528,11 @@ th.mode-specific-metric {
 input:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+}
+
+/* Grey out legend text when its toggle is disabled */
+.filter-legend:has(input:disabled) span {
+    opacity: 0.5;
 }
 
 input:disabled::after {
@@ -662,7 +686,8 @@ label:has(input:disabled) {
             </div>
 
             <div class="extended-btn-wrapper">
-                <button id="toggleExtendedBtn">Show extended report</button>
+                <button id="toggleProductBtn">Show stratification by product</button>
+                <button id="toggleCompletenessBtn">Show stratification by completeness</button>
             </div>
 
             <div id="reportTableContainer"></div>
@@ -674,10 +699,10 @@ label:has(input:disabled) {
             <div class="plot-and-controls">
                 <div class="chart-wrap">
                     <div class="metric-tabs">
-                        <button class="metric-tab active" data-metric="bgcs">Overview</button>
-                        <button class="metric-tab" data-metric="fully">Fully recovered BGCs</button>
-                        <button class="metric-tab" data-metric="partial">Partially recovered BGCs</button>
-                        <button class="metric-tab" data-metric="missed">Missed BGCs</button>
+                        <button class="metric-tab active" data-metric="bgcs">All BGCs</button>
+                        <button class="metric-tab" data-metric="fully">Full ref. BGCs</button>
+                        <button class="metric-tab" data-metric="partial">Partial ref. BGCs</button>
+                        <button class="metric-tab" data-metric="missed">Missed ref. BGCs</button>
                         <button class="metric-tab" data-metric="unique">Unique BGCs</button>
                         <button class="metric-tab" data-metric="pyplots">BGC overlap plots</button>
                     </div>
@@ -695,24 +720,23 @@ label:has(input:disabled) {
                 <div class="barplot-controls">
                     <div class="barplot-mode">
                         <label><input type="radio" name="barMode" value="total" id="barModeTotal" checked> Total</label>
-                        <label><input type="radio" name="barMode" value="showby" id="barModeShowBy"> Show by:</label>
+                        <label><input type="radio" name="barMode" value="showby" id="barModeShowBy"> Show by</label>
                     </div>
 
-                    <!-- Show-by group (completeness + type) -->
-                    <fieldset id="showByGroup">
-                        <label><input type="checkbox" id="byCompleteness"> by completeness</label>
-                        <label><input type="checkbox" id="byType"> by product</label>
-                    </fieldset>
-
-
                     <fieldset id="completenessFilterGroup">
-                        <legend>Completeness</legend>
+                        <legend class="filter-legend">
+                            <span>completeness</span>
+                            <input type="checkbox" id="byCompleteness">
+                        </legend>
                         <!-- JS fills in checkboxes here -->
                     </fieldset>
 
                     <!-- Dynamic product filters (NRP/PKS/RiPP/...) -->
                     <fieldset id="typeFilterGroup">
-                        <legend>Products</legend>
+                        <legend class="filter-legend">
+                            <span>product</span>
+                            <input type="checkbox" id="byType">
+                        </legend>
                         <!-- JS fills in checkboxes here -->
                     </fieldset>
 
@@ -726,7 +750,7 @@ label:has(input:disabled) {
 
     <!-- Data injected by Python -->
     <script>
-        const reportData = [["file_label", "assembly_20", "assembly_10"], ["Genome mining tool", "antiSMASH", "antiSMASH"], ["# Filtered BGCs by length (Total)", "0", "0"], ["# BGCs (Total)", "6", "6"], ["# BGCs (NRPS)", "1", "1"], ["# BGCs (PKS)", "1", "1"], ["# BGCs (RiPP)", "2", "2"], ["# BGCs (Terpene)", "2", "2"], ["# BGCs (Complete)", "2", "2"], ["# BGCs (Incomplete)", "4", "4"], ["# BGCs (NRPS, Incomplete)", "1", "1"], ["# BGCs (PKS, Incomplete)", "1", "1"], ["# BGCs (RiPP, Complete)", "1", "1"], ["# BGCs (RiPP, Incomplete)", "1", "1"], ["# BGCs (Terpene, Complete)", "1", "1"], ["# BGCs (Terpene, Incomplete)", "1", "1"], ["Mean BGC length (Total)", "27759.167", "29313"], ["Mean BGC length (NRPS)", "50160", "52045"], ["Mean BGC length (PKS)", "38582", "39844"], ["Mean BGC length (RiPP)", "15131.5", "17261"], ["Mean BGC length (Terpene)", "23775", "24733.5"], ["Mean BGC length (Complete)", "19057.5", "26235"], ["Mean BGC length (Incomplete)", "32110", "30852"], ["Mean BGC length (NRPS, Incomplete)", "50160", "52045"], ["Mean BGC length (PKS, Incomplete)", "38582", "39844"], ["Mean BGC length (RiPP, Complete)", "10216", "24559"], ["Mean BGC length (RiPP, Incomplete)", "20047", "9963"], ["Mean BGC length (Terpene, Complete)", "27899", "27911"], ["Mean BGC length (Terpene, Incomplete)", "19651", "21556"]];
+        const reportData = [["file_label", "assembly_10", "assembly_20"], ["Genome mining tool", "antiSMASH", "antiSMASH"], ["# BGCs filtered by length", "0", "0"], ["# BGCs", "6", "6"], ["# BGCs (NRPS)", "1", "1"], ["# BGCs (PKS)", "1", "1"], ["# BGCs (RiPP)", "2", "2"], ["# BGCs (terpene)", "2", "2"], ["# BGCs (complete)", "2", "2"], ["# BGCs (incomplete)", "4", "4"], ["# BGCs (NRPS, incomplete)", "1", "1"], ["# BGCs (PKS, incomplete)", "1", "1"], ["# BGCs (RiPP, complete)", "1", "1"], ["# BGCs (RiPP, incomplete)", "1", "1"], ["# BGCs (terpene, complete)", "1", "1"], ["# BGCs (terpene, incomplete)", "1", "1"], ["Total BGC length in bp", "175878", "166555"], ["Total BGC length in bp (NRPS)", "52045", "50160"], ["Total BGC length in bp (PKS)", "39844", "38582"], ["Total BGC length in bp (RiPP)", "34522", "30263"], ["Total BGC length in bp (terpene)", "49467", "47550"], ["Total BGC length in bp (complete)", "52470", "38115"], ["Total BGC length in bp (incomplete)", "123408", "128440"], ["Total BGC length in bp (NRPS, incomplete)", "52045", "50160"], ["Total BGC length in bp (PKS, incomplete)", "39844", "38582"], ["Total BGC length in bp (RiPP, complete)", "24559", "10216"], ["Total BGC length in bp (RiPP, incomplete)", "9963", "20047"], ["Total BGC length in bp (terpene, complete)", "27911", "27899"], ["Total BGC length in bp (terpene, incomplete)", "21556", "19651"], ["Mean BGC length in bp", "29313.0", "27759.2"], ["Mean BGC length in bp (NRPS)", "52045.0", "50160.0"], ["Mean BGC length in bp (PKS)", "39844.0", "38582.0"], ["Mean BGC length in bp (RiPP)", "17261.0", "15131.5"], ["Mean BGC length in bp (terpene)", "24733.5", "23775.0"], ["Mean BGC length in bp (complete)", "26235.0", "19057.5"], ["Mean BGC length in bp (incomplete)", "30852.0", "32110.0"], ["Mean BGC length in bp (NRPS, incomplete)", "52045.0", "50160.0"], ["Mean BGC length in bp (PKS, incomplete)", "39844.0", "38582.0"], ["Mean BGC length in bp (RiPP, complete)", "24559.0", "10216.0"], ["Mean BGC length in bp (RiPP, incomplete)", "9963.0", "20047.0"], ["Mean BGC length in bp (terpene, complete)", "27911.0", "27899.0"], ["Mean BGC length in bp (terpene, incomplete)", "21556.0", "19651.0"]];
         const reportMode = "compare_samples";
         const reportMetadata = {"requested_mode": "auto", "running_mode": "compare_samples", "results_count": 2, "min_bgc_length": 0, "bgc_completeness_margin": 100, "label_renaming_log": []};
     </script>
@@ -751,11 +775,11 @@ function renderRunSummary(meta) {
         modeText = `The running mode is <code>${resolved}</code>.`;
     }
 
-    let text = `${modeText} All statistics are based on BGCs of size ≥ <code>${meta.min_bgc_length}</code> bp `;
+    let text = `${modeText} All statistics are based on BGCs of size ≥ <code>${meta.min_bgc_length}</code> bp. `;
 
     const margin = meta.bgc_completeness_margin;
     if (margin != null) {
-        text += `and with <code>${margin}</code> bp margin from contig edges.`;
+        text += `BGCs are considered complete if located at least <code>${margin}</code> bp from contig edges.`;
     }
 
     if (resolved === 'compare_tools' && meta.compare_tools_overlap_threshold != null) {
@@ -903,7 +927,7 @@ function heatMapOneRow(cells, values, direction = 'more_is_better') {
             // Between lowInner and median → interpolate white → lowColor
             const denom = (median - lowInner) || 1;
             const k = (FACT_MIN - FACT_WHITE) / denom;
-            const factor = FACT_MIN - (median - num) * k;
+            const factor = FACT_WHITE + (median - num) * k;
             cell.style.backgroundColor = getColorHex(lowColorHex, factor);
         } else if (num > topOuter) {
             // Extreme high outlier
@@ -916,7 +940,7 @@ function heatMapOneRow(cells, values, direction = 'more_is_better') {
             // Between median and topInner → interpolate white → topColor
             const denom = (topInner - median) || 1;
             const k = (FACT_MIN - FACT_WHITE) / denom;
-            const factor = FACT_MIN - (num - median) * k;
+            const factor = FACT_WHITE + (num - median) * k;
             cell.style.backgroundColor = getColorHex(topColorHex, factor);
         }
         // num === median → stays white
@@ -928,23 +952,77 @@ function heatMapOneRow(cells, values, direction = 'more_is_better') {
  * Each entry: { cells: HTMLTableCellElement[], values: number[] }
  */
 const allNumericCells = [];
-let extendedReportShown = false;
+let showProductRows = false;
+let showCompletenessRows = false;
+
+function classifyRowLabel(rawLabel) {
+    const label = String(rawLabel ?? '').trim();
+    const m = /^(.*?)\s*\((.*)\)$/.exec(label);
+
+    if (!m) {
+        return { isTotal: true, isProductOnly: false, isCompletenessOnly: false, isFull: false };
+    }
+
+    const insideParts = m[2].split(',').map(s => s.trim().toLowerCase());
+    const hasCompleteness = insideParts.some(v => ['complete', 'incomplete', 'unknown completeness'].includes(v));
+
+    if (insideParts.length === 1) {
+        if (hasCompleteness) {
+            return { isTotal: false, isProductOnly: false, isCompletenessOnly: true, isFull: false };
+        }
+        return { isTotal: false, isProductOnly: true, isCompletenessOnly: false, isFull: false };
+    }
+
+    return { isTotal: false, isProductOnly: false, isCompletenessOnly: false, isFull: true };
+}
 
 function applyExtendedState() {
-    const extendedRows = document.querySelectorAll('.extended-row');
-    extendedRows.forEach(row => {
-        row.style.display = extendedReportShown ? 'table-row' : 'none';
+    const rows = document.querySelectorAll('#reportTableContainer table tr');
+
+    rows.forEach((row, idx) => {
+        if (idx === 0) return; // header row
+
+        const headerCell = row.querySelector('th');
+        if (!headerCell) return;
+
+        const rawLabel = headerCell.textContent || '';
+        if (rawLabel === 'Genome mining tool') {
+            row.style.display = 'table-row';
+            return;
+        }
+
+        const cls = classifyRowLabel(rawLabel);
+
+        if (cls.isTotal) {
+            row.style.display = 'table-row';
+        } else if (cls.isProductOnly) {
+            row.style.display = showProductRows ? 'table-row' : 'none';
+        } else if (cls.isCompletenessOnly) {
+            row.style.display = showCompletenessRows ? 'table-row' : 'none';
+        } else if (cls.isFull) {
+            row.style.display = (showProductRows && showCompletenessRows) ? 'table-row' : 'none';
+        }
     });
 
-    const toggleBtn = document.getElementById('toggleExtendedBtn');
-    if (toggleBtn) {
-        toggleBtn.textContent = extendedReportShown ? 'Hide extended report' : 'Show extended report';
-        toggleBtn.classList.toggle('is-collapsed', extendedReportShown);
+    const productBtn = document.getElementById('toggleProductBtn');
+    if (productBtn) {
+        productBtn.textContent = showProductRows
+            ? 'Hide stratification by product'
+            : 'Show stratification by product';
+        productBtn.classList.toggle('is-collapsed', showProductRows);
+    }
+
+    const completenessBtn = document.getElementById('toggleCompletenessBtn');
+    if (completenessBtn) {
+        completenessBtn.textContent = showCompletenessRows
+            ? 'Hide stratification by completeness'
+            : 'Show stratification by completeness';
+        completenessBtn.classList.toggle('is-collapsed', showCompletenessRows);
     }
 
     const layout = document.getElementById('reportLayout');
     if (layout) {
-        if (extendedReportShown) layout.classList.add('extended-locked');
+        if (showProductRows || showCompletenessRows) layout.classList.add('extended-locked');
         else layout.classList.remove('extended-locked');
     }
 }
@@ -986,10 +1064,9 @@ function buildTable(data) {
         const rowData = data[i];
 
         // Hide extended rows by default (only show "total" by default)
-        const label = String(rowData[0] ?? '').toLowerCase();
-        const isTotal = label.includes('(total)');
-        const isMiningTool = label === 'genome mining tool';
-        if (!isTotal && !isMiningTool) {
+        const label = String(rowData[0] ?? '');
+        const isMiningTool = label.trim().toLowerCase() === 'genome mining tool';
+        if (!isMiningTool) {
             row.classList.add('extended-row');
         }
 
@@ -1012,9 +1089,9 @@ function buildTable(data) {
                     td.classList.add('row-label-total');
                 }
 
-                const isTotalLabel = labelText.trim().toLowerCase().endsWith('(total)');
+                const rowClass = classifyRowLabel(labelText);
 
-                if (isTotalLabel) {
+                if (rowClass.isTotal || labelText === 'Genome mining tool') {
                     td.classList.add('row-label-total');
                 } else {
                     td.classList.add('row-label');
@@ -1024,17 +1101,18 @@ function buildTable(data) {
 
                 // Compare-tools mode-specific rows
                 const isCompareToolsSpecific =
-                    rawLabel.startsWith('Unique BGCs') ||
-                    rawLabel.startsWith('Unique recovery rate');
+                    rawLabel.startsWith('# unique BGCs') ||
+                    rawLabel.startsWith('Unique BGC rate');
 
-                // Compare-reference mode-specific rows
                 const isCompareRefSpecific =
-                    rawLabel.startsWith('Fully recovered BGCs') ||
-                    rawLabel.startsWith('Partially recovered BGCs') ||
-                    rawLabel.startsWith('Missed BGCs') ||
-                    rawLabel.startsWith('Fragmented BGCs') ||
-                    rawLabel.startsWith('Misclassified product type') ||
-                    rawLabel.startsWith('Recovery rate');
+                    rawLabel.startsWith('# full ref. BGCs') ||
+                    rawLabel.startsWith('# full ref. BGCs, single-contig') ||
+                    rawLabel.startsWith('# full ref. BGCs, multi-contig') ||
+                    rawLabel.startsWith('# partial ref. BGCs') ||
+                    rawLabel.startsWith('# missed ref. BGCs') ||
+                    rawLabel.startsWith('# product type mismatches to ref.') ||
+                    rawLabel.startsWith('# unmapped BGCs to ref.') ||
+                    rawLabel.startsWith('Ref. BGC recovery rate');
 
                 if ((reportMode === 'compare_tools' && isCompareToolsSpecific) ||
                     (reportMode === 'compare_to_reference' && isCompareRefSpecific)) {
@@ -1088,11 +1166,12 @@ const productColors = {
     'NRPS': '#2e8b57',
     'PKS': '#f4a460',
     'RiPP': '#4169e1',
-    'Hybrid': '#689cba',
-    'Terpene': '#800080',
-    'Saccharide': '#f0c107',
-    'Alkaloid': '#dda0dd',
-    'Other': '#666666'
+    'hybrid': '#689cba',
+    'terpene': '#800080',
+    'saccharide': '#f0c107',
+    'alkaloid': '#dda0dd',
+    'other': '#b56576',
+    'unknown': '#000000',
 };
 
 /**
@@ -1164,14 +1243,7 @@ function renderCompletenessFilters(statuses) {
         input.id = id;
         input.checked = true; // default ON
         label.appendChild(input);
-        // Capitalize
-        let niceLabel;
-        if (status === 'unknown completeness') {
-            niceLabel = 'Unknown completeness';
-        } else {
-            niceLabel = status.charAt(0).toUpperCase() + status.slice(1);
-}
-        label.append(` ${niceLabel}`);
+        label.append(` ${status}`);
         frag.appendChild(label);
     });
 
@@ -1210,8 +1282,15 @@ function selectedStatusesFromUI() {
 function syncShowByDisabled() {
     const isTotal   = document.getElementById('barModeTotal').checked;
     const showBy    = document.getElementById('barModeShowBy').checked;
-    const byTypeOn  = document.getElementById('byType').checked;
-    const byCompOn  = document.getElementById('byCompleteness').checked;
+
+    const byType = document.getElementById('byType');
+    const byCompleteness = document.getElementById('byCompleteness');
+
+    if (byType) byType.disabled = isTotal;
+    if (byCompleteness) byCompleteness.disabled = isTotal;
+
+    const byTypeOn  = byType ? byType.checked : false;
+    const byCompOn  = byCompleteness ? byCompleteness.checked : false;
 
     const showByGroup = document.getElementById('showByGroup');
     if (showByGroup) showByGroup.disabled = isTotal;
@@ -1261,19 +1340,19 @@ function detectTypes(data) {
 
     // skip non-product tokens that appear as totals
     const lc = type.toLowerCase();
-    if (lc === 'total' || lc === 'complete' || lc === 'incomplete' || lc === 'unknown completeness') continue;
+    if (lc === 'complete' || lc === 'incomplete' || lc === 'unknown completeness') continue;
 
     types.add(type);
   }
 
   // Preferred order + fallback to 'Other' if nothing detected
-  const preferred = ['NRPS','PKS','RiPP','Terpene','Saccharide','Alkaloid','Hybrid'];
+  const preferred = ['NRPS','PKS','RiPP','terpene','saccharide','alkaloid','hybrid'];
   const detected = Array.from(types);
   const ordered = [
     ...preferred.filter(t => detected.includes(t)),
     ...detected.filter(t => !preferred.includes(t))
   ];
-  return ordered.length ? ordered : ['Other'];
+  return ordered.length ? ordered : ['other'];
 }
 
 /**
@@ -1325,11 +1404,11 @@ const METRIC_TABS_BY_MODE = {
 
 // Which metric are we plotting (# BGCs, Fully recovered, etc.)
 const METRIC_BASE = {
-    bgcs:   '# BGCs',                 // existing behaviour
-    fully:  'Fully recovered BGCs',
-    partial:'Partially recovered BGCs',
-    missed: 'Missed BGCs',
-    unique: "Unique BGCs",
+    bgcs:   '# BGCs',
+    fully:  '# full ref. BGCs',
+    partial:'# partial ref. BGCs',
+    missed: '# missed ref. BGCs',
+    unique: '# unique BGCs',
     // pyplots: no metricBase → handled specially
 };
 
@@ -1337,7 +1416,7 @@ let currentMetricKey = 'bgcs';
 
 function metricLabel(base, inside) {
     // e.g. base="# BGCs", inside="Total"
-    return `${base} (${inside})`;
+    return inside ? `${base} (${inside})` : base;
 }
 
 
@@ -1401,11 +1480,11 @@ function buildBarPlotDynamic(data) {
     let datasets = [];
 
     if (mode === 'total') {
-        const row = getRowByLabel(data, metricLabel(metricBase, 'Total'));
+        const row = getRowByLabel(data, metricLabel(metricBase, ''));
         if (row) {
             const counts = row.slice(colStart).map(v => parseInt(v, 10));
             datasets.push({
-                label: metricLabel(metricBase, 'Total'),
+                label: 'Total',
                 data: counts,
                 backgroundColor: '#322b7a'
             });
@@ -1421,27 +1500,27 @@ function buildBarPlotDynamic(data) {
             for (const type of types) {
                 const baseColor = productColors[type] || productColors['Other'];
                 // const rowComplete = getRowByLabel(data, `# BGCs (${type}, Complete)`);
-                const rowComplete = getRowByLabel(data, metricLabel(metricBase, `${type}, Complete`));
-                const rowIncomplete = getRowByLabel(data, metricLabel(metricBase, `${type}, Incomplete`));
-                const rowUnknown    = getRowByLabel(data, metricLabel(metricBase, `${type}, Unknown completeness`));
+                const rowComplete = getRowByLabel(data, metricLabel(metricBase, `${type}, complete`));
+                const rowIncomplete = getRowByLabel(data, metricLabel(metricBase, `${type}, incomplete`));
+                const rowUnknown    = getRowByLabel(data, metricLabel(metricBase, `${type}, unknown completeness`));
 
                 if (statuses.includes('complete') && rowComplete) {
                     datasets.push({
-                        label: `${type} complete`,
+                        label: `${type}, complete`,
                         data: rowComplete.slice(colStart).map(v => parseInt(v, 10)),
                         backgroundColor: baseColor
                     });
                 }
                 if (statuses.includes('incomplete') && rowIncomplete) {
                     datasets.push({
-                        label: `${type} incomplete`,
+                        label: `${type}, incomplete`,
                         data: rowIncomplete.slice(colStart).map(v => parseInt(v, 10)),
                         backgroundColor: lighten(baseColor, 0.45) // lighter shade
                     });
                 }
                 if (statuses.includes('unknown completeness') && rowUnknown) {
                     datasets.push({
-                        label: `${type} unknown completeness`,
+                        label: `${type}, unknown completeness`,
                         data: rowUnknown.slice(colStart).map(v => parseInt(v, 10)),
                         backgroundColor: lighten(baseColor, 0.75) // even lighter shade
                     });
@@ -1450,28 +1529,28 @@ function buildBarPlotDynamic(data) {
 
         } else if (byCompleteness) {
             // stacks are complete vs incomplete (total)
-            const rowComplete   = getRowByLabel(data, metricLabel(metricBase, 'Complete'));
-            const rowIncomplete = getRowByLabel(data, metricLabel(metricBase, 'Incomplete'));
-            const rowUnknown    = getRowByLabel(data, metricLabel(metricBase, 'Unknown completeness'));
+            const rowComplete   = getRowByLabel(data, metricLabel(metricBase, 'complete'));
+            const rowIncomplete = getRowByLabel(data, metricLabel(metricBase, 'incomplete'));
+            const rowUnknown    = getRowByLabel(data, metricLabel(metricBase, 'unknown completeness'));
             const statuses = selectedStatusesFromUI();
 
             if (statuses.includes('complete') && rowComplete) {
                 datasets.push({
-                    label: 'Complete',
+                    label: 'complete',
                     data: rowComplete.slice(colStart).map(v => parseInt(v, 10)),
                     backgroundColor: '#578c18'
                 });
             }
             if (statuses.includes('incomplete') && rowIncomplete) {
                 datasets.push({
-                    label: 'Incomplete',
+                    label: 'incomplete',
                     data: rowIncomplete.slice(colStart).map(v => parseInt(v, 10)),
                     backgroundColor: '#ccca3d'
                 });
             }
             if (statuses.includes('unknown completeness') && rowUnknown) {
                 datasets.push({
-                    label: 'Unknown completeness',
+                    label: 'unknown completeness',
                     data: rowUnknown.slice(colStart).map(v => parseInt(v, 10)),
                     backgroundColor: '#999999'
                 });
@@ -1487,18 +1566,18 @@ function buildBarPlotDynamic(data) {
                     datasets.push({
                         label: type,
                         data: row.slice(colStart).map(v => parseInt(v, 10)),
-                        backgroundColor: productColors[type] || productColors['Other']
+                        backgroundColor: productColors[type] || productColors['other']
                     });
                 }
             }
         } else {
             // fallback: if user selected "Show by" but no boxes,
-            // just show the *current metric* total to avoid an empty chart.
-            const row = getRowByLabel(data, metricLabel(metricBase, 'Total'));
+            // just show the total to avoid an empty chart.
+            const row = getRowByLabel(data, metricLabel(metricBase, ''));
             if (row) {
                 const counts = row.slice(colStart).map(v => parseInt(v, 10));
                 datasets.push({
-                    label: metricLabel(metricBase, 'Total'),
+                    label: 'Total',
                     data: counts,
                     backgroundColor: '#322b7a'
                 });
@@ -1538,6 +1617,17 @@ function buildBarPlotDynamic(data) {
             },
 
             plugins: {
+                title: {
+                    display: true,
+                    text: '# BGCs',
+                    font: {
+                        size: 16
+                    },
+                    padding: {
+                        top: 0,
+                        bottom: 10
+                    }
+                },
                 legend: {
                     display: false
                 },
@@ -1576,7 +1666,7 @@ function normalizeToolLabel(name) {
     if (!name) return '';
     const s = String(name).trim();
     const low = s.toLowerCase();
-    if (low.startsWith('deepbgc'))   return 'deepBGC';
+    if (low.startsWith('deepbgc'))   return 'DeepBGC';
     if (low.startsWith('antismash')) return 'antiSMASH';
     if (low.startsWith('gecco'))     return 'GECCO';
     return s;
@@ -1603,7 +1693,7 @@ function drawVenn(svg, toolA, toolB, pairwiseByTool, threshold) {
 
     // Clear the SVG before drawing a new diagram
     while (svg.firstChild) svg.removeChild(svg.firstChild);
-    svg.setAttribute('viewBox', '0 0 260 220');
+    svg.setAttribute('viewBox', '0 0 290 250');
 
     const NS = 'http://www.w3.org/2000/svg';
 
@@ -1632,17 +1722,17 @@ function drawVenn(svg, toolA, toolB, pairwiseByTool, threshold) {
     };
 
     // circles
-    makeCircle(100, 110, 75, '#2e808f');  // left
-    makeCircle(160, 110, 75, '#FFBC42');  // right
+    makeCircle(115, 110, 75, '#2e808f');  // left
+    makeCircle(175, 110, 75, '#FFBC42');  // right
 
     // counts
-    makeText(70, 110,  String(leftUnique));
-    makeText(190, 110, String(rightUnique));
-    makeText(130, 110, `${leftNonUni} | ${rightNonUni}`);
+    makeText(85, 110,  String(leftUnique));
+    makeText(205, 110, String(rightUnique));
+    makeText(145, 110, `${leftNonUni} | ${rightNonUni}`);
 
     // labels
-    makeText(60, 200, labelA, 10);
-    makeText(200, 200, labelB, 10);
+    makeText(75, 200, labelA, 9);
+    makeText(215, 200, labelB, 9);
 
     // title
     const wrapper = svg.closest('.venn-wrapper');
@@ -1709,7 +1799,7 @@ function initVennPanel(panel, metadata) {
     downloadBtn.addEventListener('click', () => {
         // Do nothing if no diagram yet (no tools selected or not 2 selected)
         if (!svg.firstChild) return;
-        exportSvgAsPng(svg, currentFilename);
+        exportSvg(svg, currentFilename);
     });
 
     // Assemble UI
@@ -1868,9 +1958,14 @@ function exportPlotWithLegend() {
     }
 
     // Trigger browser download
+    const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="${exportCanvas.width}" height="${exportCanvas.height}"> <image href="${exportCanvas.toDataURL('image/png')}" width="100%" height="100%"/></svg>`;
+
+    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+
     const link = document.createElement('a');
-    link.href = exportCanvas.toDataURL('image/png');
-    link.download = 'bgc-quast_barplot.png';
+    link.href = url;
+    link.download = 'bgc-quast_barplot.svg';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -1879,44 +1974,27 @@ function exportPlotWithLegend() {
 /* ---------------------------------------------------------------------------
  * VENN DIAGRAM DOWNLOADING
  * ------------------------------------------------------------------------- */
-// Export a single SVG element (e.g. the Venn diagram) as a PNG file
-function exportSvgAsPng(svgElement, filename) {
+// Export a single SVG element (e.g. the Venn diagram) as an SVG file
+function exportSvg(svgElement, filename) {
     if (!svgElement) return;
 
-    // Use viewBox if present; otherwise fall back to rendered size
-    const width  = 700;
-    const height = 600;
-
-    // Serialize SVG to a string
     const serializer = new XMLSerializer();
-    const svgString = serializer.serializeToString(svgElement);
+    let source = serializer.serializeToString(svgElement);
 
-    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    // Add XML header
+    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+
+    const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
 
-    const img = new Image();
-    img.onload = function () {
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename.replace('.png', '.svg');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
-        const ctx = canvas.getContext('2d');
-        // White background so exported PNG isn’t transparent
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, width, height);
-        ctx.drawImage(img, 0, 0, width, height);
-
-        URL.revokeObjectURL(url);
-
-        const link = document.createElement('a');
-        link.href = canvas.toDataURL('image/png');
-        link.download = filename || 'bgc-quast_venn.png';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
-    img.src = url;
+    URL.revokeObjectURL(url);
 }
 
 
@@ -1938,11 +2016,23 @@ document.addEventListener('DOMContentLoaded', () => {
     buildBarPlotDynamic(reportData);
 
     // Extended report toggle visibility (show/hide extra rows)
-    const toggleBtn = document.getElementById('toggleExtendedBtn');
-    toggleBtn.addEventListener('click', () => {
-        extendedReportShown = !extendedReportShown;
-        applyExtendedState();
-    });
+    const productBtn = document.getElementById('toggleProductBtn');
+    if (productBtn) {
+        productBtn.addEventListener('click', () => {
+            showProductRows = !showProductRows;
+            applyExtendedState();
+        });
+    }
+
+    const completenessBtn = document.getElementById('toggleCompletenessBtn');
+    if (completenessBtn) {
+        completenessBtn.addEventListener('click', () => {
+            showCompletenessRows = !showCompletenessRows;
+            applyExtendedState();
+        });
+    }
+
+    applyExtendedState()
 
     // Heatmap toggle
     const heatmapToggle = document.getElementById('heatmapToggle');

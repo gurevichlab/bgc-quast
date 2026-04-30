@@ -1,29 +1,42 @@
-file_label                            assembly_20 assembly_10
-Genome mining tool                      antiSMASH   antiSMASH
-# Filtered BGCs by length (Total)               0           0
-# BGCs (Total)                                  6           6
-# BGCs (NRPS)                                   1           1
-# BGCs (PKS)                                    1           1
-# BGCs (RiPP)                                   2           2
-# BGCs (Terpene)                                2           2
-# BGCs (Complete)                               2           2
-# BGCs (Incomplete)                             4           4
-# BGCs (NRPS, Incomplete)                       1           1
-# BGCs (PKS, Incomplete)                        1           1
-# BGCs (RiPP, Complete)                         1           1
-# BGCs (RiPP, Incomplete)                       1           1
-# BGCs (Terpene, Complete)                      1           1
-# BGCs (Terpene, Incomplete)                    1           1
-Mean BGC length (Total)                 27759.167       29313
-Mean BGC length (NRPS)                      50160       52045
-Mean BGC length (PKS)                       38582       39844
-Mean BGC length (RiPP)                    15131.5       17261
-Mean BGC length (Terpene)                   23775     24733.5
-Mean BGC length (Complete)                19057.5       26235
-Mean BGC length (Incomplete)                32110       30852
-Mean BGC length (NRPS, Incomplete)          50160       52045
-Mean BGC length (PKS, Incomplete)           38582       39844
-Mean BGC length (RiPP, Complete)            10216       24559
-Mean BGC length (RiPP, Incomplete)          20047        9963
-Mean BGC length (Terpene, Complete)         27899       27911
-Mean BGC length (Terpene, Incomplete)       19651       21556
+file_label                                   assembly_10 assembly_20
+Genome mining tool                             antiSMASH   antiSMASH
+# BGCs filtered by length                              0           0
+# BGCs                                                 6           6
+# BGCs (NRPS)                                          1           1
+# BGCs (PKS)                                           1           1
+# BGCs (RiPP)                                          2           2
+# BGCs (terpene)                                       2           2
+# BGCs (complete)                                      2           2
+# BGCs (incomplete)                                    4           4
+# BGCs (NRPS, incomplete)                              1           1
+# BGCs (PKS, incomplete)                               1           1
+# BGCs (RiPP, complete)                                1           1
+# BGCs (RiPP, incomplete)                              1           1
+# BGCs (terpene, complete)                             1           1
+# BGCs (terpene, incomplete)                           1           1
+Total BGC length in bp                            175878      166555
+Total BGC length in bp (NRPS)                      52045       50160
+Total BGC length in bp (PKS)                       39844       38582
+Total BGC length in bp (RiPP)                      34522       30263
+Total BGC length in bp (terpene)                   49467       47550
+Total BGC length in bp (complete)                  52470       38115
+Total BGC length in bp (incomplete)               123408      128440
+Total BGC length in bp (NRPS, incomplete)          52045       50160
+Total BGC length in bp (PKS, incomplete)           39844       38582
+Total BGC length in bp (RiPP, complete)            24559       10216
+Total BGC length in bp (RiPP, incomplete)           9963       20047
+Total BGC length in bp (terpene, complete)         27911       27899
+Total BGC length in bp (terpene, incomplete)       21556       19651
+Mean BGC length in bp                            29313.0     27759.2
+Mean BGC length in bp (NRPS)                     52045.0     50160.0
+Mean BGC length in bp (PKS)                      39844.0     38582.0
+Mean BGC length in bp (RiPP)                     17261.0     15131.5
+Mean BGC length in bp (terpene)                  24733.5     23775.0
+Mean BGC length in bp (complete)                 26235.0     19057.5
+Mean BGC length in bp (incomplete)               30852.0     32110.0
+Mean BGC length in bp (NRPS, incomplete)         52045.0     50160.0
+Mean BGC length in bp (PKS, incomplete)          39844.0     38582.0
+Mean BGC length in bp (RiPP, complete)           24559.0     10216.0
+Mean BGC length in bp (RiPP, incomplete)          9963.0     20047.0
+Mean BGC length in bp (terpene, complete)        27911.0     27899.0
+Mean BGC length in bp (terpene, incomplete)      21556.0     19651.0
