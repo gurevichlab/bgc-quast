@@ -46,6 +46,17 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
     )
 
     basic.add_argument(
+        "--merge-distance",
+        type=int,
+        metavar="INT",
+        default=None,
+        help=(
+            "Merge nearby BGCs if the gap between them is at most the specified distance (bp); "
+            "0 disables merging [default: 0]"
+        ),
+    )
+
+    basic.add_argument(
         "--min-bgc-length",
         type=int,
         metavar="INT",
@@ -241,12 +252,19 @@ def validate_arguments(args: CommandLineArgs):
         validate(0.0 <= thr <= 1.0,
                  "--overlap-fraction must be between 0 and 1")
 
+    merge_distance = getattr(args, "merge_distance", None)
+    if merge_distance is not None:
+        validate(
+            merge_distance >= 0,
+            "--merge-distance must not be a negative integer",
+        )
     min_len = getattr(args, "min_bgc_length", None)
     if min_len is not None:
         validate(
             min_len >= 0,
             "--min-bgc-length must not be a negative integer",
         )
+
     if getattr(args, "ref_name", None) and not getattr(args, "reference_mining_result", None):
         raise ValidationError(
             "--ref-name was provided but no reference genome mining result was specified. "

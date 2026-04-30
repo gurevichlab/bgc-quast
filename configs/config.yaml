@@ -11,6 +11,7 @@ product_yamls:
   gecco_product_mapping: "gecco_class_mapping.yaml"
   deepbgc_product_mapping: "deepbgc_class_mapping.yaml"
 
+merge_distance: 0
 min_bgc_length: 0
 bgc_completeness_margin: 100
 allowed_gap_for_fragmented_recovery: 100
