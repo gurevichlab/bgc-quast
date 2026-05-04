@@ -4,4 +4,6 @@ dev/ export-ignore
 .pytest_cache/ export-ignore
 __pycache__/ export-ignore
 *.pyc export-ignore
+test_data/dummy_antismash.json export-ignore
+tests/ export-ignore
 make_release.sh export-ignore
