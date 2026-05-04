@@ -40,13 +40,25 @@ All required Python dependencies are specified in the
 
 ### 1. Get the source code
 
+#### Stable release (recommended)  
+
+Download the latest release tarball from [GitHub](https://github.com/gurevichlab/bgc-quast/releases/latest).  
+Then unpack it:
+
+```bash
+tar -xzf bgc-quast-*.tar.gz
+cd bgc-quast-*
+```  
+
+#### Development version (cutting-edge)
+
 Clone the repository:  
 
 ```bash
 git clone https://github.com/gurevichlab/bgc-quast.git
 cd bgc-quast
 ```  
-Alternatively, download the repository as a ZIP file from [GitHub](https://github.com/gurevichlab/bgc-quast) and extract it.
+This version may contain the latest features and fixes, but can be less stable.
 
 ### 2. Create and activate the conda environment
 
