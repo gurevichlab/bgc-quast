@@ -1,6 +1,7 @@
 from typing import List, Optional
 from pathlib import Path
 
+from src.version import get_version
 import src.input_utils as input_utils
 import src.reporting.report_writer as report_writer
 from src.config import load_config
@@ -71,6 +72,7 @@ class PipelineHelper:
         self.log.set_up_file_handler(self.config.output_config.output_dir)
         if self.args.debug:
             self.log.enable_debug_mode()
+        self.log.info(f"BGC-QUAST version: {get_version()}")
         self.log.start()
 
     def set_up_output_dir(self) -> None:
