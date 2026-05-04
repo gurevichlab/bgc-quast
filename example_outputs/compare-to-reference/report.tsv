@@ -1,0 +1,110 @@
+file_label	reference	assembly_10	assembly_20
+Genome mining tool	antiSMASH	antiSMASH	antiSMASH
+# BGCs filtered by length	0	0	0
+# BGCs	6	6	6
+# BGCs (NRPS)	1	1	1
+# BGCs (PKS)	1	1	1
+# BGCs (RiPP)	2	2	2
+# BGCs (terpene)	2	2	2
+# BGCs (complete)	6	2	2
+# BGCs (incomplete)	0	4	4
+# BGCs (NRPS, complete)	1	0	0
+# BGCs (NRPS, incomplete)	0	1	1
+# BGCs (PKS, complete)	1	0	0
+# BGCs (PKS, incomplete)	0	1	1
+# BGCs (RiPP, complete)	2	1	1
+# BGCs (RiPP, incomplete)	0	1	1
+# BGCs (terpene, complete)	2	1	1
+# BGCs (terpene, incomplete)	0	1	1
+Total BGC length in bp	197589	175878	166555
+Total BGC length in bp (NRPS)	58337	52045	50160
+Total BGC length in bp (PKS)	52961	39844	38582
+Total BGC length in bp (RiPP)	34775	34522	30263
+Total BGC length in bp (terpene)	51516	49467	47550
+Total BGC length in bp (complete)	197589	52470	38115
+Total BGC length in bp (incomplete)	0	123408	128440
+Total BGC length in bp (NRPS, complete)	58337	0	0
+Total BGC length in bp (NRPS, incomplete)	0	52045	50160
+Total BGC length in bp (PKS, complete)	52961	0	0
+Total BGC length in bp (PKS, incomplete)	0	39844	38582
+Total BGC length in bp (RiPP, complete)	34775	24559	10216
+Total BGC length in bp (RiPP, incomplete)	0	9963	20047
+Total BGC length in bp (terpene, complete)	51516	27911	27899
+Total BGC length in bp (terpene, incomplete)	0	21556	19651
+Mean BGC length in bp	32931.5	29313.0	27759.2
+Mean BGC length in bp (NRPS)	58337.0	52045.0	50160.0
+Mean BGC length in bp (PKS)	52961.0	39844.0	38582.0
+Mean BGC length in bp (RiPP)	17387.5	17261.0	15131.5
+Mean BGC length in bp (terpene)	25758.0	24733.5	23775.0
+Mean BGC length in bp (complete)	32931.5	26235.0	19057.5
+Mean BGC length in bp (incomplete)	0.0	30852.0	32110.0
+Mean BGC length in bp (NRPS, complete)	58337.0	0.0	0.0
+Mean BGC length in bp (NRPS, incomplete)	0.0	52045.0	50160.0
+Mean BGC length in bp (PKS, complete)	52961.0	0.0	0.0
+Mean BGC length in bp (PKS, incomplete)	0.0	39844.0	38582.0
+Mean BGC length in bp (RiPP, complete)	17387.5	24559.0	10216.0
+Mean BGC length in bp (RiPP, incomplete)	0.0	9963.0	20047.0
+Mean BGC length in bp (terpene, complete)	25758.0	27911.0	27899.0
+Mean BGC length in bp (terpene, incomplete)	0.0	21556.0	19651.0
+# full ref. BGCs	6	3	2
+# full ref. BGCs (NRPS)	1	0	0
+# full ref. BGCs (PKS)	1	0	0
+# full ref. BGCs (RiPP)	2	2	1
+# full ref. BGCs (terpene)	2	1	1
+# full ref. BGCs (complete)	6	3	2
+# full ref. BGCs (NRPS, complete)	1	0	0
+# full ref. BGCs (PKS, complete)	1	0	0
+# full ref. BGCs (RiPP, complete)	2	2	1
+# full ref. BGCs (terpene, complete)	2	1	1
+# full ref. BGCs, single-contig	6	3	2
+# full ref. BGCs, single-contig (NRPS)	1	0	0
+# full ref. BGCs, single-contig (PKS)	1	0	0
+# full ref. BGCs, single-contig (RiPP)	2	2	1
+# full ref. BGCs, single-contig (terpene)	2	1	1
+# full ref. BGCs, single-contig (complete)	6	3	2
+# full ref. BGCs, single-contig (NRPS, complete)	1	0	0
+# full ref. BGCs, single-contig (PKS, complete)	1	0	0
+# full ref. BGCs, single-contig (RiPP, complete)	2	2	1
+# full ref. BGCs, single-contig (terpene, complete)	2	1	1
+# full ref. BGCs, multi-contig	0	0	0
+# full ref. BGCs, multi-contig (NRPS)	0	0	0
+# full ref. BGCs, multi-contig (PKS)	0	0	0
+# full ref. BGCs, multi-contig (RiPP)	0	0	0
+# full ref. BGCs, multi-contig (terpene)	0	0	0
+# full ref. BGCs, multi-contig (complete)	0	0	0
+# full ref. BGCs, multi-contig (NRPS, complete)	0	0	0
+# full ref. BGCs, multi-contig (PKS, complete)	0	0	0
+# full ref. BGCs, multi-contig (RiPP, complete)	0	0	0
+# full ref. BGCs, multi-contig (terpene, complete)	0	0	0
+# partial ref. BGCs	0	3	4
+# partial ref. BGCs (NRPS)	0	1	1
+# partial ref. BGCs (PKS)	0	1	1
+# partial ref. BGCs (RiPP)	0	0	1
+# partial ref. BGCs (terpene)	0	1	1
+# partial ref. BGCs (complete)	0	3	4
+# partial ref. BGCs (NRPS, complete)	0	1	1
+# partial ref. BGCs (PKS, complete)	0	1	1
+# partial ref. BGCs (RiPP, complete)	0	0	1
+# partial ref. BGCs (terpene, complete)	0	1	1
+# missed ref. BGCs	0	0	0
+# missed ref. BGCs (NRPS)	0	0	0
+# missed ref. BGCs (PKS)	0	0	0
+# missed ref. BGCs (RiPP)	0	0	0
+# missed ref. BGCs (terpene)	0	0	0
+# missed ref. BGCs (complete)	0	0	0
+# missed ref. BGCs (NRPS, complete)	0	0	0
+# missed ref. BGCs (PKS, complete)	0	0	0
+# missed ref. BGCs (RiPP, complete)	0	0	0
+# missed ref. BGCs (terpene, complete)	0	0	0
+Ref. BGC recovery rate	1.00	1.00	1.00
+Ref. BGC recovery rate (NRPS)	1.00	1.00	1.00
+Ref. BGC recovery rate (PKS)	1.00	1.00	1.00
+Ref. BGC recovery rate (RiPP)	1.00	1.00	1.00
+Ref. BGC recovery rate (terpene)	1.00	1.00	1.00
+Ref. BGC recovery rate (complete)	1.00	1.00	1.00
+Ref. BGC recovery rate (NRPS, complete)	1.00	1.00	1.00
+Ref. BGC recovery rate (PKS, complete)	1.00	1.00	1.00
+Ref. BGC recovery rate (RiPP, complete)	1.00	1.00	1.00
+Ref. BGC recovery rate (terpene, complete)	1.00	1.00	1.00
+# product type mismatches to ref.	0	0	0
+# unmapped BGCs to ref.	0	0	0
