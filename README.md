@@ -9,7 +9,8 @@
 2.1. [Compare-to-reference mode](#sec_run_mode_1) </br>
 2.2. [Compare-tools mode](#sec_run_mode_2) </br>
 2.3. [Compare-samples mode](#sec_run_mode_3) </br>
-3. [Feedback and bug reports](#sec_feedback)</br>
+3. [Citation](#sec_cite)</br>
+4. [Feedback and bug reports](#sec_feedback)</br>
 
 
 <a name="sec_about"></a>
@@ -243,6 +244,10 @@ See the example output in
 
 **Mode-specific quality metrics**  
 - This mode currently reports only the **basic BGC quality metrics described above**, aggregated and summarized across samples.
+
+<a name="sec_cite"></a>
+## Citation
+If you use BGC-QUAST in your research, please cite [Kushnareva, Tupikina et al. bioRxiv 2026](https://www.biorxiv.org/content/10.1101/2026.05.04.722653).
 
 <a name="sec_feedback"></a>
 ## Feedback and bug reports
