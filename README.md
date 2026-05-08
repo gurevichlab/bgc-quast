@@ -259,7 +259,7 @@ See the example output in
 
 <a name="sec_cite"></a>
 ## Citation
-If you use BGC-QUAST in your research, please cite [Kushnareva, Tupikina et al. bioRxiv 2026](https://www.biorxiv.org/content/10.1101/2026.05.04.722653).
+If you use BGC-QUAST in your research, please cite [Kushnareva, Tupikina et al. bioRxiv 2026](https://www.biorxiv.org/content/10.64898/2026.05.04.722653).
 
 <a name="sec_feedback"></a>
 ## Feedback and bug reports
