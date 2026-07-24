@@ -1,8 +1,8 @@
 from statistics import mean
 from typing import Any, Callable, Iterable, Optional
 
-from src.genome_mining_result import Bgc
-from src.compare_to_ref_data import RecoveryContiguity, ReferenceBgc, Status
+from bgc_quast.genome_mining_result import Bgc
+from bgc_quast.compare_to_ref_data import RecoveryContiguity, ReferenceBgc, Status
 
 
 class GroupingKeyRegistry:

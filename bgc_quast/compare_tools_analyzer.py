@@ -1,7 +1,7 @@
 from typing import Dict, Iterable, List, Tuple
 from collections import defaultdict
 
-from src.genome_mining_result import GenomeMiningResult, Bgc
+from bgc_quast.genome_mining_result import GenomeMiningResult, Bgc
 
 # ------------------------ Basic geometry helpers ------------------------- #
 def overlap_len(a_start: int, a_end: int, b_start: int, b_end: int) -> int:

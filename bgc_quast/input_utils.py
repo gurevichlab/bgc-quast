@@ -3,12 +3,12 @@ import json
 from pathlib import Path
 from typing import Dict, List, Optional, TextIO, Union
 from collections import defaultdict
-from src.logger import Logger
+from bgc_quast.logger import Logger
 import yaml
 
-from src.genome_mining_result import GenomeMiningResult
-from src.reporting.report_data import RunningMode
-from src.option_parser import ValidationError
+from bgc_quast.genome_mining_result import GenomeMiningResult
+from bgc_quast.reporting.report_data import RunningMode
+from bgc_quast.option_parser import ValidationError
 
 
 def validate_no_duplicate_paths(paths: list[Path]) -> None:

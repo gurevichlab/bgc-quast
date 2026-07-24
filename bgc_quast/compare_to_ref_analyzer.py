@@ -1,10 +1,10 @@
-from src.compare_to_ref_data import (
+from bgc_quast.compare_to_ref_data import (
     Intersection,
     RecoveryContiguity,
     ReferenceBgc,
     Status,
 )
-from src.genome_mining_result import AlignmentInfo, Bgc, GenomeMiningResult, QuastResult
+from bgc_quast.genome_mining_result import AlignmentInfo, Bgc, GenomeMiningResult, QuastResult
 
 
 def compute_coverage(

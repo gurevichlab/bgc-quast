@@ -46,8 +46,7 @@ def _unique_timestamp_dir(root: Path) -> Path:
 
 
 def load_config(args: Optional[CommandLineArgs] = None) -> Config:
-    tool_dir = Path(__file__).parent.parent.resolve()
-    configs_dir = tool_dir / Path("configs")
+    configs_dir = Path(__file__).resolve().parent / "configs"
     cfg = yaml.safe_load((configs_dir / "config.yaml").open("r"))
 
     default_output_dir_root = Path.cwd() / Path(cfg["default_output_dir_root"])

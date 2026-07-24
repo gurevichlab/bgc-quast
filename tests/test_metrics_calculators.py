@@ -1,13 +1,13 @@
 from pathlib import Path
 
 import pytest
-from src.compare_to_ref_data import ReferenceBgc, Status
-from src.genome_mining_result import Bgc, GenomeMiningResult
-from src.reporting.metrics_calculators import (
+from bgc_quast.compare_to_ref_data import ReferenceBgc, Status
+from bgc_quast.genome_mining_result import Bgc, GenomeMiningResult
+from bgc_quast.reporting.metrics_calculators import (
     BasicMetricsCalculator,
     CompareToRefMetricsCalculator,
 )
-from src.reporting.report_config import (
+from bgc_quast.reporting.report_config import (
     GroupingDimensionConfig,
     MetricConfig,
     ReportConfig,

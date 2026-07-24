@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bgc-quast"
+dynamic = ["version"]
+description = "BGC-QUAST: biosynthetic gene cluster quality assessment tool"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE.txt"}
+authors = [
+    {name = "Alexey Gurevich", email = "alexey.gurevich@helmholtz-hips.de"}
+]
+dependencies = [
+    "pandas",
+    "biopython",
+    "pyyaml"
+]
+
+[project.urls]
+Homepage = "https://github.com/gurevichlab/bgc-quast"
+Issues = "https://github.com/gurevichlab/bgc-quast/issues"
+
+[project.scripts]
+bgc-quast = "bgc_quast.main:main"
+
+[tool.setuptools]
+packages = ["bgc_quast", "bgc_quast.output", "bgc_quast.reporting"]
+
+[tool.setuptools.package-data]
+bgc_quast = ["configs/*.yaml", "html_report/*"]
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION.txt"}

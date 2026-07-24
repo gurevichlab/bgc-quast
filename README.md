@@ -67,11 +67,20 @@ conda env create -f environment.yml
 conda activate bgc-quast
 ```
 
-### 3. Verify installation
+### 3. Install BGC-QUAST
 
+Install the package in editable mode (recommended for development):
 ```bash
-python bgc-quast.py --help
+pip install -e .
 ```
+
+### 4. Verify installation
+
+You can verify the installation by running:
+```bash
+bgc-quast --help
+```
+*(Alternatively, you can run the backward-compatible script: `python bgc-quast.py --help`)*
 
 <a name="sec_tools"></a>
 ## Supported genome mining tools
@@ -85,9 +94,9 @@ Compressed files (`.gz`) are supported. See [test_data](test_data) for example f
 <a name="sec_cmd_options"></a>
 ## Command-line Options
 ```bash
-usage: bgc-quast.py [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-to-reference,compare-tools,compare-samples}]
-                    [--merge-distance INT] [--min-bgc-length INT] [--names NAME1,NAME2 ...] [--genome FILE ...] [--debug]
-                    [mode-specific options] <GENOME_MINING_RESULT>
+usage: bgc-quast [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-to-reference,compare-tools,compare-samples}]
+                 [--merge-distance INT] [--min-bgc-length INT] [--names NAME1,NAME2 ...] [--genome FILE ...] [--debug]
+                 [mode-specific options] <GENOME_MINING_RESULT>
 ```
 ### Positional Arguments
 
@@ -157,9 +166,9 @@ Assess how well BGCs predicted on draft assemblies match the predictions obtaine
 **Command (general form)**  
 
 ```bash
-python bgc-quast.py <assembly1_genome_mining_results> \
-                    <assembly2_genome_mining_results> \
-                    ... \
+bgc-quast <assembly1_genome_mining_results> \
+          <assembly2_genome_mining_results> \
+          ... \
   --mode compare-to-reference \
   --reference-mining-result <reference_genome_mining_results> \
   --quast-output-dir <quast_output_dir> \
@@ -169,7 +178,7 @@ python bgc-quast.py <assembly1_genome_mining_results> \
 **Example (test data)**  
 
 ```bash
-python bgc-quast.py \
+bgc-quast \
   test_data/assembly_10_mining/antiSMASH/assembly_10.json.gz \
   test_data/assembly_20_mining/antiSMASH/assembly_20.json.gz \
   -r test_data/reference_mining/antiSMASH/reference.json.gz \
@@ -194,9 +203,9 @@ Compare BGCs predicted by different genome mining tools applied to the same geno
 **Command (general form)**  
 
 ```bash
-python bgc-quast.py <tool1_genome_mining_results> \
-                    <tool2_genome_mining_results> \
-                    ... \
+bgc-quast <tool1_genome_mining_results> \
+          <tool2_genome_mining_results> \
+          ... \
   --mode compare-tools \
   --overlap-fraction <fraction> \
   --output-dir <output_dir>
@@ -205,7 +214,7 @@ python bgc-quast.py <tool1_genome_mining_results> \
 **Example (test data)**  
 
 ```bash
-python bgc-quast.py \
+bgc-quast \
   test_data/assembly_10_mining/antiSMASH/assembly_10.json.gz \
   test_data/assembly_10_mining/DeepBGC/DeepBGC.bgc.tsv \
   test_data/assembly_10_mining/GECCO/assembly_10.clusters.tsv \
@@ -234,9 +243,9 @@ Summarize and compare BGC predictions produced by a single genome mining tool ac
 
 
 ```bash
-python bgc-quast.py <sample1_genome_mining_results> \
-                    <sample2_genome_mining_results> \
-                    ... \
+bgc-quast <sample1_genome_mining_results> \
+          <sample2_genome_mining_results> \
+          ... \
   --mode compare-samples \
   --names <sample1>,<sample2>,... \
   --genome <sample1_genome> <sample2_genome> ... \
@@ -246,7 +255,7 @@ python bgc-quast.py <sample1_genome_mining_results> \
 **Example (test data)**  
 
 ```bash
-python bgc-quast.py \
+bgc-quast \
   test_data/assembly_10_mining/antiSMASH/assembly_10.json.gz \
   test_data/assembly_20_mining/antiSMASH/assembly_20.json.gz 
 ```

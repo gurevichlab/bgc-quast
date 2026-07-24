@@ -3,18 +3,18 @@
 from typing import List, Optional
 from collections import defaultdict
 
-import src.compare_to_ref_analyzer as compare_to_ref_analyzer
-from src.compare_tools_analyzer import compute_uniqueness
-import src.input_utils as input_utils
-from src.config import Config
-from src.genome_mining_result import GenomeMiningResult, QuastResult
-from src.reporting.metrics_calculators import (
+import bgc_quast.compare_to_ref_analyzer as compare_to_ref_analyzer
+from bgc_quast.compare_tools_analyzer import compute_uniqueness
+import bgc_quast.input_utils as input_utils
+from bgc_quast.config import Config
+from bgc_quast.genome_mining_result import GenomeMiningResult, QuastResult
+from bgc_quast.reporting.metrics_calculators import (
     BasicMetricsCalculator,
     CompareToRefMetricsCalculator,
     CompareToolsMetricsCalculator
 )
-from src.reporting.report_config import ReportConfigManager
-from src.reporting.report_data import (
+from bgc_quast.reporting.report_config import ReportConfigManager
+from bgc_quast.reporting.report_data import (
     ReportData,
     RunningMode,
     create_dataframe_from_metrics,
@@ -67,8 +67,9 @@ class ReportBuilder:
 
         requested_mode = requested_mode
 
+        mode_str = requested_mode if requested_mode is not None else running_mode.value
         metadata = {
-            "requested_mode": requested_mode.replace("-", "_"),
+            "requested_mode": mode_str.replace("-", "_"),
             "running_mode": running_mode.value,
             "results_count": len(results),
             "min_bgc_length": config.min_bgc_length,

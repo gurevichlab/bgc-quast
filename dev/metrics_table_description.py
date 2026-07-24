@@ -6,7 +6,7 @@ Run as:
 """
 
 from pathlib import Path
-from src.reporting.report_config import ReportConfigManager
+from bgc_quast.reporting.report_config import ReportConfigManager
 
 config_manager = ReportConfigManager()
 

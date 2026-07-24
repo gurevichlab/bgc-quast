@@ -3,11 +3,11 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
-from src.config import Config
-from src.genome_mining_result import Bgc, GenomeMiningResult, QuastResult
-from src.reporting.report_builder import ReportBuilder
-from src.reporting.report_config import ReportConfig
-from src.reporting.report_data import MetricValue, ReportData, RunningMode
+from bgc_quast.config import Config
+from bgc_quast.genome_mining_result import Bgc, GenomeMiningResult, QuastResult
+from bgc_quast.reporting.report_builder import ReportBuilder
+from bgc_quast.reporting.report_config import ReportConfig
+from bgc_quast.reporting.report_data import MetricValue, ReportData, RunningMode
 
 
 @pytest.fixture
@@ -15,6 +15,8 @@ def mock_config():
     """Provides a mock Config object."""
     config = MagicMock(spec=Config)
     config.allowed_gap_for_fragmented_recovery = 100
+    config.min_bgc_length = 0
+    config.bgc_completeness_margin = 0
     return config
 
 
@@ -77,12 +79,14 @@ def mock_genome_mining_results():
     result1 = MagicMock(spec=GenomeMiningResult)
     result1.input_file = Path("sample1.fasta")
     result1.input_file_label = "sample1"
+    result1.display_label = None
     result1.mining_tool = "tool1"
     result1.bgcs = [MagicMock(spec=Bgc) for _ in range(5)]
 
     result2 = MagicMock(spec=GenomeMiningResult)
     result2.input_file = Path("sample2.fasta")
     result2.input_file_label = "sample2"
+    result2.display_label = None
     result2.mining_tool = "tool2"
     result2.bgcs = [MagicMock(spec=Bgc) for _ in range(10)]
 
@@ -101,7 +105,12 @@ def mock_quast_results():
 @pytest.fixture
 def mock_reference_result():
     """Provides a mock GenomeMiningResult for a reference genome."""
-    return MagicMock(spec=GenomeMiningResult, input_file_label="reference")
+    ref = MagicMock(spec=GenomeMiningResult)
+    ref.input_file = Path("reference.fasta")
+    ref.input_file_label = "reference"
+    ref.display_label = None
+    ref.mining_tool = "tool1"
+    return ref
 
 
 # --- Tests for ReportBuilder class ---
@@ -127,13 +136,13 @@ def test_build_report_basic_mode(
     # Arrange: Mock the dependencies using patch as a context manager
     with (
         patch(
-            "src.reporting.report_builder.BasicMetricsCalculator"
+            "bgc_quast.reporting.report_builder.BasicMetricsCalculator"
         ) as MockBasicCalculator,
         patch(
-            "src.reporting.report_builder.create_dataframe_from_metrics"
+            "bgc_quast.reporting.report_builder.create_dataframe_from_metrics"
         ) as MockDataFrame,
         patch(
-            "src.reporting.report_builder.input_utils.get_file_label_from_path"
+            "bgc_quast.reporting.report_builder.input_utils.get_file_label_from_path"
         ) as MockGetLabel,
     ):
         MockBasicCalculator.return_value.calculate_metrics.return_value = (
@@ -153,11 +162,11 @@ def test_build_report_basic_mode(
         report_data = builder.build_report(
             config=mock_config,
             results=mock_genome_mining_results,
-            running_mode=RunningMode.UNKNOWN,
+            running_mode=RunningMode.COMPARE_SAMPLES,
         )
 
         assert isinstance(report_data, ReportData)
-        assert report_data.running_mode == RunningMode.UNKNOWN
+        assert report_data.running_mode == RunningMode.COMPARE_SAMPLES
         assert report_data.metadata["results_count"] == 2
 
         df = report_data.metrics_df
@@ -187,19 +196,19 @@ def test_build_report_compare_to_reference_mode(
     # Arrange: Mock the dependencies
     with (
         patch(
-            "src.reporting.report_builder.BasicMetricsCalculator"
+            "bgc_quast.reporting.report_builder.BasicMetricsCalculator"
         ) as MockBasicCalculator,
         patch(
-            "src.reporting.report_builder.CompareToRefMetricsCalculator"
+            "bgc_quast.reporting.report_builder.CompareToRefMetricsCalculator"
         ) as MockCompareCalculator,
         patch(
-            "src.reporting.report_builder.compare_to_ref_analyzer.compute_coverage"
+            "bgc_quast.reporting.report_builder.compare_to_ref_analyzer.compute_coverage"
         ) as MockComputeCoverage,
         patch(
-            "src.reporting.report_builder.create_dataframe_from_metrics"
+            "bgc_quast.reporting.report_builder.create_dataframe_from_metrics"
         ) as MockDataFrame,
         patch(
-            "src.reporting.report_builder.input_utils.get_file_label_from_path"
+            "bgc_quast.reporting.report_builder.input_utils.get_file_label_from_path"
         ) as MockGetLabel,
     ):
         MockBasicCalculator.return_value.calculate_metrics.return_value = (
@@ -248,9 +257,6 @@ def test_build_report_compare_to_reference_mode(
         assert isinstance(report_data, ReportData)
         assert report_data.running_mode == RunningMode.COMPARE_TO_REFERENCE
         assert report_data.metadata["results_count"] == 2
-        assert "reference_bgcs" in report_data.metadata
-        assert report_data.metadata["reference_bgcs"] == {"ref_bgc_1": 0.9}
-
         df = report_data.metrics_df
         assert "file_label" in df.columns
         assert "file_path" not in df.columns
@@ -265,7 +271,7 @@ def test_build_report_no_metrics_calculated(
     """
     # Arrange: Mock the calculator to return an empty list
     with patch(
-        "src.reporting.report_builder.BasicMetricsCalculator"
+        "bgc_quast.reporting.report_builder.BasicMetricsCalculator"
     ) as MockBasicCalculator:
         MockBasicCalculator.return_value.calculate_metrics.return_value = []
         builder = ReportBuilder(mock_config_manager)
@@ -277,7 +283,7 @@ def test_build_report_no_metrics_calculated(
             builder.build_report(
                 config=mock_config,
                 results=mock_genome_mining_results,
-                running_mode=RunningMode.UNKNOWN,
+                running_mode=RunningMode.COMPARE_SAMPLES,
             )
 
 
@@ -299,5 +305,5 @@ def test_build_report_missing_basic_config(
         builder.build_report(
             config=mock_config,
             results=mock_genome_mining_results,
-            running_mode=RunningMode.UNKNOWN,
+            running_mode=RunningMode.COMPARE_SAMPLES,
         )

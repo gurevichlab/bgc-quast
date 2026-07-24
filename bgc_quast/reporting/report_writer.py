@@ -3,9 +3,9 @@
 from pathlib import Path
 from typing import Optional
 
-from src.reporting.report_config import ReportConfigManager
-from src.reporting.report_data import ReportData
-from src.reporting.report_formatter import ReportFormatter
+from bgc_quast.reporting.report_config import ReportConfigManager
+from bgc_quast.reporting.report_data import ReportData
+from bgc_quast.reporting.report_formatter import ReportFormatter
 
 
 def write_report(

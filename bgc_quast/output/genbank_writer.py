@@ -5,8 +5,8 @@ from Bio import SeqIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from Bio.SeqRecord import SeqRecord
 
-from src.genome_mining_result import GenomeMiningResult
-from src.input_utils import open_file
+from bgc_quast.genome_mining_result import GenomeMiningResult
+from bgc_quast.input_utils import open_file
 
 
 class UnsupportedGenomeFormatError(Exception):

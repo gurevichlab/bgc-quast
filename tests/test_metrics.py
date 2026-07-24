@@ -1,6 +1,6 @@
 import pytest
-from src.genome_mining_result import Bgc
-from src.reporting.metrics import GROUPING_REGISTRY, METRIC_REGISTRY
+from bgc_quast.genome_mining_result import Bgc
+from bgc_quast.reporting.metrics import GROUPING_REGISTRY, METRIC_REGISTRY
 
 
 @pytest.fixture
@@ -64,7 +64,7 @@ def test_grouping_by_product_type(sample_bgcs):
     assert grouping_func(sample_bgcs[0]) == "NRP"
     assert grouping_func(sample_bgcs[1]) == "PKS"
     assert grouping_func(sample_bgcs[2]) == "Hybrid"
-    assert grouping_func(sample_bgcs[3]) == "Unknown product"
+    assert grouping_func(sample_bgcs[3]) == "Unknown"
 
 
 def test_invalid_grouping_key():

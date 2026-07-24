@@ -4,7 +4,7 @@ from typing import Literal
 import pytest
 
 # Relative imports from the file under test.
-from src.compare_to_ref_analyzer import (
+from bgc_quast.compare_to_ref_analyzer import (
     ReferenceBgc,
     Status,
     compute_coverage,
@@ -13,9 +13,9 @@ from src.compare_to_ref_analyzer import (
     get_asm_bgc_coords_on_ref,
     get_intersecting_bgcs_from_alignment,
 )
-from src.compare_to_ref_data import Intersection, RecoveryContiguity
+from bgc_quast.compare_to_ref_data import Intersection, RecoveryContiguity
 
-from src.genome_mining_result import AlignmentInfo, Bgc, GenomeMiningResult, QuastResult
+from bgc_quast.genome_mining_result import AlignmentInfo, Bgc, GenomeMiningResult, QuastResult
 
 # ====================== Helper Create Functions ======================
 

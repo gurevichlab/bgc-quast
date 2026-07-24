@@ -6,8 +6,8 @@ import pandas as pd
 import json
 import math
 import base64
-from src.reporting.report_config import ReportConfig
-from src.reporting.report_data import ReportData
+from bgc_quast.reporting.report_config import ReportConfig
+from bgc_quast.reporting.report_data import ReportData
 
 
 class DataFrameTableBuilder:

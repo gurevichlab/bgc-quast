@@ -41,7 +41,7 @@ class ReportConfigManager:
 
     def __init__(self):
         self.config_path = Path.joinpath(
-            Path(__file__).parent.parent.parent.resolve(),
+            Path(__file__).resolve().parent.parent,
             "configs",
             "report_config.yaml",
         )

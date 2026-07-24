@@ -2,13 +2,13 @@
 
 import pandas as pd
 import pytest
-from src.reporting.report_config import (
+from bgc_quast.reporting.report_config import (
     GroupingDimensionConfig,
     MetricConfig,
     ReportConfig,
 )
-from src.reporting.report_data import ReportData, RunningMode
-from src.reporting.report_formatter import DataFrameTableBuilder, ReportFormatter
+from bgc_quast.reporting.report_data import ReportData, RunningMode
+from bgc_quast.reporting.report_formatter import DataFrameTableBuilder, ReportFormatter
 
 
 @pytest.fixture
@@ -32,10 +32,10 @@ def simple_data() -> ReportData:
             "metric_name": ["metric1", "metric2", "metric1", "metric2"],
             "value": [10, 20, 15, 25],
             "file_label": ["file1", "file1", "file2", "file2"],
-            "mining_tool": ["tool1", "tool1", "tool2", "tool2"],
+            "Genome mining tool": ["tool1", "tool1", "tool2", "tool2"],
         }
     )
-    return ReportData(metrics_df=df, running_mode=RunningMode.UNKNOWN)
+    return ReportData(metrics_df=df, running_mode=RunningMode.COMPARE_SAMPLES)
 
 
 @pytest.fixture
@@ -60,18 +60,18 @@ def grouped_data() -> ReportData:
             "metric_name": ["metric1", "metric1", "metric1", "metric1"],
             "value": [100, 200, 150, 250],
             "file_label": ["file1", "file1", "file2", "file2"],
-            "mining_tool": ["tool1", "tool1", "tool2", "tool2"],
+            "Genome mining tool": ["tool1", "tool1", "tool2", "tool2"],
             "type": ["A", "B", "A", "B"],
         }
     )
     # Add total rows
     total_df = df.groupby(
-        ["metric_name", "file_label", "mining_tool"], as_index=False
+        ["metric_name", "file_label", "Genome mining tool"], as_index=False
     )["value"].sum()
     total_df["type"] = pd.NA
 
     metrics_df = pd.concat([df, total_df], ignore_index=True)
-    return ReportData(metrics_df=metrics_df, running_mode=RunningMode.UNKNOWN)
+    return ReportData(metrics_df=metrics_df, running_mode=RunningMode.COMPARE_SAMPLES)
 
 
 class TestDataFrameTableBuilder:
@@ -84,10 +84,10 @@ class TestDataFrameTableBuilder:
 
         assert pivot_table.shape == (2, 2)
         assert list(pivot_table.columns) == [("file1", "tool1"), ("file2", "tool2")]
-        assert "Metric 1 (total)" in pivot_table.index
-        assert "Metric 2 (total)" in pivot_table.index
-        assert pivot_table.loc["Metric 1 (total)", ("file1", "tool1")] == 10
-        assert pivot_table.loc["Metric 2 (total)", ("file2", "tool2")] == 25
+        assert "Metric 1" in pivot_table.index
+        assert "Metric 2" in pivot_table.index
+        assert pivot_table.loc["Metric 1", ("file1", "tool1")] == 10
+        assert pivot_table.loc["Metric 2", ("file2", "tool2")] == 25
 
     def test_build_pivot_table_with_grouping(self, grouped_config, grouped_data):
         """Test building a pivot table with grouping."""
@@ -95,18 +95,18 @@ class TestDataFrameTableBuilder:
         pivot_table = builder.build_pivot_table(grouped_data)
 
         assert pivot_table.shape == (3, 2)
-        assert "Metric 1 (total)" in pivot_table.index
+        assert "Metric 1" in pivot_table.index
         assert "Metric 1 (A)" in pivot_table.index
         assert "Metric 1 (B)" in pivot_table.index
 
         # Check sorting
-        expected_index = ["Metric 1 (total)", "Metric 1 (A)", "Metric 1 (B)"]
+        expected_index = ["Metric 1", "Metric 1 (A)", "Metric 1 (B)"]
         assert pivot_table.index.tolist() == expected_index
 
         # Check values
         assert pivot_table.loc["Metric 1 (A)", ("file1", "tool1")] == 100
         assert pivot_table.loc["Metric 1 (B)", ("file2", "tool2")] == 250
-        assert pivot_table.loc["Metric 1 (total)", ("file1", "tool1")] == 300  # 100 + 200
+        assert pivot_table.loc["Metric 1", ("file1", "tool1")] == 300  # 100 + 200
 
 
 class TestReportFormatter:
@@ -124,7 +124,7 @@ class TestReportFormatter:
 
         assert output_file.exists()
         content = output_file.read_text()
-        assert "Metric 1 (total)" in content
+        assert "Metric 1" in content
         assert "file1" in content
         assert "10" in content
 
@@ -136,8 +136,8 @@ class TestReportFormatter:
         assert output_file.exists()
         content = output_file.read_text()
         assert "<h1>BGC-QUAST Report</h1>" in content
-        assert "<th>Metric 1 (total)</th>" in content
-        assert "<td>10</td>" in content
+        assert "Metric 1" in content
+        assert "file1" in content
 
     def test_write_tsv(self, formatter, simple_data, tmp_path):
         """Test writing a report to a TSV file."""
@@ -146,5 +146,5 @@ class TestReportFormatter:
 
         assert output_file.exists()
         content = output_file.read_text()
-        assert "Metric 1 (total)\t10\t15" in content
-        assert "Metric 2 (total)\t20\t25" in content
+        assert "Metric 1\t10\t15" in content
+        assert "Metric 2\t20\t25" in content

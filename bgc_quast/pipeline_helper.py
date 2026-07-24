@@ -1,23 +1,23 @@
 from typing import List, Optional
 from pathlib import Path
 
-from src.version import get_version
-import src.input_utils as input_utils
-import src.reporting.report_writer as report_writer
-from src.config import load_config
-from src.genome_mining_parser import (
+from bgc_quast.version import get_version
+import bgc_quast.input_utils as input_utils
+import bgc_quast.reporting.report_writer as report_writer
+from bgc_quast.config import load_config
+from bgc_quast.genome_mining_parser import (
     GenomeMiningResult,
     QuastResult,
     parse_input_mining_result_files,
     parse_quast_output_dir,
     parse_reference_genome_mining_result,
 )
-from src.logger import Logger
-from src.option_parser import ValidationError, get_command_line_args
-from src.reporting.report_builder import ReportBuilder
-from src.reporting.report_config import ReportConfigManager
-from src.reporting.report_data import ReportData, RunningMode
-from src.output.genbank_writer import write_genbank, UnsupportedGenomeFormatError
+from bgc_quast.logger import Logger
+from bgc_quast.option_parser import ValidationError, get_command_line_args
+from bgc_quast.reporting.report_builder import ReportBuilder
+from bgc_quast.reporting.report_config import ReportConfigManager
+from bgc_quast.reporting.report_data import ReportData, RunningMode
+from bgc_quast.output.genbank_writer import write_genbank, UnsupportedGenomeFormatError
 
 
 class PipelineHelper:

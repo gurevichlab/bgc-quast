@@ -1,7 +1,7 @@
 from pathlib import Path
 import argparse
 from argparse import Namespace as CommandLineArgs
-from src.config import Config
+from bgc_quast.config import Config
 from io import StringIO
 import textwrap
 

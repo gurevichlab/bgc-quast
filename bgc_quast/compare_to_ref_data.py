@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
 
-from src.genome_mining_result import Bgc
+from bgc_quast.genome_mining_result import Bgc
 
 
 @dataclass

@@ -1,12 +1,13 @@
 from pathlib import Path
 
 import pytest
-from src.genome_mining_result import GenomeMiningResult
-from src.input_utils import (
+from bgc_quast.genome_mining_result import GenomeMiningResult
+from bgc_quast.input_utils import (
     determine_running_mode,
     get_file_label_from_path,
 )
-from src.reporting.report_data import RunningMode
+from bgc_quast.reporting.report_data import RunningMode
+from bgc_quast.option_parser import ValidationError
 
 SAMPLE_PATH_1 = Path("sample1.json")
 SAMPLE_PATH_2 = Path("sample2.json")
@@ -27,12 +28,12 @@ def test_determine_running_mode_compare_to_reference():
         ),
     ]
 
-    mode = determine_running_mode(reference_result, genome_results)
+    mode = determine_running_mode("auto", reference_result, genome_results)
     assert mode == RunningMode.COMPARE_TO_REFERENCE
 
 
 def test_determine_running_mode_different_labels_with_reference_unknown():
-    """Test running mode when a reference mining result is provided."""
+    """Test running mode when a reference mining result is provided but multiple tools conflict."""
     reference_result = GenomeMiningResult(
         input_file=REFERENCE_PATH, input_file_label="ref", mining_tool="tool1"
     )
@@ -41,12 +42,12 @@ def test_determine_running_mode_different_labels_with_reference_unknown():
             input_file=SAMPLE_PATH_1, input_file_label="sample1", mining_tool="tool1"
         ),
         GenomeMiningResult(
-            input_file=SAMPLE_PATH_2, input_file_label="sample2", mining_tool="tool1"
+            input_file=SAMPLE_PATH_2, input_file_label="sample2", mining_tool="tool2"
         ),
     ]
 
-    mode = determine_running_mode(reference_result, genome_results)
-    assert mode == RunningMode.UNKNOWN
+    with pytest.raises(ValidationError):
+        determine_running_mode("auto", reference_result, genome_results)
 
 
 def test_determine_running_mode_one_genome_result_compare_samples():
@@ -57,7 +58,7 @@ def test_determine_running_mode_one_genome_result_compare_samples():
         ),
     ]
 
-    mode = determine_running_mode(None, genome_results)
+    mode = determine_running_mode("auto", None, genome_results)
     assert mode == RunningMode.COMPARE_SAMPLES
 
 
@@ -72,7 +73,7 @@ def test_determine_running_mode_compare_tools():
         ),
     ]
 
-    mode = determine_running_mode(None, genome_results)
+    mode = determine_running_mode("auto", None, genome_results)
     assert mode == RunningMode.COMPARE_TOOLS
 
 
@@ -87,7 +88,7 @@ def test_determine_running_mode_compare_samples():
         ),
     ]
 
-    mode = determine_running_mode(None, genome_results)
+    mode = determine_running_mode("auto", None, genome_results)
     assert mode == RunningMode.COMPARE_SAMPLES
 
 
@@ -102,8 +103,8 @@ def test_determine_running_mode_different_labels_and_tools_unknown():
         ),
     ]
 
-    mode = determine_running_mode(None, genome_results)
-    assert mode == RunningMode.UNKNOWN
+    with pytest.raises(ValidationError):
+        determine_running_mode("auto", None, genome_results)
 
 
 @pytest.mark.parametrize(

@@ -3,11 +3,11 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Callable, Sequence
 
-from src.compare_to_ref_data import ReferenceBgc
-from src.genome_mining_result import Bgc, GenomeMiningResult
-from src.reporting.metrics import GROUPING_REGISTRY, METRIC_REGISTRY
-from src.reporting.report_config import ReportConfig
-from src.reporting.report_data import MetricValue
+from bgc_quast.compare_to_ref_data import ReferenceBgc
+from bgc_quast.genome_mining_result import Bgc, GenomeMiningResult
+from bgc_quast.reporting.metrics import GROUPING_REGISTRY, METRIC_REGISTRY
+from bgc_quast.reporting.report_config import ReportConfig
+from bgc_quast.reporting.report_data import MetricValue
 
 
 class MetricsCalculator(ABC):

@@ -3,7 +3,7 @@
 from unittest.mock import mock_open, patch
 
 import pytest
-from src.reporting.report_config import (
+from bgc_quast.reporting.report_config import (
     GroupingDimensionConfig,
     MetricConfig,
     ReportConfig,
