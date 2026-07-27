@@ -209,6 +209,42 @@ class PipelineHelper:
                 self.assembly_genome_mining_results,
                 log=self.log,
             )
+
+            genome_count = len(self.args.genome_data or [])
+            mining_result_count = len(self.assembly_genome_mining_results)
+
+            if (
+                    self.running_mode == RunningMode.COMPARE_TOOLS
+                    and genome_count > 1
+            ):
+                raise ValidationError(
+                    "Compare-tools mode accepts at most one genome file because all "
+                    "genome mining results must describe the same genome, but "
+                    f"{genome_count} genomes were provided. "
+                    "Provide no genome or exactly one genome using -G/--genome."
+                )
+
+            if (
+                    self.running_mode
+                    in {
+                RunningMode.COMPARE_SAMPLES,
+                RunningMode.COMPARE_TO_REFERENCE,
+            }
+                    and genome_count not in {0, mining_result_count}
+            ):
+                mode_name = (
+                    "compare-samples"
+                    if self.running_mode == RunningMode.COMPARE_SAMPLES
+                    else "compare-to-reference"
+                )
+
+                raise ValidationError(
+                    f"--mode {mode_name} requires either no assembly genome files "
+                    f"or exactly one -G/--genome file per input genome mining result. "
+                    f"Received {mining_result_count} genome mining result files and "
+                    f"{genome_count} genome files."
+                )
+
             self.label_renaming_log = input_utils.assign_and_deduplicate_display_labels(
                 assembly_results=self.assembly_genome_mining_results,
                 reference_result=self.reference_genome_mining_result,
@@ -275,10 +311,6 @@ class PipelineHelper:
             if self.running_mode == RunningMode.COMPARE_TOOLS:
                 if not self.args.genome_data:
                     self.log.warning("Cannot create GenBank file with BGC annotations since no input genome was provided")
-                elif len(self.args.genome_data) > 1:
-                    raise ValidationError("--mode compare-tools requires all genome mining tools "
-                                          "to be run on the same genome input. "
-                                          "More than one genome is provided via --genome")
                 else:
                     bgc_annotations_gbk_output_path = (self.config.output_config.output_dir /
                                                        ".".join([

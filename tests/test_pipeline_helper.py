@@ -318,3 +318,232 @@ def test_parse_input_passes_names_as_matching_aliases(pipeline_helper):
             pipeline_helper.args.genome_data,
             matching_aliases=["assembly_1", "assembly_2"],
         )
+
+
+def test_parse_input_rejects_multiple_genomes_in_compare_tools(pipeline_helper):
+    """Compare-tools mode must accept at most one genome."""
+    pipeline_helper.args.genome_data = [
+        Path("genome_1.fasta"),
+        Path("genome_2.fasta"),
+    ]
+    pipeline_helper.args.mode = "compare-tools"
+    pipeline_helper.args.names = None
+    pipeline_helper.args.ref_name = None
+
+    error_message = (
+        "Compare-tools mode accepts at most one genome file because all "
+        "genome mining results must describe the same genome, but "
+        "2 genomes were provided. "
+        "Provide no genome or exactly one genome using -G/--genome."
+    )
+
+    with (
+        patch(
+            "bgc_quast.pipeline_helper.parse_input_mining_result_files"
+        ) as mock_parse,
+        patch(
+            "bgc_quast.pipeline_helper.input_utils.determine_running_mode"
+        ) as mock_mode,
+    ):
+        mock_parse.return_value = [
+            create_mock_genome_mining_result(),
+            create_mock_genome_mining_result(),
+        ]
+        mock_mode.return_value = RunningMode.COMPARE_TOOLS
+
+        with pytest.raises(
+            ValidationError,
+            match="Compare-tools mode accepts at most one genome file",
+        ):
+            pipeline_helper.parse_input()
+
+    pipeline_helper.log.error.assert_called_with(error_message)
+
+def test_parse_input_allows_multiple_genomes_in_compare_samples(pipeline_helper):
+    """Compare-samples mode may use multiple genome files."""
+    pipeline_helper.args.mining_results = [
+        Path("sample_1.json"),
+        Path("sample_2.json"),
+    ]
+    pipeline_helper.args.genome_data = [
+        Path("genome_1.fasta"),
+        Path("genome_2.fasta"),
+    ]
+    pipeline_helper.args.mode = "compare-samples"
+    pipeline_helper.args.names = None
+    pipeline_helper.args.ref_name = None
+
+    with (
+        patch(
+            "bgc_quast.pipeline_helper.parse_input_mining_result_files"
+        ) as mock_parse,
+        patch(
+            "bgc_quast.pipeline_helper.input_utils.determine_running_mode"
+        ) as mock_mode,
+    ):
+        mock_parse.return_value = [
+            create_mock_genome_mining_result(
+                input_file="sample_1.json",
+                input_file_label="sample_1",
+            ),
+            create_mock_genome_mining_result(
+                input_file="sample_2.json",
+                input_file_label="sample_2",
+            ),
+        ]
+        mock_mode.return_value = RunningMode.COMPARE_SAMPLES
+
+        pipeline_helper.parse_input()
+
+    assert pipeline_helper.running_mode == RunningMode.COMPARE_SAMPLES
+
+def test_parse_input_allows_multiple_genomes_in_compare_to_reference(
+    pipeline_helper,
+):
+    """Compare-to-reference mode may use multiple assembly genomes."""
+    pipeline_helper.args.mining_results = [
+        Path("assembly_1.json"),
+        Path("assembly_2.json"),
+    ]
+    pipeline_helper.args.genome_data = [
+        Path("genome_1.fasta"),
+        Path("genome_2.fasta"),
+    ]
+    pipeline_helper.args.reference_mining_result = Path("reference.json")
+    pipeline_helper.args.quast_output_dir = QUAST_OUTPUT_DIR
+    pipeline_helper.args.mode = "compare-to-reference"
+    pipeline_helper.args.names = None
+    pipeline_helper.args.ref_name = None
+
+    with (
+        patch(
+            "bgc_quast.pipeline_helper.parse_input_mining_result_files"
+        ) as mock_parse,
+        patch(
+            "bgc_quast.pipeline_helper.parse_quast_output_dir"
+        ) as mock_quast_parse,
+        patch(
+            "bgc_quast.pipeline_helper.parse_reference_genome_mining_result"
+        ) as mock_reference_parse,
+        patch(
+            "bgc_quast.pipeline_helper.input_utils.determine_running_mode"
+        ) as mock_mode,
+    ):
+        mock_parse.return_value = [
+            create_mock_genome_mining_result(
+                input_file="assembly_1.json",
+                input_file_label="assembly_1",
+            ),
+            create_mock_genome_mining_result(
+                input_file="assembly_2.json",
+                input_file_label="assembly_2",
+            ),
+        ]
+        mock_quast_parse.return_value = []
+        mock_reference_parse.return_value = create_mock_genome_mining_result(
+            input_file="reference.json",
+            input_file_label="reference",
+        )
+        mock_mode.return_value = RunningMode.COMPARE_TO_REFERENCE
+
+        pipeline_helper.parse_input()
+
+    assert pipeline_helper.running_mode == RunningMode.COMPARE_TO_REFERENCE
+
+
+def test_parse_input_rejects_incomplete_genomes_in_compare_samples(
+    pipeline_helper,
+):
+    """Compare-samples requires one genome per result when genomes are given."""
+    pipeline_helper.args.mining_results = [
+        Path("sample_1.json"),
+        Path("sample_2.json"),
+    ]
+    pipeline_helper.args.genome_data = [Path("genome_1.fasta")]
+    pipeline_helper.args.mode = "compare-samples"
+    pipeline_helper.args.names = None
+    pipeline_helper.args.ref_name = None
+
+    error_message = (
+        "--mode compare-samples requires either no assembly genome files "
+        "or exactly one -G/--genome file per input genome mining result. "
+        "Received 2 genome mining result files and 1 genome files."
+    )
+
+    with (
+        patch(
+            "bgc_quast.pipeline_helper.parse_input_mining_result_files"
+        ) as mock_parse,
+        patch(
+            "bgc_quast.pipeline_helper.input_utils.determine_running_mode"
+        ) as mock_mode,
+    ):
+        mock_parse.return_value = [
+            create_mock_genome_mining_result(),
+            create_mock_genome_mining_result(),
+        ]
+        mock_mode.return_value = RunningMode.COMPARE_SAMPLES
+
+        with pytest.raises(
+            ValidationError,
+            match="requires either no assembly genome files",
+        ):
+            pipeline_helper.parse_input()
+
+    pipeline_helper.log.error.assert_called_with(error_message)
+
+def test_parse_input_rejects_incomplete_genomes_in_compare_to_reference(
+    pipeline_helper,
+):
+    """Reference mode requires one assembly genome per result when provided."""
+    pipeline_helper.args.mining_results = [
+        Path("assembly_1.json"),
+        Path("assembly_2.json"),
+    ]
+    pipeline_helper.args.genome_data = [Path("genome_1.fasta")]
+    pipeline_helper.args.reference_mining_result = Path("reference.json")
+    pipeline_helper.args.quast_output_dir = QUAST_OUTPUT_DIR
+    pipeline_helper.args.mode = "compare-to-reference"
+    pipeline_helper.args.names = None
+    pipeline_helper.args.ref_name = None
+
+    error_message = (
+        "--mode compare-to-reference requires either no assembly genome files "
+        "or exactly one -G/--genome file per input genome mining result. "
+        "Received 2 genome mining result files and 1 genome files."
+    )
+
+    with (
+        patch(
+            "bgc_quast.pipeline_helper.parse_input_mining_result_files"
+        ) as mock_parse,
+        patch(
+            "bgc_quast.pipeline_helper.parse_quast_output_dir"
+        ) as mock_quast_parse,
+        patch(
+            "bgc_quast.pipeline_helper.parse_reference_genome_mining_result"
+        ) as mock_reference_parse,
+        patch(
+            "bgc_quast.pipeline_helper.input_utils.determine_running_mode"
+        ) as mock_mode,
+    ):
+        mock_parse.return_value = [
+            create_mock_genome_mining_result(),
+            create_mock_genome_mining_result(),
+        ]
+        mock_quast_parse.return_value = []
+        mock_reference_parse.return_value = (
+            create_mock_genome_mining_result(
+                input_file="reference.json",
+                input_file_label="reference",
+            )
+        )
+        mock_mode.return_value = RunningMode.COMPARE_TO_REFERENCE
+
+        with pytest.raises(
+            ValidationError,
+            match="requires either no assembly genome files",
+        ):
+            pipeline_helper.parse_input()
+
+    pipeline_helper.log.error.assert_called_with(error_message)
