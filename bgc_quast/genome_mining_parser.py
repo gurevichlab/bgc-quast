@@ -364,6 +364,7 @@ def parse_input_mining_result_files(
     config: Config,
     file_paths: List[Path],
     genome_data: Optional[List[Path]] = None,
+    matching_aliases: Optional[List[str]] = None,
 ) -> List[GenomeMiningResult]:
     """
     Parse input files by trying different parsers.
@@ -373,6 +374,8 @@ def parse_input_mining_result_files(
         config: Config
         file_paths: List of input file paths
         genome_data: Optional genome data for sequence completeness estimation
+        matching_aliases: Optional positional aliases used as fallback labels
+                        when matching mining results to genome files
 
     Returns:
         A list of GenomeMiningResult objects
@@ -396,13 +399,23 @@ def parse_input_mining_result_files(
 
     results = []
 
-    for file_path in file_paths:
+    for file_index, file_path in enumerate(file_paths):
         if not file_path.exists():
             raise InvalidInputException(f"Input file does not exist: {file_path}")
 
+        matching_alias = (
+            matching_aliases[file_index]
+            if matching_aliases is not None
+            else None
+        )
         # Get sequence length map for the current file.
         try:
-            seq_data_map = get_seq_data_map(genome_seq_data_maps, file_path, log)
+            seq_data_map = get_seq_data_map(
+                genome_seq_data_maps,
+                file_path,
+                log,
+                matching_alias=matching_alias,
+            )
         except Exception as e:
             log.warning(
                 f"Failed to get sequence length map for {file_path}  -- BGC"
@@ -465,7 +478,10 @@ def parse_input_mining_result_files(
 
 
 def get_seq_data_map(
-    genome_seq_data_maps: Dict[str, Dict[str, ContigData]], file_path: Path, log: Optional[Logger] = None
+    genome_seq_data_maps: Dict[str, Dict[str, ContigData]],
+    file_path: Path,
+    log: Optional[Logger] = None,
+    matching_alias: Optional[str] = None,
 ) -> Optional[Dict[str, ContigData]]:
     """
     Get sequence length map for a given file path.
@@ -475,6 +491,8 @@ def get_seq_data_map(
         name to sequence length
         file_path: Path to the input file
         log: Logger
+        matching_alias: Optional positional aliases used as fallback labels
+                        when matching mining results to genome files
 
     Returns:
         Sequence length map for the given file path, or None if not found
@@ -490,16 +508,45 @@ def get_seq_data_map(
         label = get_file_label_from_path(file_path)
         seq_data_map = genome_seq_data_maps.get(label)
 
+        # If the original filename label did not match, try the corresponding
+        # positional alias supplied through --names.
+        if seq_data_map is None and matching_alias is not None:
+            seq_data_map = genome_seq_data_maps.get(matching_alias)
+
+            if seq_data_map is not None and log is not None:
+                log.info(
+                    f"Matched genome mining result '{file_path}' to genome label "
+                    f"'{matching_alias}' using its --names alias."
+                )
+
         if seq_data_map is None:
             if len(genome_seq_data_maps) == 1:
                 only_label, only_map = next(iter(genome_seq_data_maps.items()))
                 if log is not None:
                     log.warning(
-                        f"Could not match input file '{file_path}' to genome label '{only_label}' "
-                        f"(quite common e.g., for DeepBGC genome mining results). "
-                        f"Since only one genome was provided, using it as fallback (forced matching)."
+                        f"Could not match input file '{file_path}' to genome label "
+                        f"'{only_label}' (quite common e.g., for DeepBGC genome "
+                        f"mining results). Since only one genome was provided, "
+                        f"using it as fallback (forced matching)."
                     )
                 seq_data_map = only_map
+            elif log is not None:
+                attempted_labels = f"'{label}'"
+                if matching_alias is not None:
+                    attempted_labels += f" and --names alias '{matching_alias}'"
+
+                available_labels = ", ".join(
+                    f"'{genome_label}'"
+                    for genome_label in sorted(genome_seq_data_maps)
+                )
+
+                log.warning(
+                    f"Could not associate genome mining result '{file_path}' with "
+                    f"any provided genome file. Tried labels {attempted_labels}. "
+                    f"Available genome labels: {available_labels}. "
+                    f"Genome-dependent metrics will not be calculated correctly "
+                    f"for this input and may appear as zero in the report."
+                )
 
     # If genome_seq_data_maps is None, try to get the sequence length map from the file
     # directly.

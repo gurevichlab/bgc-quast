@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 from bgc_quast.config import Config, load_config
@@ -386,6 +387,72 @@ def test_get_seq_data_map_with_genome_seq_data_maps(tmp_path):
     result = get_seq_data_map(genome_seq_data_maps, dummy_file)
     assert result["contig"].seq_len == 123  # type: ignore
 
+def test_get_seq_data_map_prefers_original_label_over_alias(tmp_path):
+    """The original mining-result basename must have priority over --names."""
+    original_map = {"contig": ContigData(seq_len=111)}
+    alias_map = {"contig": ContigData(seq_len=222)}
+
+    mining_file = tmp_path / "assembly1.json"
+    mining_file.write_text("{}")
+
+    result = get_seq_data_map(
+        {
+            "assembly1": original_map,
+            "a1": alias_map,
+        },
+        mining_file,
+        matching_alias="a1",
+    )
+
+    assert result is original_map
+
+
+def test_get_seq_data_map_uses_names_alias_as_fallback(tmp_path):
+    """Use the corresponding --names value when the original label does not match."""
+    alias_map = {"contig": ContigData(seq_len=123)}
+    log = MagicMock(spec=Logger)
+
+    mining_file = tmp_path / "DeepBGC.bgc.tsv"
+    mining_file.write_text("")
+
+    result = get_seq_data_map(
+        {"assembly1": alias_map},
+        mining_file,
+        log=log,
+        matching_alias="assembly1",
+    )
+
+    assert result is alias_map
+    log.info.assert_called_once()
+    assert "--names alias" in log.info.call_args.args[0]
+
+
+def test_get_seq_data_map_warns_when_multiple_genomes_do_not_match(tmp_path):
+    """Warn when neither the original label nor --names matches a genome."""
+    log = MagicMock(spec=Logger)
+
+    mining_file = tmp_path / "DeepBGC.bgc.tsv"
+    mining_file.write_text("")
+
+    result = get_seq_data_map(
+        {
+            "assembly1": {"contig1": ContigData(seq_len=100)},
+            "assembly2": {"contig2": ContigData(seq_len=200)},
+        },
+        mining_file,
+        log=log,
+        matching_alias="wrong_name",
+    )
+
+    assert result is None
+    log.warning.assert_called_once()
+
+    warning_message = log.warning.call_args.args[0]
+    assert "Could not associate genome mining result" in warning_message
+    assert "DeepBGC" in warning_message
+    assert "wrong_name" in warning_message
+    assert "assembly1" in warning_message
+    assert "assembly2" in warning_message
 
 def test_get_seq_data_map_fallback_to_mining_result(tmp_path):
     dummy_file = tmp_path / "foo.json"

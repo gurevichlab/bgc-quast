@@ -145,10 +145,30 @@ class PipelineHelper:
             self.log.error(f"{str(e)}")
             raise e
 
+        # Parse --names early so that they can also be used as positional
+        # fallback aliases when associating mining results with genome files.
+        matching_aliases = input_utils.parse_names_arg(self.args.names)
+
+        if (
+                matching_aliases is not None
+                and len(matching_aliases) != len(self.args.mining_results)
+        ):
+            error_message = (
+                f"--names must contain exactly {len(self.args.mining_results)} name(s) "
+                f"to match the number of input genome mining result files, "
+                f"but got {len(matching_aliases)}."
+            )
+            self.log.error(error_message)
+            raise ValidationError(error_message)
+
         # Parse genome mining results.
         try:
             self.assembly_genome_mining_results = parse_input_mining_result_files(
-                self.log, self.config, self.args.mining_results, self.args.genome_data
+                self.log,
+                self.config,
+                self.args.mining_results,
+                self.args.genome_data,
+                matching_aliases=matching_aliases,
             )
         except Exception as e:
             self.log.error(f"Failed to parse genome mining results: {str(e)}")

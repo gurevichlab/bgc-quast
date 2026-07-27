@@ -98,7 +98,11 @@ def test_parse_input_valid_input(pipeline_helper):
 
         assert len(pipeline_helper.assembly_genome_mining_results) == 1
         mock_parse.assert_called_with(
-            pipeline_helper.log, pipeline_helper.config, [DUMMY_ANTISMASH_FILE], None
+            pipeline_helper.log,
+            pipeline_helper.config,
+            [DUMMY_ANTISMASH_FILE],
+            None,
+            matching_aliases=None,
         )
 
 
@@ -250,6 +254,7 @@ def test_parse_input_with_genome_data(pipeline_helper):
             pipeline_helper.config,
             [DUMMY_ANTISMASH_FILE],
             pipeline_helper.args.genome_data,
+            matching_aliases=None,
         )
 
 
@@ -276,4 +281,38 @@ def test_parse_input_with_reference_genome_data(pipeline_helper):
             pipeline_helper.config,
             DUMMY_ANTISMASH_FILE,
             pipeline_helper.args.reference_genome_data,
+        )
+
+def test_parse_input_passes_names_as_matching_aliases(pipeline_helper):
+    """Test that --names values are passed as genome-matching aliases."""
+    mining_results = [
+        Path("sample1/DeepBGC/DeepBGC.bgc.tsv"),
+        Path("sample2/DeepBGC/DeepBGC.bgc.tsv"),
+    ]
+
+    pipeline_helper.args.mining_results = mining_results
+    pipeline_helper.args.names = "assembly_1,assembly_2"
+
+    with (
+        patch(
+            "bgc_quast.pipeline_helper.parse_input_mining_result_files"
+        ) as mock_parse,
+        patch(
+            "bgc_quast.pipeline_helper.input_utils.determine_running_mode"
+        ) as mock_mode,
+    ):
+        mock_parse.return_value = [
+            create_mock_genome_mining_result(),
+            create_mock_genome_mining_result(),
+        ]
+        mock_mode.return_value = RunningMode.COMPARE_SAMPLES
+
+        pipeline_helper.parse_input()
+
+        mock_parse.assert_called_with(
+            pipeline_helper.log,
+            pipeline_helper.config,
+            mining_results,
+            pipeline_helper.args.genome_data,
+            matching_aliases=["assembly_1", "assembly_2"],
         )
