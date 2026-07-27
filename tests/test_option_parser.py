@@ -15,7 +15,7 @@ def test_parse_single_genome_argument(parser):
     args = parser.parse_args(
         [
             "result.json",
-            "-g",
+            "-G",
             "genome.fasta",
         ]
     )
@@ -29,9 +29,9 @@ def test_parse_repeated_genome_arguments(parser):
         [
             "result_1.json",
             "result_2.json",
-            "-g",
+            "-G",
             "genome_1.fasta",
-            "-g",
+            "-G",
             "genome_2.gbff",
         ]
     )

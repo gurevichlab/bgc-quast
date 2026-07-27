@@ -94,11 +94,11 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
 
     basic.add_argument(
         "--genome",
-        "-g",
+        "-G",
         help=(
             "Path to a genome FASTA or GenBank file. "
             "Repeat this option for multiple genomes, for example: "
-            "-g genome_1.fasta -g genome_2.fasta."
+            "-G genome_1.fasta -G genome_2.fasta."
         ),
         metavar="FILE",
         action="append",
