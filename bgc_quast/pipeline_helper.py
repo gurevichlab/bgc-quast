@@ -213,6 +213,28 @@ class PipelineHelper:
                 names_arg=self.args.names,
                 ref_name=self.args.ref_name,
             )
+            if matching_aliases is not None:
+                renamed_results = [
+                    (result, requested_name)
+                    for result, requested_name in zip(
+                        self.assembly_genome_mining_results,
+                        matching_aliases,
+                    )
+                    if requested_name != result.input_file_label
+                ]
+
+                if renamed_results:
+                    self.log.info(
+                        "Using custom report labels provided through --names. "
+                        "Original input labels remain unchanged for primary file matching:"
+                    )
+
+                    for result, requested_name in renamed_results:
+                        self.log.info(
+                            f"{result.input_file}: "
+                            f"'{result.input_file_label}' ===> '{result.display_label}'",
+                            indent=1,
+                        )
         except ValidationError as e:
             # Log the specific message from determine_running_mode, then re-raise.
             self.log.error(str(e))
