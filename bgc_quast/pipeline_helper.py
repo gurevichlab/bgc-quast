@@ -51,6 +51,7 @@ class PipelineHelper:
         self.running_mode: Optional[RunningMode] = None
         self.analysis_report: Optional[ReportData] = None
         self.label_renaming_log: List[dict] = []
+        self.matching_aliases: Optional[List[str]] = None
 
         default_cfg = load_config()
         try:
@@ -148,6 +149,7 @@ class PipelineHelper:
         # Parse --names early so that they can also be used as positional
         # fallback aliases when associating mining results with genome files.
         matching_aliases = input_utils.parse_names_arg(self.args.names)
+        self.matching_aliases = matching_aliases
 
         if (
                 matching_aliases is not None
@@ -255,6 +257,8 @@ class PipelineHelper:
             reference_genome_mining_result=self.reference_genome_mining_result,
             label_renaming_log=getattr(self, "label_renaming_log", []),
             requested_mode=self.args.mode,
+            matching_aliases=self.matching_aliases,
+            log=self.log,
         )
 
         self.analysis_report = analysis_report

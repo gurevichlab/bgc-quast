@@ -1,3 +1,6 @@
+from typing import Optional
+from bgc_quast.logger import Logger
+
 from bgc_quast.compare_to_ref_data import (
     Intersection,
     RecoveryContiguity,
@@ -6,55 +9,157 @@ from bgc_quast.compare_to_ref_data import (
 )
 from bgc_quast.genome_mining_result import AlignmentInfo, Bgc, GenomeMiningResult, QuastResult
 
+INPUT_NAMING_DOCS_URL = (
+    "https://github.com/gurevichlab/bgc-quast/blob/main/README.md"
+)
 
 def compute_coverage(
     genome_mining_results: list[GenomeMiningResult],
     reference_genome_mining_result: GenomeMiningResult,
     quast_results: list[QuastResult],
     allowed_gap: int,
+    matching_aliases: Optional[list[str]] = None,
+    log: Optional[Logger] = None,
 ) -> list[tuple[GenomeMiningResult, list[ReferenceBgc]]]:
     """
     Compute reference BGC coverage for mining results.
 
-    Match genome mining results with QUAST results by input_file_label.
-    Each genome mining result should have a corresponding QUAST result.
-    Process each pair independently to calculate reference coverage.
+    QUAST results are matched first by the original input_file_label.
+    If that fails, the corresponding positional --names value is used
+    as a fallback alias.
 
-    Args:
-        genome_mining_results (list): List of genome mining results.
-        reference_genome_mining_result (GenomeMiningResult): Reference genome mining
-        result.
-        quast_results (list): Parsed QUAST results.
-        allowed_gap (int): Allowed gap for fragmented recovery.
-
-    Returns:
-        list[tuple[Path, list[ReferenceBgc]]]: List of tuples mapping input genome mining results to ReferenceBgc
-        objects with computed statistics.
+    Each QUAST result can be associated with only one mining result.
     """
-    labels = [r.input_file_label for r in genome_mining_results]
-    dups = sorted({x for x in labels if labels.count(x) > 1})
-    if dups:
+    if (
+        matching_aliases is not None
+        and len(matching_aliases) != len(genome_mining_results)
+    ):
         raise ValueError(
-            "Duplicate assembly file labels detected in the compare-to-reference mode. "
-            "QUAST pairing relies on input_file_label and requires uniqueness. "
-            f"Duplicate labels: {', '.join(dups)}"
+            "The number of QUAST matching aliases does not match the number "
+            "of genome mining results."
         )
+
+    quast_results_by_label: dict[str, QuastResult] = {}
+    duplicate_quast_labels = set()
+
+    for quast_result in quast_results:
+        label = quast_result.input_file_label
+
+        if label in quast_results_by_label:
+            duplicate_quast_labels.add(label)
+        else:
+            quast_results_by_label[label] = quast_result
+
+    if duplicate_quast_labels:
+        duplicate_files = ", ".join(
+            f"{label}.coords" for label in sorted(duplicate_quast_labels)
+        )
+        raise ValueError(
+            "Duplicate QUAST file labels were detected after filename "
+            f"normalization: {duplicate_files}. QUAST .coords files must "
+            "have unique basenames."
+        )
+
+    used_quast_labels: set[str] = set()
     ref_bgc_coverage = []
 
-    for genome_mining_result in genome_mining_results:
-        corresponding_quast_result = next(
-            (
-                quast
-                for quast in quast_results
-                if quast.input_file_label == genome_mining_result.input_file_label
-            ),
-            None,
+    for result_index, genome_mining_result in enumerate(genome_mining_results):
+        original_label = genome_mining_result.input_file_label
+        matching_alias = (
+            matching_aliases[result_index]
+            if matching_aliases is not None
+            else None
         )
-        if not corresponding_quast_result:
+
+        corresponding_quast_result = None
+        matched_by_alias = False
+
+        # Primary match: original filename-derived label.
+        original_quast_result = quast_results_by_label.get(original_label)
+        if (
+            original_quast_result is not None
+            and original_label not in used_quast_labels
+        ):
+            corresponding_quast_result = original_quast_result
+
+        # Fallback match: positional value supplied through --names.
+        if (
+            corresponding_quast_result is None
+            and matching_alias is not None
+            and matching_alias != original_label
+        ):
+            alias_quast_result = quast_results_by_label.get(matching_alias)
+
+            if (
+                alias_quast_result is not None
+                and matching_alias not in used_quast_labels
+            ):
+                corresponding_quast_result = alias_quast_result
+                matched_by_alias = True
+
+        if corresponding_quast_result is None:
+            attempted_labels = f"original label '{original_label}'"
+
+            if matching_alias is not None and matching_alias != original_label:
+                attempted_labels += (
+                    f" and --names alias '{matching_alias}'"
+                )
+
+            mining_result_details = []
+            for index, result in enumerate(genome_mining_results):
+                alias = (
+                    matching_aliases[index]
+                    if matching_aliases is not None
+                    else None
+                )
+                alias_text = (
+                    f", --names alias '{alias}'"
+                    if alias is not None
+                    else ""
+                )
+                mining_result_details.append(
+                    f"  - {result.input_file} "
+                    f"(original label '{result.input_file_label}'"
+                    f"{alias_text})"
+                )
+
+            quast_file_details = [
+                f"  - {label}.coords"
+                for label in sorted(quast_results_by_label)
+            ]
+
             raise ValueError(
-                f"No QUAST result found for genome mining result: "
-                f"{genome_mining_result.input_file_label}"
+                f"No QUAST result could be associated with genome mining "
+                f"result '{genome_mining_result.input_file}'.\n\n"
+                f"Tried {attempted_labels}.\n\n"
+                f"Genome mining results:\n"
+                f"{chr(10).join(mining_result_details)}\n\n"
+                f"QUAST .coords files found:\n"
+                f"{chr(10).join(quast_file_details)}\n\n"
+                f"BGC-QUAST first pairs files by their original basenames and then "
+                f"uses the corresponding positional --names value as a fallback. "
+                f"Each QUAST .coords file can be paired only once.\n\n"
+                f"To fix this, rerun BGC-QUAST with one --names value per genome "
+                f"mining result, in the same order as the input files. Each value "
+                f"must match the basename of the corresponding QUAST .coords file, "
+                f"without the .coords extension. For example:\n"
+                f"  --names assembly_10,assembly_20\n\n"
+                f"If the files cannot be associated this way, rerun QUAST using "
+                f"assembly filenames compatible with the genome mining result files. "
+                f"See the BGC-QUAST input-naming documentation: {INPUT_NAMING_DOCS_URL}"
             )
+
+        used_quast_labels.add(corresponding_quast_result.input_file_label)
+
+        if matched_by_alias and log is not None:
+            log.info(
+                f"Matched genome mining result "
+                f"'{genome_mining_result.input_file}' to QUAST file "
+                f"'{matching_alias}.coords' using its --names alias, because "
+                f"the original input label '{original_label}' did not match "
+                f"an available QUAST result."
+            )
+
         ref_bgc_coverage.append(
             (
                 genome_mining_result,

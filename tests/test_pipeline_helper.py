@@ -211,6 +211,8 @@ def test_compute_stats_creates_analysis_report(pipeline_helper):
             reference_genome_mining_result=None,
             label_renaming_log=[],
             requested_mode=pipeline_helper.args.mode,
+            matching_aliases=None,
+            log=pipeline_helper.log,
         )
         assert pipeline_helper.analysis_report == mock_report
 
