@@ -398,6 +398,7 @@ def parse_input_mining_result_files(
     }
 
     results = []
+    available_genome_seq_data_maps = genome_seq_data_maps.copy()
 
     for file_index, file_path in enumerate(file_paths):
         if not file_path.exists():
@@ -411,11 +412,27 @@ def parse_input_mining_result_files(
         # Get sequence length map for the current file.
         try:
             seq_data_map = get_seq_data_map(
-                genome_seq_data_maps,
+                available_genome_seq_data_maps,
                 file_path,
                 log,
                 matching_alias=matching_alias,
+                allow_single_genome_fallback=len(genome_seq_data_maps) == 1,
             )
+
+            # In multi-genome modes, each provided genome may be associated only once.
+            if len(genome_seq_data_maps) > 1 and seq_data_map is not None:
+                matched_genome_label = next(
+                    (
+                        label
+                        for label, genome_map in available_genome_seq_data_maps.items()
+                        if genome_map is seq_data_map
+                    ),
+                    None,
+                )
+
+                if matched_genome_label is not None:
+                    available_genome_seq_data_maps.pop(matched_genome_label)
+
         except Exception as e:
             log.warning(
                 f"Failed to get sequence length map for {file_path}  -- BGC"
@@ -482,6 +499,7 @@ def get_seq_data_map(
     file_path: Path,
     log: Optional[Logger] = None,
     matching_alias: Optional[str] = None,
+    allow_single_genome_fallback: bool = True,
 ) -> Optional[Dict[str, ContigData]]:
     """
     Get sequence length map for a given file path.
@@ -493,6 +511,8 @@ def get_seq_data_map(
         log: Logger
         matching_alias: Optional positional aliases used as fallback labels
                         when matching mining results to genome files
+        allow_single_genome_fallback: Whether one unmatched genome may be forced
+                onto the current mining result
 
     Returns:
         Sequence length map for the given file path, or None if not found
@@ -520,7 +540,7 @@ def get_seq_data_map(
                 )
 
         if seq_data_map is None:
-            if len(genome_seq_data_maps) == 1:
+            if len(genome_seq_data_maps) == 1 and allow_single_genome_fallback:
                 only_label, only_map = next(iter(genome_seq_data_maps.items()))
                 if log is not None:
                     log.warning(
@@ -651,8 +671,18 @@ def parse_genome_data(file_paths: List[Path]) -> Dict[str, Dict[str, ContigData]
         length.
     """
     result: Dict[str, Dict[str, ContigData]] = {}
+    label_sources: Dict[str, Path] = {}
+
     for file_path in file_paths:
         label = get_file_label_from_path(file_path)
+
+        if label in result:
+            raise ValueError(
+                f"Genome files '{label_sources[label]}' and '{file_path}' have "
+                f"the same input label '{label}'. Rename one of the genome files "
+                f"so that each normalized basename is unique."
+            )
+
         contigs: Dict[str, ContigData] = {}
 
         base_extension = input_utils.get_base_extension(file_path)
@@ -663,6 +693,7 @@ def parse_genome_data(file_paths: List[Path]) -> Dict[str, Dict[str, ContigData]
                         contigs[normalize_sequence_id(record.id)] = ContigData(seq_len=len(record.seq))
             except Exception as e:
                 raise Exception(f"Error parsing FASTA file {file_path}: {str(e)}")
+
         elif base_extension in [".gb", ".gbff", ".gbk"]:
             try:
                 with open_file(file_path) as handle:
@@ -681,6 +712,7 @@ def parse_genome_data(file_paths: List[Path]) -> Dict[str, Dict[str, ContigData]
             raise ValueError(f"Unsupported file extension for genome data: {file_path}")
 
         result[label] = contigs
+        label_sources[label] = file_path
     return result
 
 
