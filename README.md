@@ -5,6 +5,7 @@
 1.2. [Installation](#sec_install) </br>
 1.3. [Supported genome mining tools](#sec_tools) </br>
 1.4. [Command-line Options](#sec_cmd_options) </br>
+1.5. [Input naming and file matching](#sec_naming) </br>
 2. [Running modes](#sec_run_modes)</br> 
 2.1. [Compare-to-reference mode](#sec_run_mode_1) </br>
 2.2. [Compare-tools mode](#sec_run_mode_2) </br>
@@ -95,7 +96,7 @@ Compressed files (`.gz`) are supported. See [test_data](test_data) for example f
 ## Command-line Options
 ```bash
 usage: bgc-quast [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-to-reference,compare-tools,compare-samples}]
-                 [--merge-distance INT] [--min-bgc-length INT] [--names NAME1,NAME2 ...] [--genome FILE ...] [--debug]
+                 [--merge-distance INT] [--min-bgc-length INT] [--names NAME1,NAME2 ...] [--genome FILE] [--debug]
                  [mode-specific options] <GENOME_MINING_RESULT>
 ```
 ### Positional Arguments
@@ -112,8 +113,8 @@ usage: bgc-quast [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-t
 | `--output-dir DIR, -o DIR`   | Output directory [default: ./bgc-quast-results/<date_time>]                                                         |
 | `--threads INT, -t INT`      | Number of threads [default: 1]                                                                                      |
 | `--debug`                    | Keep intermediate files                                                                                             |
-| `--genome, -g [FILE ...]`     | Path to the genome FASTA/GenBank file; can accept multiple paths; required for `--min-bgc-length` and `edge-distance` |
-| `--names NAME1,NAME2 ...` | Custom names for the input genome mining results in reports                                                         |
+| `--genome, -G FILE`     | Path to the genome FASTA/GenBank file; can accept multiple paths; required for `--min-bgc-length` and `edge-distance` |
+| `--names NAME1,NAME2 ...` | Comma-separated custom names for the input genome mining results in reports; also used as positional fallback labels when matching genome mining results to genome and QUAST files |
 | `--merge-distance INT` | Merge nearby BGCs if the gap between them <= this distance (bp); 0 disables merging [default: 0]       |
 | `--min-bgc-length INT` | Filter out BGCs shorter than this length (bp) [default: 0]                                                                            |
 | `--edge-distance INT` | Margin (in bp) from contig edges used to classify BGC completeness                                                  |
@@ -133,6 +134,20 @@ usage: bgc-quast [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-t
 |-----------------------------|--------------------------------------------------------------------------------------------|
 | `--overlap-fraction FLOAT` | BGC overlap threshold as a fraction in (0, 1] [default: 0.9] |
 | `--output-bgcs`             | Output BGCs predicted by all tools in an integrated GenBank file (requires `--genome` to be specified)  |
+
+
+<a name="sec_naming"></a>
+
+## Input naming and matching
+
+BGC-QUAST uses labels derived from the original genome mining result filenames to associate them with optional genome files and, in compare-to-reference mode, QUAST `.coords` files. We recommend using the same basename for each assembly across all tools.
+
+* antiSMASH uses the input filename by default; a custom name can be specified using `--output-basename`.
+* GECCO uses the input genome filename as the prefix of its output files.
+* DeepBGC names its output files after the output directory; use `-o/--output` to assign the corresponding assembly name.
+* QUAST uses the input assembly filenames by default; custom assembly names can be specified using `-l/--labels`.
+
+If the original filenames do not match, `--names` can provide one positional fallback label per genome mining result. The names must be comma-separated and supplied in the same order as the input genome mining result files. BGC-QUAST first attempts to match the original filename and then the corresponding `--names` value.
 
 <a name="sec_run_modes"></a>
 ## Running modes
@@ -248,7 +263,8 @@ bgc-quast <sample1_genome_mining_results> \
           ... \
   --mode compare-samples \
   --names <sample1>,<sample2>,... \
-  --genome <sample1_genome> <sample2_genome> ... \
+  --genome <sample1_genome>
+  --genome <sample2_genome> ... \
   --output-dir <output_dir>
 ```
 

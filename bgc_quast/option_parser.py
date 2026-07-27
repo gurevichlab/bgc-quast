@@ -122,7 +122,9 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
         help=(
             "Custom names for the input genome mining results in reports.\n"
             "Comma-separated; use quotes if names contain spaces. "
-            "The number of names must match the number of genome mining results files."
+            "The names are also used as positional fallback labels when matching "
+            "genome and QUAST files. "
+            "The number of names must match the number of genome mining result files."
         ),
     )
 
