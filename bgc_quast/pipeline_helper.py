@@ -285,17 +285,22 @@ class PipelineHelper:
         Compute statistics for the parsed results.
         """
 
-        analysis_report = ReportBuilder(ReportConfigManager()).build_report(
-            config=self.config,
-            results=self.assembly_genome_mining_results,
-            running_mode=self.running_mode,  # type: ignore
-            quast_results=self.quast_results,
-            reference_genome_mining_result=self.reference_genome_mining_result,
-            label_renaming_log=getattr(self, "label_renaming_log", []),
-            requested_mode=self.args.mode,
-            matching_aliases=self.matching_aliases,
-            log=self.log,
-        )
+        try:
+            analysis_report = ReportBuilder(ReportConfigManager()).build_report(
+                config=self.config,
+                results=self.assembly_genome_mining_results,
+                running_mode=self.running_mode,  # type: ignore
+                quast_results=self.quast_results,
+                reference_genome_mining_result=self.reference_genome_mining_result,
+                label_renaming_log=getattr(self, "label_renaming_log", []),
+                requested_mode=self.args.mode,
+                matching_aliases=self.matching_aliases,
+                log=self.log,
+            )
+        except (ValidationError, ValueError) as e:
+            # Report our own exceptions as "Errors" for users.
+            self.log.error(str(e))
+            raise
 
         self.analysis_report = analysis_report
 

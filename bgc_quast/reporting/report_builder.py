@@ -89,12 +89,12 @@ class ReportBuilder:
                 )
 
             reference_bgcs = compare_to_ref_analyzer.compute_coverage(
+                log,
                 results,
                 reference_genome_mining_result,  # type: ignore
                 quast_results,  # type: ignore
                 config.allowed_gap_for_fragmented_recovery,
-                matching_aliases = matching_aliases,
-                log = log,
+                matching_aliases=matching_aliases,
             )
 
             mode_metrics_calculator = CompareToRefMetricsCalculator(
