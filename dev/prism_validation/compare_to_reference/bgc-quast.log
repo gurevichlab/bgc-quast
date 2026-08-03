@@ -1,0 +1,26 @@
+BGC-QUAST version: 1.0.0
+
+Started with command: ./bgc-quast.py test_data/assembly_10_mining/PRISM/assembly_10.fasta.json.gz test_data/assembly_20_mining/PRISM/assembly_20.fasta.json.gz --mode compare-to-reference -r test_data/reference_mining/PRISM/reference.fasta.json.gz -q test_data/quast_out/ -o dev/prism_validation/compare_to_reference
+
+System information:
+  OS: Linux-6.8.0-136-generic-x86_64-with-glibc2.35
+  Python version: 3.13
+  CPUs number: 12
+
+Started: 2026-08-04 01:19:58
+
+Logging to /home/aleks0809/PycharmProjects/pythonProject/thesis/other_projects/BGC_QUAST_data/bgc-quast/dev/prism_validation/compare_to_reference/bgc-quast.log
+Mode COMPARE_REFERENCE selected
+The running mode is set to: RunningMode.COMPARE_TO_REFERENCE
+
+RESULTS:
+  Text report is saved to /home/aleks0809/PycharmProjects/pythonProject/thesis/other_projects/BGC_QUAST_data/bgc-quast/dev/prism_validation/compare_to_reference/report.txt
+  HTML report is saved to /home/aleks0809/PycharmProjects/pythonProject/thesis/other_projects/BGC_QUAST_data/bgc-quast/dev/prism_validation/compare_to_reference/report.html
+  TSV report is saved to /home/aleks0809/PycharmProjects/pythonProject/thesis/other_projects/BGC_QUAST_data/bgc-quast/dev/prism_validation/compare_to_reference/report.tsv
+  Log is saved to /home/aleks0809/PycharmProjects/pythonProject/thesis/other_projects/BGC_QUAST_data/bgc-quast/dev/prism_validation/compare_to_reference/bgc-quast.log
+
+Finished: 2026-08-04 01:19:59
+Elapsed time: 0:00:00.534125
+WARNINGs: 1
+
+Thank you for using BGC-QUAST!

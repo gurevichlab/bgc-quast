@@ -1,0 +1,77 @@
+file_label                                                   reference assembly_10 assembly_20
+Genome mining tool                                               PRISM       PRISM       PRISM
+# BGCs filtered by length                                            0           0           0
+# BGCs                                                               4           4           4
+# BGCs (NRPS)                                                        1           1           1
+# BGCs (PKS)                                                         2           2           2
+# BGCs (RiPP)                                                        1           1           1
+# BGCs (unknown completeness)                                        4           4           4
+# BGCs (NRPS, unknown completeness)                                  1           1           1
+# BGCs (PKS, unknown completeness)                                   2           2           2
+# BGCs (RiPP, unknown completeness)                                  1           1           1
+Total BGC length in bp                                           52304       52304       52304
+Total BGC length in bp (NRPS)                                    19460       19460       19460
+Total BGC length in bp (PKS)                                     27070       27070       27070
+Total BGC length in bp (RiPP)                                     5774        5774        5774
+Total BGC length in bp (unknown completeness)                    52304       52304       52304
+Total BGC length in bp (NRPS, unknown completeness)              19460       19460       19460
+Total BGC length in bp (PKS, unknown completeness)               27070       27070       27070
+Total BGC length in bp (RiPP, unknown completeness)               5774        5774        5774
+Mean BGC length in bp                                          13076.0     13076.0     13076.0
+Mean BGC length in bp (NRPS)                                   19460.0     19460.0     19460.0
+Mean BGC length in bp (PKS)                                    13535.0     13535.0     13535.0
+Mean BGC length in bp (RiPP)                                    5774.0      5774.0      5774.0
+Mean BGC length in bp (unknown completeness)                   13076.0     13076.0     13076.0
+Mean BGC length in bp (NRPS, unknown completeness)             19460.0     19460.0     19460.0
+Mean BGC length in bp (PKS, unknown completeness)              13535.0     13535.0     13535.0
+Mean BGC length in bp (RiPP, unknown completeness)              5774.0      5774.0      5774.0
+# full ref. BGCs                                                     4           4           4
+# full ref. BGCs (NRPS)                                              1           1           1
+# full ref. BGCs (PKS)                                               2           2           2
+# full ref. BGCs (RiPP)                                              1           1           1
+# full ref. BGCs (unknown completeness)                              4           4           4
+# full ref. BGCs (NRPS, unknown completeness)                        1           1           1
+# full ref. BGCs (PKS, unknown completeness)                         2           2           2
+# full ref. BGCs (RiPP, unknown completeness)                        1           1           1
+# full ref. BGCs, single-contig                                      4           4           4
+# full ref. BGCs, single-contig (NRPS)                               1           1           1
+# full ref. BGCs, single-contig (PKS)                                2           2           2
+# full ref. BGCs, single-contig (RiPP)                               1           1           1
+# full ref. BGCs, single-contig (unknown completeness)               4           4           4
+# full ref. BGCs, single-contig (NRPS, unknown completeness)         1           1           1
+# full ref. BGCs, single-contig (PKS, unknown completeness)          2           2           2
+# full ref. BGCs, single-contig (RiPP, unknown completeness)         1           1           1
+# full ref. BGCs, multi-contig                                       0           0           0
+# full ref. BGCs, multi-contig (NRPS)                                0           0           0
+# full ref. BGCs, multi-contig (PKS)                                 0           0           0
+# full ref. BGCs, multi-contig (RiPP)                                0           0           0
+# full ref. BGCs, multi-contig (unknown completeness)                0           0           0
+# full ref. BGCs, multi-contig (NRPS, unknown completeness)          0           0           0
+# full ref. BGCs, multi-contig (PKS, unknown completeness)           0           0           0
+# full ref. BGCs, multi-contig (RiPP, unknown completeness)          0           0           0
+# partial ref. BGCs                                                  0           0           0
+# partial ref. BGCs (NRPS)                                           0           0           0
+# partial ref. BGCs (PKS)                                            0           0           0
+# partial ref. BGCs (RiPP)                                           0           0           0
+# partial ref. BGCs (unknown completeness)                           0           0           0
+# partial ref. BGCs (NRPS, unknown completeness)                     0           0           0
+# partial ref. BGCs (PKS, unknown completeness)                      0           0           0
+# partial ref. BGCs (RiPP, unknown completeness)                     0           0           0
+# missed ref. BGCs                                                   0           0           0
+# missed ref. BGCs (NRPS)                                            0           0           0
+# missed ref. BGCs (PKS)                                             0           0           0
+# missed ref. BGCs (RiPP)                                            0           0           0
+# missed ref. BGCs (unknown completeness)                            0           0           0
+# missed ref. BGCs (NRPS, unknown completeness)                      0           0           0
+# missed ref. BGCs (PKS, unknown completeness)                       0           0           0
+# missed ref. BGCs (RiPP, unknown completeness)                      0           0           0
+Ref. BGC recovery rate                                            1.00        1.00        1.00
+Ref. BGC recovery rate (NRPS)                                     1.00        1.00        1.00
+Ref. BGC recovery rate (PKS)                                      1.00        1.00        1.00
+Ref. BGC recovery rate (RiPP)                                     1.00        1.00        1.00
+Ref. BGC recovery rate (unknown completeness)                     1.00        1.00        1.00
+Ref. BGC recovery rate (NRPS, unknown completeness)               1.00        1.00        1.00
+Ref. BGC recovery rate (PKS, unknown completeness)                1.00        1.00        1.00
+Ref. BGC recovery rate (RiPP, unknown completeness)               1.00        1.00        1.00
+# product type mismatches to ref.                                    0           0           0
+# unmapped BGCs to ref.                                              0           0           0
