@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 from bgc_quast.config import Config, load_config
@@ -386,6 +387,72 @@ def test_get_seq_data_map_with_genome_seq_data_maps(tmp_path):
     result = get_seq_data_map(genome_seq_data_maps, dummy_file)
     assert result["contig"].seq_len == 123  # type: ignore
 
+def test_get_seq_data_map_prefers_original_label_over_alias(tmp_path):
+    """The original mining-result basename must have priority over --names."""
+    original_map = {"contig": ContigData(seq_len=111)}
+    alias_map = {"contig": ContigData(seq_len=222)}
+
+    mining_file = tmp_path / "assembly1.json"
+    mining_file.write_text("{}")
+
+    result = get_seq_data_map(
+        {
+            "assembly1": original_map,
+            "a1": alias_map,
+        },
+        mining_file,
+        matching_alias="a1",
+    )
+
+    assert result is original_map
+
+
+def test_get_seq_data_map_uses_names_alias_as_fallback(tmp_path):
+    """Use the corresponding --names value when the original label does not match."""
+    alias_map = {"contig": ContigData(seq_len=123)}
+    log = MagicMock(spec=Logger)
+
+    mining_file = tmp_path / "DeepBGC.bgc.tsv"
+    mining_file.write_text("")
+
+    result = get_seq_data_map(
+        {"assembly1": alias_map},
+        mining_file,
+        log=log,
+        matching_alias="assembly1",
+    )
+
+    assert result is alias_map
+    log.info.assert_called_once()
+    assert "--names alias" in log.info.call_args.args[0]
+
+
+def test_get_seq_data_map_warns_when_multiple_genomes_do_not_match(tmp_path):
+    """Warn when neither the original label nor --names matches a genome."""
+    log = MagicMock(spec=Logger)
+
+    mining_file = tmp_path / "DeepBGC.bgc.tsv"
+    mining_file.write_text("")
+
+    result = get_seq_data_map(
+        {
+            "assembly1": {"contig1": ContigData(seq_len=100)},
+            "assembly2": {"contig2": ContigData(seq_len=200)},
+        },
+        mining_file,
+        log=log,
+        matching_alias="wrong_name",
+    )
+
+    assert result is None
+    log.warning.assert_called_once()
+
+    warning_message = log.warning.call_args.args[0]
+    assert "Could not associate genome mining result" in warning_message
+    assert "DeepBGC" in warning_message
+    assert "wrong_name" in warning_message
+    assert "assembly1" in warning_message
+    assert "assembly2" in warning_message
 
 def test_get_seq_data_map_fallback_to_mining_result(tmp_path):
     dummy_file = tmp_path / "foo.json"
@@ -424,3 +491,88 @@ def test_get_completeness(seq_data_map, sequence_id, start, end, margin, expecte
     config = DummyConfig(margin)
     result = get_completeness(config, seq_data_map, sequence_id, start, end)
     assert result == expected
+
+
+def test_parse_input_mining_results_does_not_reuse_genome_alias(logger):
+    """A genome alias may be assigned only once when multiple genomes exist."""
+    assembly_20_deepbgc = (
+        TEST_DATA_DIR / "assembly_20_mining" / "DeepBGC" / "DeepBGC.bgc.tsv"
+    )
+
+    results = parse_input_mining_result_files(
+        logger,
+        load_config(),
+        [DEEPBGC_TSV_FILE, assembly_20_deepbgc],
+        [
+            TEST_DATA_DIR / "assembly_10.gbff.gz",
+            TEST_DATA_DIR / "assembly_20.gbff.gz",
+        ],
+        matching_aliases=["assembly_10", "assembly_10"],
+    )
+
+    assert results[0].genome_data is not None
+    assert results[1].genome_data is None
+
+
+def test_parse_input_mining_results_tries_alias_after_used_original_label(
+    tmp_path,
+    logger,
+):
+    """A used original label must not block a different unused alias."""
+    first_dir = tmp_path / "first"
+    second_dir = tmp_path / "second"
+    first_dir.mkdir()
+    second_dir.mkdir()
+
+    first_result = first_dir / "assembly_10.json"
+    second_result = second_dir / "assembly_10.json"
+
+    antismash_data = {
+        "records": [
+            {
+                "id": "contig",
+                "features": [
+                    {
+                        "type": "region",
+                        "location": "[0:3]",
+                        "qualifiers": {},
+                    }
+                ],
+            }
+        ]
+    }
+
+    first_result.write_text(json.dumps(antismash_data))
+    second_result.write_text(json.dumps(antismash_data))
+
+    genome_10 = tmp_path / "assembly_10.fasta"
+    genome_20 = tmp_path / "assembly_20.fasta"
+    genome_10.write_text(">contig\nATGC\n")
+    genome_20.write_text(">contig\nATGCATGC\n")
+
+    results = parse_input_mining_result_files(
+        logger,
+        load_config(),
+        [first_result, second_result],
+        [genome_10, genome_20],
+        matching_aliases=["unused_name", "assembly_20"],
+    )
+
+    assert results[0].genome_data["contig"].seq_len == 4  # type: ignore
+    assert results[1].genome_data["contig"].seq_len == 8  # type: ignore
+
+
+def test_parse_genome_data_rejects_duplicate_labels(tmp_path):
+    """Genome files with the same normalized basename are ambiguous."""
+    first_dir = tmp_path / "first"
+    second_dir = tmp_path / "second"
+    first_dir.mkdir()
+    second_dir.mkdir()
+
+    first_genome = first_dir / "assembly.fasta"
+    second_genome = second_dir / "assembly.fasta"
+    first_genome.write_text(">contig1\nATGC\n")
+    second_genome.write_text(">contig2\nATGC\n")
+
+    with pytest.raises(ValueError, match="same input label 'assembly'"):
+        parse_genome_data([first_genome, second_genome])

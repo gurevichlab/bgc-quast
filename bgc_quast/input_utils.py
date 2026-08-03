@@ -338,7 +338,7 @@ def get_base_extension(file_path: Path) -> str:
         return file_path.with_suffix("").suffix.lower()
     return file_path.suffix.lower()
 
-def _parse_names_arg(names_arg: Optional[str]) -> Optional[List[str]]:
+def parse_names_arg(names_arg: Optional[str]) -> Optional[List[str]]:
     if names_arg is None:
         return None
     names = [n.strip() for n in names_arg.split(",")]
@@ -364,7 +364,7 @@ def assign_and_deduplicate_display_labels(
 
     Returns a renaming log for  messages
     """
-    names = _parse_names_arg(names_arg)
+    names = parse_names_arg(names_arg)
 
     if names is not None and len(names) != len(assembly_results):
         raise ValidationError(

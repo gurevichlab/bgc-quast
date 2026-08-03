@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import Literal
-
+from unittest.mock import MagicMock, patch
+from bgc_quast.logger import Logger
+from bgc_quast.option_parser import ValidationError
 import pytest
 
 # Relative imports from the file under test.
@@ -504,7 +506,9 @@ def test_compute_coverage():
         reference_sequences={"ref_id": [alignment]}, input_file_label="asm_label"
     )
     quast_results = [quast_result]
+    log = MagicMock(spec=Logger)
     coverage_list = compute_coverage(
+        log,
         genome_mining_results,
         reference_genome_mining_result,
         quast_results,
@@ -536,11 +540,144 @@ def test_compute_coverage_no_quast_result():
     )
     quast_results = [quast_result]
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValidationError) as excinfo:
+        log = MagicMock(spec=Logger)
         compute_coverage(
+            log,
             genome_mining_results,
             reference_genome_mining_result,
             quast_results,
             allowed_gap=100,
         )
-    assert "No QUAST result found" in str(excinfo.value)
+    error_message = str(excinfo.value)
+    assert "Could not find a QUAST" in error_message
+    assert "asm_label" in error_message
+    assert "wrong_label.coords" in error_message
+
+def test_compute_coverage_prefers_original_quast_label_over_alias():
+    genome_mining_result = create_genome_mining_result(
+        input_file="assembly1.json",
+        input_file_label="assembly1",
+        bgcs=[],
+    )
+    reference_result = create_genome_mining_result(bgcs=[])
+
+    original_quast = create_quast_result(
+        input_file_label="assembly1",
+        reference_sequences={},
+    )
+    alias_quast = create_quast_result(
+        input_file_label="a1",
+        reference_sequences={},
+    )
+
+    with patch(
+        "bgc_quast.compare_to_ref_analyzer.compute_reference_coverage"
+    ) as mock_compute:
+        mock_compute.side_effect = (
+            lambda _result, quast_result, _reference, allowed_gap:
+            [quast_result.input_file_label]
+        )
+
+        log = MagicMock(spec=Logger)
+        coverage = compute_coverage(
+            log,
+            [genome_mining_result],
+            reference_result,
+            [original_quast, alias_quast],
+            allowed_gap=100,
+            matching_aliases=["a1"],
+        )
+
+    assert coverage[0][1] == ["assembly1"]
+
+def test_compute_coverage_uses_unique_aliases_for_duplicate_input_labels():
+    results = [
+        create_genome_mining_result(
+            input_file="sample1/DeepBGC.bgc.tsv",
+            input_file_label="DeepBGC",
+            bgcs=[],
+        ),
+        create_genome_mining_result(
+            input_file="sample2/DeepBGC.bgc.tsv",
+            input_file_label="DeepBGC",
+            bgcs=[],
+        ),
+    ]
+    reference_result = create_genome_mining_result(bgcs=[])
+
+    quast_results = [
+        create_quast_result(
+            input_file_label="assembly1",
+            reference_sequences={},
+        ),
+        create_quast_result(
+            input_file_label="assembly2",
+            reference_sequences={},
+        ),
+    ]
+
+    log = MagicMock(spec=Logger)
+
+    with patch(
+        "bgc_quast.compare_to_ref_analyzer.compute_reference_coverage"
+    ) as mock_compute:
+        mock_compute.side_effect = (
+            lambda _result, quast_result, _reference, allowed_gap:
+            [quast_result.input_file_label]
+        )
+
+        coverage = compute_coverage(
+            log,
+            results,
+            reference_result,
+            quast_results,
+            allowed_gap=100,
+            matching_aliases=["assembly1", "assembly2"],
+        )
+
+    assert coverage[0][1] == ["assembly1"]
+    assert coverage[1][1] == ["assembly2"]
+
+    assert log.info.call_count == 2
+    assert "--names alias" in log.info.call_args_list[0].args[0]
+    assert "--names alias" in log.info.call_args_list[1].args[0]
+
+def test_compute_coverage_does_not_reuse_quast_result():
+    results = [
+        create_genome_mining_result(
+            input_file="sample1/DeepBGC.bgc.tsv",
+            input_file_label="DeepBGC",
+            bgcs=[],
+        ),
+        create_genome_mining_result(
+            input_file="sample2/DeepBGC.bgc.tsv",
+            input_file_label="DeepBGC",
+            bgcs=[],
+        ),
+    ]
+    reference_result = create_genome_mining_result(bgcs=[])
+
+    quast_results = [
+        create_quast_result(
+            input_file_label="assembly1",
+            reference_sequences={},
+        )
+    ]
+
+    with pytest.raises(ValidationError) as excinfo:
+        log = MagicMock(spec=Logger)
+        compute_coverage(
+            log,
+            results,
+            reference_result,
+            quast_results,
+            allowed_gap=100,
+            matching_aliases=["assembly1", "assembly1"],
+        )
+
+    error_message = str(excinfo.value)
+
+    assert "Could not find a QUAST" in error_message
+    assert "assembly1.coords" in error_message
+    assert "Each QUAST .coords file can only be matched once" in error_message

@@ -2,6 +2,7 @@
 
 from typing import List, Optional
 from collections import defaultdict
+from bgc_quast.logger import Logger
 
 import bgc_quast.compare_to_ref_analyzer as compare_to_ref_analyzer
 from bgc_quast.compare_tools_analyzer import compute_uniqueness
@@ -36,6 +37,8 @@ class ReportBuilder:
         reference_genome_mining_result: Optional[GenomeMiningResult] = None,
         label_renaming_log: Optional[list[dict]] = None,
         requested_mode: Optional[str] = None,
+        matching_aliases: Optional[List[str]] = None,
+        log: Optional[Logger] = None,
     ) -> ReportData:
         """
         Build a report from genome mining results.
@@ -48,6 +51,8 @@ class ReportBuilder:
             quast_results: Optional list of QuastResult objects for QUAST analysis.
             reference_genome_mining_result: Optional GenomeMiningResult for reference
             genome comparison.
+            matching_aliases: Optional positional aliases parsed from --names.
+            log: Optional logger used to report fallback QUAST associations.
 
         Returns:
             ReportData object with structured metrics
@@ -84,10 +89,12 @@ class ReportBuilder:
                 )
 
             reference_bgcs = compare_to_ref_analyzer.compute_coverage(
+                log,
                 results,
                 reference_genome_mining_result,  # type: ignore
                 quast_results,  # type: ignore
-                config.allowed_gap_for_fragmented_recovery
+                config.allowed_gap_for_fragmented_recovery,
+                matching_aliases=matching_aliases,
             )
 
             mode_metrics_calculator = CompareToRefMetricsCalculator(
