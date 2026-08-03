@@ -21,6 +21,8 @@ We applied [GECCO](https://github.com/zellerlab/GECCO) v0.9.10 using default set
 We applied [DeepBGC](https://github.com/Merck/deepbgc) v0.1.31 using default settings (`deepbgc pipeline input_sequence -o output_dir`) to the reference genome and both assemblies. The corresponding outputs were saved in the '<sequence_filename>_mining/DeepBGC' directories. 
 Note that the directories structure include one more layer since DeepBGC uses the provided `output_dir` as a basename for the output files. 
 
+### PRISM
+We applied [PRISM web server](http://prism.adapsyn.com/) using default settings (version 4.4.5 as of 04.08.2026) to the reference and both assemblies. The corresponding output JSON was compressed with GZIP and saved in the `<sequence_filename>_mining/PRISM` directories.
 
 ## Assembly to reference alignment
 We ran `quast -r reference.fasta assembly_10.fasta assembly_20.fasta -o quast_out --fast` to produce QUAST alignments for both assemblies. The results are in the `quast_out` directory.

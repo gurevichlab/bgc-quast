@@ -30,7 +30,7 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
         type=Path,
         nargs="+",
         metavar="GENOME_MINING_RESULT",
-        help="Paths to genome mining results (antiSMASH, GECCO, or DeepBGC); at least one is required",
+        help="Paths to genome mining results (antiSMASH, GECCO, DeepBGC, or PRISM); at least one is required",
     )
 
     basic = parser.add_argument_group("Basic options")
@@ -153,7 +153,7 @@ def add_mode_specific_arguments(parser: argparse.ArgumentParser):
     compare_ref.add_argument(
         "--reference-mining-result",
         "-r",
-        help="Path to the reference genome mining result (antiSMASH, GECCO, or DeepBGC); "
+        help="Path to the reference genome mining result (antiSMASH, GECCO, DeepBGC, or PRISM); "
              "required if --quast-output-dir/-q is specified",
         metavar="REFERENCE_GENOME_MINING_RESULT",
         action="store",

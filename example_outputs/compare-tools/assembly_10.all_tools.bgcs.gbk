@@ -4957,6 +4957,11 @@ FEATURES             Location/Qualifiers
                      /tool="GECCO"
                      /bgc_id="CONTIG_2_2"
                      /completeness="Complete"
+     BGC             3971..28480
+                     /product="PKS"
+                     /tool="PRISM"
+                     /bgc_id="CONTIG_2_1"
+                     /completeness="Complete"
 ORIGIN
         1 agaggatctt cagcagggtc gtcttgcccg caccgttctc gccgacgatc ccggccaggg
        61 tgccgggctt cagccggagg ccgacgcccc tcaggacggc gtgctgtcgg taggaatggt
@@ -8402,6 +8407,11 @@ FEATURES             Location/Qualifiers
                      /product="RiPP"
                      /tool="GECCO"
                      /bgc_id="CONTIG_3_1"
+                     /completeness="Complete"
+     BGC             55325..61098
+                     /product="RiPP"
+                     /tool="PRISM"
+                     /bgc_id="CONTIG_3_2"
                      /completeness="Complete"
 ORIGIN
         1 tggagccgtt ccgtagcgat cccgaggagt tgagcacatg gctgccaagg acatcggtgc
@@ -18591,6 +18601,16 @@ FEATURES             Location/Qualifiers
                      /tool="GECCO"
                      /bgc_id="CONTIG_6_1"
                      /completeness="Complete"
+     BGC             13589..33048
+                     /product="NRPS"
+                     /tool="PRISM"
+                     /bgc_id="CONTIG_6_3"
+                     /completeness="Complete"
+     BGC             86587..89146
+                     /product="PKS"
+                     /tool="PRISM"
+                     /bgc_id="CONTIG_6_4"
+                     /completeness="Complete"
 ORIGIN
         1 ggtcggccac ggccgccggg ccgccgcgca gcgccacgtt gacggccacc gccatggtgc
        61 ccgcggcgta gttgagcgtg ccgcacaggg gatccaccag ccactggcgt gccgcgtcgg
@@ -22164,7 +22184,7 @@ FEATURES             Location/Qualifiers
                      /bgc_id="CONTIG_7.1"
                      /completeness="Incomplete"
      BGC             119..12174
-                     /product="Terpene,PKS"
+                     /product="PKS,Terpene"
                      /tool="DeepBGC"
                      /bgc_id="CONTIG_7_1"
                      /completeness="Complete"
@@ -29285,7 +29305,7 @@ FEATURES             Location/Qualifiers
                      /bgc_id="CONTIG_9_2"
                      /completeness="Complete"
      BGC             46103..47686
-                     /product="Terpene,PKS"
+                     /product="PKS,Terpene"
                      /tool="DeepBGC"
                      /bgc_id="CONTIG_9_3"
                      /completeness="Complete"
