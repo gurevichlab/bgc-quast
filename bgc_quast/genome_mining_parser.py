@@ -756,16 +756,19 @@ def parse_genome_data(file_paths: List[Path]) -> Dict[str, Dict[str, ContigData]
             try:
                 with open_file(file_path) as handle:
                     for record in SeqIO.parse(handle, "genbank"):
-                        genes = [
-                            (int(f.location.start), int(f.location.end))
-                            for f in record.features
-                            if f.type in ["gene", "CDS"]
-                        ]
+                        genes = sorted(
+                            {
+                                (int(f.location.start), int(f.location.end))
+                                for f in record.features
+                                if f.type in ["gene", "CDS"]
+                            }
+                        )
                         contigs[normalize_sequence_id(record.id)] = ContigData(
                             seq_len=len(record.seq), genes=genes
                         )
             except Exception as e:
                 raise Exception(f"Error parsing GenBank file {file_path}: {str(e)}")
+
         else:
             raise ValueError(f"Unsupported file extension for genome data: {file_path}")
 

@@ -411,6 +411,54 @@ ORIGIN
     assert result[label]["contigc"].genes == [(0, 5), (9, 15)]
     assert result[label]["contigd"].genes == []
 
+def test_parse_genome_data_gbff_cds_only(tmp_path):
+    """Test that CDS-only GenBank annotations are used as genes."""
+    gbff_content = """LOCUS       contigE              20 bp    DNA     linear   01-JAN-1980
+DEFINITION  dummy.
+ACCESSION   contigE
+FEATURES             Location/Qualifiers
+     CDS             1..5
+     CDS             10..15
+ORIGIN
+        1 atgcatgcat gcatgcatgc
+//
+"""
+    gbff_file = tmp_path / "cds_only.gbff"
+    gbff_file.write_text(gbff_content)
+
+    result = parse_genome_data([gbff_file])
+    label = gbff_file.stem
+
+    assert result[label]["contige"].genes == [(0, 5), (9, 15)]
+
+
+def test_parse_genome_data_gbff_deduplicates_gene_and_cds(tmp_path):
+    """Test that matching gene and CDS features are counted only once."""
+    gbff_content = """LOCUS       contigF              20 bp    DNA     linear   01-JAN-1980
+DEFINITION  dummy.
+ACCESSION   contigF
+FEATURES             Location/Qualifiers
+     CDS             16..18
+     gene            1..5
+     CDS             1..5
+     gene            10..15
+     CDS             10..15
+ORIGIN
+        1 atgcatgcat gcatgcatgc
+//
+"""
+    gbff_file = tmp_path / "gene_and_cds.gbff"
+    gbff_file.write_text(gbff_content)
+
+    result = parse_genome_data([gbff_file])
+    label = gbff_file.stem
+
+    assert result[label]["contigf"].genes == [
+        (0, 5),
+        (9, 15),
+        (15, 18),
+    ]
+
 
 def test_parse_genome_data_unsupported_extension(tmp_path):
     file = tmp_path / "test.unsupported"
