@@ -80,15 +80,14 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
         choices=["auto", "compare-to-reference", "compare-tools", "compare-samples"],
         default="auto",
         help=(
-            "Running mode that controls how BGC-QUAST interprets the inputs.\n"
+            "Running mode that controls how BGC-QUAST interprets the inputs:\n"
             "  - auto (default): Infer the mode from provided files\n"
             "  - compare-to-reference: Assess how well BGCs predicted on draft assemblies "
-            "match the predictions from a high-quality reference genome. (!) Requires "
-            "reference mining result and  QUAST output.\n"
+            "match the predictions from a high-quality reference genome. **Requires** "
+            "reference mining result (-r) and a QUAST assemblies-vs-reference output (-q);\n"
             "  - compare-tools: Compare different genome mining tools run on the same genome sequence "
-            "(supports multiple runs from the same tool).\n"
-            "  - compare-samples: Summarize BGC predictions from a single genome mining tool across multiple genomes. "
-            "Doesn't require any specific options."
+            "(supports multiple runs from the same tool);\n"
+            "  - compare-samples: Summarize BGC predictions from a single genome mining tool across multiple genomes "
         ),
     )
 
@@ -97,8 +96,8 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
         "-G",
         help=(
             "Path to a genome FASTA or GenBank file. "
-            "Repeat this option for multiple genomes, for example: "
-            "-G genome_1.fasta -G genome_2.fasta."
+            "Specify each genome file with a separate -G/--genome option. "
+            "Provide either no genome files or exactly one genome file per genome mining result file"
         ),
         metavar="FILE",
         action="append",
@@ -111,7 +110,7 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
         action="store_true",
         default=False,
         help="Output BGCs predicted by all tools in an integrated GenBank file "
-             "(compare-tools mode only; requires --genome to be specified)",
+             "(compare-tools mode only; requires --genome/-G to be specified)",
     )
 
     basic.add_argument(
@@ -124,7 +123,7 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
             "Comma-separated; use quotes if names contain spaces. "
             "The names are also used as positional fallback labels when matching "
             "genome and QUAST files. "
-            "The number of names must match the number of genome mining result files."
+            "The number of names must match the number of genome mining result files"
         ),
     )
 
@@ -153,7 +152,7 @@ def add_mode_specific_arguments(parser: argparse.ArgumentParser):
         "--reference-mining-result",
         "-r",
         help="Path to the reference genome mining result (antiSMASH, GECCO, or DeepBGC); "
-             "required if --quast-output-dir is specified",
+             "required if --quast-output-dir/-q is specified",
         metavar="REFERENCE_GENOME_MINING_RESULT",
         action="store",
         type=Path,
@@ -164,7 +163,7 @@ def add_mode_specific_arguments(parser: argparse.ArgumentParser):
         "-q",
         help="QUAST output in the reference-based evaluation mode; if specified, it is expected that the "
              "genome mining results are provided for both the reference and the assembly; "
-             "required if --reference-mining-result is specified",
+             "required if --reference-mining-result/-r is specified",
         metavar="DIR",
         action="store",
         type=Path,
@@ -173,7 +172,7 @@ def add_mode_specific_arguments(parser: argparse.ArgumentParser):
     compare_ref.add_argument(
         "--reference-genome",
         "-R",
-        help="Path to the reference genome FASTA or GenBank file.",
+        help="Path to the reference genome FASTA or GenBank file",
         metavar="REFERENCE_GENOME",
         dest="reference_genome_data",
         nargs="?",
@@ -184,7 +183,7 @@ def add_mode_specific_arguments(parser: argparse.ArgumentParser):
         "--ref-name",
         type=str,
         default=None,
-        help="Custom name for the reference genome mining result in reports (only if reference is provided).",
+        help="Custom name for the reference genome mining result in reports (only if reference is provided, see -R)",
     )
 
     compare_tools = parser.add_argument_group("Compare-tools")

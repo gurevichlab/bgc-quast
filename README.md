@@ -113,7 +113,7 @@ usage: bgc-quast [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-t
 | `--output-dir DIR, -o DIR`   | Output directory [default: ./bgc-quast-results/<date_time>]                                                         |
 | `--threads INT, -t INT`      | Number of threads [default: 1]                                                                                      |
 | `--debug`                    | Keep intermediate files                                                                                             |
-| `--genome, -G FILE`     | Path to the genome FASTA/GenBank file; can accept multiple paths; required for `--min-bgc-length` and `edge-distance` |
+| `--genome, -G FILE`     | Path to the genome FASTA/GenBank file |
 | `--names NAME1,NAME2 ...` | Comma-separated custom names for the input genome mining results in reports; also used as positional fallback labels when matching genome mining results to genome and QUAST files |
 | `--merge-distance INT` | Merge nearby BGCs if the gap between them <= this distance (bp); 0 disables merging [default: 0]       |
 | `--min-bgc-length INT` | Filter out BGCs shorter than this length (bp) [default: 0]                                                                            |
