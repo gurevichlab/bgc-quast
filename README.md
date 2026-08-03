@@ -107,18 +107,18 @@ usage: bgc-quast [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-t
 
 ### Basic options
 
-| Option                        | Description                                                                                                         |
-|-------------------------------|---------------------------------------------------------------------------------------------------------------------|
-| `-h, --help`                  | Show help message and exit                                                                                          |
-| `--output-dir DIR, -o DIR`   | Output directory [default: ./bgc-quast-results/<date_time>]                                                         |
-| `--threads INT, -t INT`      | Number of threads [default: 1]                                                                                      |
-| `--debug`                    | Keep intermediate files                                                                                             |
-| `--genome, -G FILE`     | Path to the genome FASTA/GenBank file |
-| `--names NAME1,NAME2 ...` | Comma-separated custom names for the input genome mining results in reports; also used as positional fallback labels when matching genome mining results to genome and QUAST files |
-| `--merge-distance INT` | Merge nearby BGCs if the gap between them <= this distance (bp); 0 disables merging [default: 0]       |
-| `--min-bgc-length INT` | Filter out BGCs shorter than this length (bp) [default: 0]                                                                            |
-| `--edge-distance INT` | Margin (in bp) from contig edges used to classify BGC completeness                                                  |
-| `--mode {auto,compare-to-reference,compare-tools,compare-samples}` | [Running mode](#sec_run_modes) that controls how BGC-QUAST interprets the inputs                                    |
+| Option                                                             | Description                                                                                      |
+|--------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
+| `-h, --help`                                                       | Show help message and exit                                                                       |
+| `--output-dir DIR, -o DIR`                                         | Output directory [default: ./bgc-quast-results/<date_time>]                                      |
+| `--threads INT, -t INT`                                            | Number of threads [default: 1]                                                                   |
+| `--debug`                                                          | Keep intermediate files and enable more detailed logging                                         |
+| `--genome FILE, -G FILE`                                           | Optional genome FASTA/GenBank file(s); provide one per genome mining result file                 |
+| `--names NAME1,NAME2 ...`                                          | Comma-separated custom names for genome mining results in reports                                |
+| `--merge-distance INT`                                             | Merge nearby BGCs if the gap between them <= this distance (bp); 0 disables merging [default: 0] |
+| `--min-bgc-length INT`                                             | Filter out BGCs shorter than this length (bp) [default: 0]                                       |
+| `--edge-distance INT`                                              | Margin (in bp) from contig edges used to classify BGC completeness [default: 100]                |
+| `--mode {auto,compare-to-reference,compare-tools,compare-samples}` | [Running mode](#sec_run_modes) that controls how BGC-QUAST interprets the inputs                 |
 
 ### Compare-to-reference options
 

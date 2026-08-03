@@ -119,11 +119,13 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
         default=None,
         metavar="NAME1,NAME2",
         help=(
-            "Custom names for the input genome mining results in reports.\n"
-            "Comma-separated; use quotes if names contain spaces. "
-            "The names are also used as positional fallback labels when matching "
-            "genome and QUAST files. "
-            "The number of names must match the number of genome mining result files"
+            "Comma-separated custom names used to label genome mining results in reports; "
+            "use quotes if names contain spaces. "
+            "The number and order of names must match the number and order of genome "
+            "mining result files. "
+            "These names are also used as fallback labels when labels derived from input "
+            "files cannot be used to associate genome mining results with genome (-G) "
+            "and QUAST (-q) files"
         ),
     )
 
