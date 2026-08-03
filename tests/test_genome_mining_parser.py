@@ -258,8 +258,8 @@ def test_parse_deepbgc_json_invalid_format(tmp_path):
         parse_deepbgc_json(load_config(), json_file, None)
     assert "Failed to parse DeepBGC format" in str(exc_info.value)
 
-def test_parse_deepbgc_json_missing_records(tmp_path):
-    """Test that valid JSON without a records list is rejected."""
+def test_parse_deepbgc_json_rejects_prism_schema(tmp_path):
+    """Test that PRISM JSON is not accepted as DeepBGC JSON."""
     json_file = tmp_path / "wrong_schema.json"
     json_file.write_text(
         json.dumps(
@@ -349,6 +349,35 @@ def test_parse_input_files_valid_json_wrong_schema(tmp_path, logger):
         in str(exc_info.value)
     )
 
+def test_parse_input_files_prism_json(tmp_path, logger):
+    """Test automatic detection of PRISM JSON."""
+    prism_file = tmp_path / "prism.json"
+    prism_file.write_text(
+        json.dumps(
+            {
+                "prism_results": {
+                    "clusters": [
+                        {
+                            "contig": "contig1",
+                            "start": 100,
+                            "end": 500,
+                            "type": ["PKS"],
+                            "family": ["TYPE_I_POLYKETIDE"],
+                        }
+                    ]
+                }
+            }
+        )
+    )
+
+    results = parse_input_mining_result_files(
+        logger, load_config(), [prism_file], None
+    )
+
+    assert len(results) == 1
+    assert results[0].mining_tool == "PRISM"
+    assert len(results[0].bgcs) == 1
+    assert results[0].bgcs[0].product_types == ["PKS"]
 
 def test_parse_input_files_valid_file(logger):
     """Test parsing a valid input file."""

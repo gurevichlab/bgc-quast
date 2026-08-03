@@ -453,6 +453,7 @@ def parse_input_mining_result_files(
         parse_gecco_tsv: "GECCO",
         parse_deepbgc_tsv: "DeepBGC",
         parse_deepbgc_json: "DeepBGC",
+        parse_prism_json: "PRISM",
     }
 
     results = []
