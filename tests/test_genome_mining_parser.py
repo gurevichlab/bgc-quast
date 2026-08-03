@@ -15,6 +15,7 @@ from bgc_quast.genome_mining_parser import (
     parse_gecco_tsv,
     parse_genome_data,
     parse_input_mining_result_files,
+    parse_prism_json,
     parse_quast_output_dir,
     parse_reference_genome_mining_result,
 )
@@ -168,6 +169,85 @@ def test_parse_deepbgc_json():
     assert bgc.end == 9307
     assert bgc.product_types == ["Unknown product"]
     assert bgc.completeness == "Complete"
+
+
+def test_parse_prism_json(tmp_path):
+    """Test parsing PRISM JSON."""
+    prism_file = tmp_path / "prism.json"
+    prism_file.write_text(
+        json.dumps(
+            {
+                "prism_results": {
+                    "clusters": [
+                        {
+                            "contig": "contig1",
+                            "start": 100,
+                            "end": 500,
+                            "type": ["PKS"],
+                            "family": ["TYPE_I_POLYKETIDE"],
+                        },
+                        {
+                            "contig": "contig1",
+                            "start": 600,
+                            "end": 900,
+                            "type": ["PKS", "NRPS"],
+                            "family": [
+                                "TYPE_I_POLYKETIDE",
+                                "NONRIBOSOMAL_PEPTIDE",
+                            ],
+                        },
+                        {
+                            "contig": "contig1",
+                            "start": 1000,
+                            "end": 1200,
+                            "type": ["NULL"],
+                            "family": ["NULL"],
+                        },
+                    ]
+                }
+            }
+        )
+    )
+
+    seq_data_map = {
+        "contig1": ContigData(
+            seq_len=2000,
+            genes=[
+                (150, 250),
+                (300, 400),
+            ],
+        )
+    }
+
+    bgcs = parse_prism_json(
+        load_config(),
+        prism_file,
+        seq_data_map,
+    )
+
+    assert len(bgcs) == 3
+
+    assert bgcs[0].sequence_id == "contig1"
+    assert bgcs[0].start == 100
+    assert bgcs[0].end == 500
+    assert bgcs[0].product_types == ["PKS"]
+    assert bgcs[0].gene_count == 2
+    assert bgcs[0].completeness == "Complete"
+    assert bgcs[0].metadata == {
+        "product_details": ["PKS"],
+        "product_family": ["TYPE_I_POLYKETIDE"],
+    }
+
+    assert set(bgcs[1].product_types) == {"PKS", "NRPS"}
+    assert bgcs[2].product_types == ["Unknown product"]
+
+def test_parse_prism_json_invalid_format(tmp_path):
+    """Test that non-PRISM JSON is rejected."""
+    prism_file = tmp_path / "invalid.json"
+    prism_file.write_text(json.dumps({"records": []}))
+
+    with pytest.raises(InvalidInputException):
+        parse_prism_json(load_config(), prism_file, None)
 
 
 def test_parse_deepbgc_json_invalid_format(tmp_path):
