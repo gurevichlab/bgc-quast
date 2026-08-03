@@ -316,10 +316,16 @@ def parse_deepbgc_json(
     try:
         data = input_utils.get_json_from_file(file_path)
 
+        records = data.get("records")
+        if not isinstance(records, list):
+            raise InvalidInputException(
+                "Not DeepBGC JSON - 'records' is missing or not a list"
+            )
+
         bgcs = list()
 
         # Loop over each record (e.g., contig/scaffold)
-        for record in data.get("records", []):
+        for record in records:
             sequence_id = record.get("name")
 
             # Each subregion is a BGC

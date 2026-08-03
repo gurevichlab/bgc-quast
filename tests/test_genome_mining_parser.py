@@ -178,6 +178,24 @@ def test_parse_deepbgc_json_invalid_format(tmp_path):
         parse_deepbgc_json(load_config(), json_file, None)
     assert "Failed to parse DeepBGC format" in str(exc_info.value)
 
+def test_parse_deepbgc_json_missing_records(tmp_path):
+    """Test that valid JSON without a records list is rejected."""
+    json_file = tmp_path / "wrong_schema.json"
+    json_file.write_text(
+        json.dumps(
+            {
+                "prism_results": {
+                    "clusters": []
+                }
+            }
+        )
+    )
+
+    with pytest.raises(InvalidInputException) as exc_info:
+        parse_deepbgc_json(load_config(), json_file, None)
+
+    assert "'records' is missing or not a list" in str(exc_info.value)
+
 
 def test_parse_quast_output_dir_valid_file():
     """Test parsing a valid QUAST output directory."""
@@ -222,6 +240,32 @@ def test_parse_input_files_invalid_file(tmp_path, logger):
         parse_input_mining_result_files(logger, load_config(), [dummy_file], None)
     assert (
         f"Could not parse file {dummy_file.as_posix()} with any available parser"
+        in str(exc_info.value)
+    )
+
+def test_parse_input_files_valid_json_wrong_schema(tmp_path, logger):
+    """Test that valid JSON with an unsupported structure is rejected."""
+    json_file = tmp_path / "wrong_schema.json"
+    json_file.write_text(
+        json.dumps(
+            {
+                "unsupported_format": {
+                    "predictions": []
+                }
+            }
+        )
+    )
+
+    with pytest.raises(InvalidInputException) as exc_info:
+        parse_input_mining_result_files(
+            logger,
+            load_config(),
+            [json_file],
+            None,
+        )
+
+    assert (
+        f"Could not parse file {json_file.as_posix()} with any available parser"
         in str(exc_info.value)
     )
 
