@@ -18,7 +18,8 @@ The corresponding output JSON and GenBank files were compressed with GZIP and sa
 We applied [GECCO](https://github.com/zellerlab/GECCO) v0.9.10 using default settings (`gecco run --genome input_sequence -o output_dir`) to the reference genome and both assemblies. The corresponding outputs were saved in the `<sequence_filename>_mining/GECCO` directories.
 
 ### DeepBGC
-We applied [deepBGC](https://github.com/Merck/deepbgc) v0.1.31 using default settings (`deepbgc pipeline input_sequence -o output_dir`) to the reference genome and both assemblies. The corresponding outputs were saved in the '<sequence_filename>_mining/deepBGC' directories.
+We applied [DeepBGC](https://github.com/Merck/deepbgc) v0.1.31 using default settings (`deepbgc pipeline input_sequence -o output_dir`) to the reference genome and both assemblies. The corresponding outputs were saved in the '<sequence_filename>_mining/DeepBGC' directories. 
+Note that the directories structure include one more layer since DeepBGC uses the provided `output_dir` as a basename for the output files. 
 
 
 ## Assembly to reference alignment
