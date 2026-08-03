@@ -91,9 +91,7 @@ def map_products(
     """
     mapped_class = set()
     for product in product_list:
-        bgc_class = product_to_class.get(
-            product, product
-        )  # Fall back to itself if unmapped
+        bgc_class = product_to_class.get(product, "Unknown product")
         mapped_class.add(bgc_class)
     return list(mapped_class)
 

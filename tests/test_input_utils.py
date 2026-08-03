@@ -5,6 +5,7 @@ from bgc_quast.genome_mining_result import GenomeMiningResult
 from bgc_quast.input_utils import (
     determine_running_mode,
     get_file_label_from_path,
+    map_products,
 )
 from bgc_quast.reporting.report_data import RunningMode
 from bgc_quast.option_parser import ValidationError
@@ -13,6 +14,20 @@ SAMPLE_PATH_1 = Path("sample1.json")
 SAMPLE_PATH_2 = Path("sample2.json")
 REFERENCE_PATH = Path("reference.json")
 
+
+def test_map_products_unmapped_product():
+    """Test that products absent from the mapping become Unknown product."""
+    product_to_class = {
+        "T1PKS": "PKS",
+        "Unknown": "Unknown product",
+    }
+
+    mapped_products = map_products(
+        ["T1PKS", "Unknown", "not_in_mapping"],
+        product_to_class,
+    )
+
+    assert set(mapped_products) == {"PKS", "Unknown product"}
 
 def test_determine_running_mode_compare_to_reference():
     """Test running mode when a reference mining result is provided."""
