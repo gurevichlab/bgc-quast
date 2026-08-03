@@ -174,20 +174,23 @@ def test_parse_deepbgc_json():
 def test_parse_prism_json(tmp_path):
     """Test parsing PRISM JSON."""
     prism_file = tmp_path / "prism.json"
+    sequence_header = (
+        "NC_003888.3 Streptomyces coelicolor A3(2) chromosome, complete genome"
+    )
     prism_file.write_text(
         json.dumps(
             {
                 "prism_results": {
                     "clusters": [
                         {
-                            "contig": "contig1",
+                            "contig": sequence_header,
                             "start": 100,
                             "end": 500,
                             "type": ["PKS"],
                             "family": ["TYPE_I_POLYKETIDE"],
                         },
                         {
-                            "contig": "contig1",
+                            "contig": sequence_header,
                             "start": 600,
                             "end": 900,
                             "type": ["PKS", "NRPS"],
@@ -197,7 +200,7 @@ def test_parse_prism_json(tmp_path):
                             ],
                         },
                         {
-                            "contig": "contig1",
+                            "contig": sequence_header,
                             "start": 1000,
                             "end": 1200,
                             "type": ["NULL"],
@@ -210,7 +213,7 @@ def test_parse_prism_json(tmp_path):
     )
 
     seq_data_map = {
-        "contig1": ContigData(
+        "nc_003888.3": ContigData(
             seq_len=2000,
             genes=[
                 (150, 250),
@@ -227,7 +230,7 @@ def test_parse_prism_json(tmp_path):
 
     assert len(bgcs) == 3
 
-    assert bgcs[0].sequence_id == "contig1"
+    assert bgcs[0].sequence_id == "NC_003888.3"
     assert bgcs[0].start == 100
     assert bgcs[0].end == 500
     assert bgcs[0].product_types == ["PKS"]

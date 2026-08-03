@@ -380,7 +380,7 @@ def parse_prism_json(
         bgcs = list()
 
         for idx, cluster in enumerate(clusters, start=1):
-            sequence_id = cluster["contig"]
+            sequence_id = cluster["contig"].split()[0].strip()
             start = cluster["start"]
             end = cluster["end"]
 
