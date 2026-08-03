@@ -110,7 +110,6 @@ class PipelineHelper:
         except OSError as e:
             self.log.warning(f"Failed to update the latest symlink '{symlink_path}' -> '{target_dir}': {e}")
 
-
     def parse_input(self) -> None:
         """
         Parse input files for genome mining and QUAST results.
@@ -148,17 +147,15 @@ class PipelineHelper:
 
         # Parse --names early so that they can also be used as positional
         # fallback aliases when associating mining results with genome files.
-        matching_aliases = input_utils.parse_names_arg(self.args.names)
-        self.matching_aliases = matching_aliases
+        self.matching_aliases = input_utils.parse_names_arg(self.args.names)
 
         if (
-                matching_aliases is not None
-                and len(matching_aliases) != len(self.args.mining_results)
+                self.matching_aliases is not None
+                and len(self.matching_aliases) != len(self.args.mining_results)
         ):
             error_message = (
-                f"--names must contain exactly {len(self.args.mining_results)} name(s) "
-                f"to match the number of input genome mining result files, "
-                f"but got {len(matching_aliases)}."
+                f"--names must contain the same number of entries as there are input genome "
+                f"mining result files. Expected {len(self.args.mining_results)}, got {len(self.matching_aliases)}."
             )
             self.log.error(error_message)
             raise ValidationError(error_message)
@@ -170,7 +167,7 @@ class PipelineHelper:
                 self.config,
                 self.args.mining_results,
                 self.args.genome_data,
-                matching_aliases=matching_aliases,
+                matching_aliases=self.matching_aliases,
             )
         except Exception as e:
             self.log.error(f"Failed to parse genome mining results: {str(e)}")
@@ -218,10 +215,10 @@ class PipelineHelper:
                     and genome_count > 1
             ):
                 raise ValidationError(
-                    "Compare-tools mode accepts at most one genome file because all "
-                    "genome mining results must describe the same genome, but "
-                    f"{genome_count} genomes were provided. "
-                    "Provide no genome or exactly one genome using -G/--genome."
+                    "In compare-tools mode, all genome mining results must describe the same genome, "
+                    "so at most one genome file can be provided. "
+                    f"Expected 0 or 1 genome file, but got {genome_count}. "
+                    "Use -G/--genome to provide a single genome file."
                 )
 
             if (
@@ -239,10 +236,10 @@ class PipelineHelper:
                 )
 
                 raise ValidationError(
-                    f"--mode {mode_name} requires either no assembly genome files "
-                    f"or exactly one -G/--genome file per input genome mining result. "
-                    f"Received {mining_result_count} genome mining result files and "
-                    f"{genome_count} genome files."
+                    f"In {mode_name} mode, the number of genome files provided with -G/--genome "
+                    "must either be zero or match the number of input genome mining result files. "
+                    f"Expected 0 or {mining_result_count} genome file(s), but got {genome_count}. "
+                    "Use -G/--genome to provide one genome file per input genome mining result file."
                 )
 
             self.label_renaming_log = input_utils.assign_and_deduplicate_display_labels(
@@ -251,28 +248,31 @@ class PipelineHelper:
                 names_arg=self.args.names,
                 ref_name=self.args.ref_name,
             )
-            if matching_aliases is not None:
+            if self.matching_aliases is not None:
                 renamed_results = [
                     (result, requested_name)
                     for result, requested_name in zip(
                         self.assembly_genome_mining_results,
-                        matching_aliases,
+                        self.matching_aliases,
                     )
                     if requested_name != result.input_file_label
                 ]
 
                 if renamed_results:
                     self.log.info(
-                        "Using custom report labels provided through --names. "
-                        "Original input labels remain unchanged for primary file matching:"
+                        "\nUsing custom report labels provided through --names. "
+                        "Labels derived from input genome mining result files will be used first to associate "
+                        "mining results with genome files and QUAST reports (if applicable); "
+                        "custom labels are used as a fallback:"
                     )
 
                     for result, requested_name in renamed_results:
                         self.log.info(
                             f"{result.input_file}: "
-                            f"'{result.input_file_label}' ===> '{result.display_label}'",
+                            f"input-derived label '{result.input_file_label}' ==> custom label '{result.display_label}'",
                             indent=1,
                         )
+                    self.log.info("")
         except ValidationError as e:
             # Log the specific message from determine_running_mode, then re-raise.
             self.log.error(str(e))
@@ -347,6 +347,7 @@ class PipelineHelper:
             self.config.output_config.tsv_report,
         )
 
+        self.log.info("")
         self.log.info("RESULTS:")
         self.log.info(
             f"Text report is saved to {self.config.output_config.report}",

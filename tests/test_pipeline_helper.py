@@ -331,10 +331,10 @@ def test_parse_input_rejects_multiple_genomes_in_compare_tools(pipeline_helper):
     pipeline_helper.args.ref_name = None
 
     error_message = (
-        "Compare-tools mode accepts at most one genome file because all "
-        "genome mining results must describe the same genome, but "
-        "2 genomes were provided. "
-        "Provide no genome or exactly one genome using -G/--genome."
+        "In compare-tools mode, all genome mining results must describe the same genome, "
+        "so at most one genome file can be provided. "
+        f"Expected 0 or 1 genome file, but got 2. "
+        "Use -G/--genome to provide a single genome file."
     )
 
     with (
@@ -353,7 +353,7 @@ def test_parse_input_rejects_multiple_genomes_in_compare_tools(pipeline_helper):
 
         with pytest.raises(
             ValidationError,
-            match="Compare-tools mode accepts at most one genome file",
+            match="In compare-tools mode, all genome mining results must describe the same genome",
         ):
             pipeline_helper.parse_input()
 
@@ -465,9 +465,10 @@ def test_parse_input_rejects_incomplete_genomes_in_compare_samples(
     pipeline_helper.args.ref_name = None
 
     error_message = (
-        "--mode compare-samples requires either no assembly genome files "
-        "or exactly one -G/--genome file per input genome mining result. "
-        "Received 2 genome mining result files and 1 genome files."
+        "In compare-samples mode, the number of genome files provided with -G/--genome "
+        "must either be zero or match the number of input genome mining result files. "
+        "Expected 0 or 2 genome file(s), but got 1. "
+        "Use -G/--genome to provide one genome file per input genome mining result file."
     )
 
     with (
@@ -486,7 +487,7 @@ def test_parse_input_rejects_incomplete_genomes_in_compare_samples(
 
         with pytest.raises(
             ValidationError,
-            match="requires either no assembly genome files",
+            match="either be zero or match the number of input genome mining result files",
         ):
             pipeline_helper.parse_input()
 
@@ -508,9 +509,10 @@ def test_parse_input_rejects_incomplete_genomes_in_compare_to_reference(
     pipeline_helper.args.ref_name = None
 
     error_message = (
-        "--mode compare-to-reference requires either no assembly genome files "
-        "or exactly one -G/--genome file per input genome mining result. "
-        "Received 2 genome mining result files and 1 genome files."
+        "In compare-to-reference mode, the number of genome files provided with -G/--genome "
+        "must either be zero or match the number of input genome mining result files. "
+        "Expected 0 or 2 genome file(s), but got 1. "
+        "Use -G/--genome to provide one genome file per input genome mining result file."
     )
 
     with (
@@ -542,7 +544,7 @@ def test_parse_input_rejects_incomplete_genomes_in_compare_to_reference(
 
         with pytest.raises(
             ValidationError,
-            match="requires either no assembly genome files",
+            match="either be zero or match the number of input genome mining result",
         ):
             pipeline_helper.parse_input()
 
