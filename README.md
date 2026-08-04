@@ -93,6 +93,9 @@ Currently supported genome mining tools and their output formats:
 
 Compressed files (`.gz`) are supported. See [test_data](test_data) for example files. 
 
+BGC-QUAST reads a defined subset of fields from each supported format, as described in [Supported input formats](SUPPORTED_INPUT_FORMATS.md). Outputs from other tools may also be parsed if they follow one of these structures and conventions, including the expected field names, value types, product encoding, and coordinate system. In this case, the output is interpreted as the corresponding supported format rather than recognized as a separate tool.
+Supporting and identifying an additional tool may require a dedicated parser or product mapping. Requests for new tools or output formats can be submitted through [GitHub Issues](https://github.com/gurevichlab/bgc-quast/issues).
+
 <a name="sec_cmd_options"></a>
 ## Command-line Options
 ```bash
