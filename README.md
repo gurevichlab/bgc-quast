@@ -93,7 +93,7 @@ Currently supported genome mining tools and their output formats:
 
 Compressed files (`.gz`) are supported. See [test_data](test_data) for example files. 
 
-BGC-QUAST reads a defined subset of fields from each supported format, as described in [Supported input formats](SUPPORTED_INPUT_FORMATS.md). Outputs from other tools may also be parsed if they follow one of these structures and conventions, including the expected field names, value types, product encoding, and coordinate system. In this case, the output is interpreted as the corresponding supported format rather than recognized as a separate tool.
+BGC-QUAST reads a defined subset of fields from each supported format, as described in [Supported input formats](docs/SUPPORTED_INPUT_FORMATS.md). Outputs from other tools may also be parsed if they follow one of these structures and conventions, including the expected field names, value types, product encoding, and coordinate system. In this case, the output is interpreted as the corresponding supported format rather than recognized as a separate tool.
 Supporting and identifying an additional tool may require a dedicated parser or product mapping. Requests for new tools or output formats can be submitted through [GitHub Issues](https://github.com/gurevichlab/bgc-quast/issues).
 
 <a name="sec_cmd_options"></a>
@@ -180,7 +180,7 @@ BGC-QUAST supports **three running modes**, each designed for a different analys
 All modes compute a set of basic BGC quality metrics and may also include extra ones depending on the selected analysis.
 The `example_outputs/` directory contains precomputed BGC-QUAST reports generated on the provided test data in all three modes.
 
-See [here](METRICS.md) the detailed description of all reported metrics.
+See [Metrics](docs/METRICS.md) for the detailed description of all reported metrics.
 
 ### Basic metrics
 The basic BGC quality metrics include:  
