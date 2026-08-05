@@ -16,4 +16,5 @@ merge_distance: 0
 min_bgc_length: 0
 bgc_completeness_margin: 100
 allowed_gap_for_fragmented_recovery: 100
+bgc_level: 'region'
 compare_tools_overlap_threshold: 0.9

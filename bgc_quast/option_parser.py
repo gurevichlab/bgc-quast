@@ -1,7 +1,7 @@
 from pathlib import Path
 import argparse
 from argparse import Namespace as CommandLineArgs
-from bgc_quast.config import Config
+from bgc_quast.config import Config, BGCLevel
 from io import StringIO
 import textwrap
 
@@ -73,6 +73,18 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
         metavar="INT",
         type=int,
         help="Margin (in bp) from contig edges used to classify BGC completeness [default: 100]",
+    )
+
+    basic.add_argument(
+        "--bgc-level",
+        choices=[level.value for level in BGCLevel],
+        default=BGCLevel.REGION.value,
+        help=(
+            "Select the annotation entity level to be treated as BGCs in BGC-QUAST. "
+            "The selected entities are used for all downstream analysis and metrics. "
+            "Currently, multiple BGC entity levels are supported only for antiSMASH annotations "
+            f"[default: '{BGCLevel.REGION.value}']"
+        ),
     )
 
     basic.add_argument(

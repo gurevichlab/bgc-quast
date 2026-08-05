@@ -4,8 +4,14 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional
-
+from enum import Enum
 import yaml
+
+
+class BGCLevel(str, Enum):
+    REGION = "region"
+    CANDIDATE_CLUSTER = "candidate-cluster"
+    PROTOCLUSTER = "protocluster"
 
 
 @dataclass
@@ -34,6 +40,7 @@ class Config:
     merge_distance: int
     min_bgc_length: int
     bgc_completeness_margin: int
+    bgc_level: BGCLevel
     compare_tools_overlap_threshold: float
 
 
@@ -81,6 +88,7 @@ def load_config(args: Optional[CommandLineArgs] = None) -> Config:
         merge_distance=cfg["merge_distance"],
         min_bgc_length=cfg["min_bgc_length"],
         bgc_completeness_margin=cfg["bgc_completeness_margin"],
+        bgc_level=cfg["bgc_level"],
         allowed_gap_for_fragmented_recovery=cfg["allowed_gap_for_fragmented_recovery"],
         compare_tools_overlap_threshold=cfg["compare_tools_overlap_threshold"],
     )
@@ -97,5 +105,8 @@ def load_config(args: Optional[CommandLineArgs] = None) -> Config:
 
     if args is not None and getattr(args, "min_bgc_length", None) is not None:
         conf.min_bgc_length = args.min_bgc_length
+
+    if args is not None and getattr(args, "bgc_level", None) is not None:
+        conf.bgc_level = args.bgc_level
 
     return conf

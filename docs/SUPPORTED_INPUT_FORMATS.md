@@ -21,7 +21,12 @@ records[]
         └── region_number[]     optional
 ```
 
-Only features with `type: region` are parsed as BGCs. Locations must follow the antiSMASH format:
+By default, features with `type: region` are used as BGC entities. 
+The `--bgc-level` option allows selecting a different antiSMASH annotation 
+entity level. For example, candidate clusters (`type: cand_cluster`) and 
+protoclusters (`type: protocluster`) can be used as BGC entities instead.  
+
+Locations must follow the antiSMASH format: 
 
 ```text
 [start:end]

@@ -8,7 +8,7 @@ import pandas as pd
 from Bio import SeqIO
 
 from . import input_utils
-from .config import Config
+from .config import Config, BGCLevel
 from .genome_mining_result import (
     AlignmentInfo,
     Bgc,
@@ -106,6 +106,31 @@ def _merge_bgc_cluster(
     )
 
 
+ANTISMASH_BGC_ENTITY_INFO = {
+    BGCLevel.REGION: {
+        "feature_type": "region",
+        "number_key": "region_number",
+        "id_prefix": "reg",
+    },
+    BGCLevel.CANDIDATE_CLUSTER: {
+        "feature_type": "cand_cluster",
+        "number_key": "candidate_cluster_number",
+        "id_prefix": "cc",
+    },
+    BGCLevel.PROTOCLUSTER: {
+        "feature_type": "protocluster",
+        "number_key": "protocluster_number",
+        "id_prefix": "pc",
+    },
+}
+
+
+def get_antismash_bgc_id(sequence_id: str, qualifiers: dict, bgc_level: BGCLevel) -> str:
+    entity_info = ANTISMASH_BGC_ENTITY_INFO[bgc_level]
+    number = qualifiers.get(entity_info["number_key"], ["unknown"])[0]
+    return f"{sequence_id}.{entity_info['id_prefix']}.{number}"
+
+
 def parse_antismash_json(
     config: Config, file_path: Path, seq_data_map: Union[Dict[str, ContigData], None]
 ) -> List[Bgc]:
@@ -113,6 +138,7 @@ def parse_antismash_json(
     product_to_class = load_reverse_mapping(
         config.product_mapping_config.product_yamls["antismash_product_mapping"]
     )
+    entity_info = ANTISMASH_BGC_ENTITY_INFO[config.bgc_level]
 
     try:
         json_data = input_utils.get_json_from_file(file_path)
@@ -120,7 +146,7 @@ def parse_antismash_json(
         bgcs = list()
         for record in records:
             for feature in record["features"]:
-                if feature["type"] == "region":
+                if feature["type"] == entity_info["feature_type"]:
                     location = feature["location"]
                     # Extract start and end positions from the location string
                     # Example location: "[0:39844](+)", "[0:39844](-)", "[0:39844]"
@@ -139,11 +165,12 @@ def parse_antismash_json(
                     products_raw = qualifiers.get("product", ["Unknown product"])
                     mapped_products = map_products(products_raw, product_to_class)
                     # TODO: extend metadata if needed, e.g., with feature content
-                    metadata = {"product_details": products_raw}
+                    metadata = {
+                        "product_details": products_raw,
+                        "antismash_feature_type": feature["type"],
+                    }
 
-                    bgc_id = (
-                        sequence_id + "." + qualifiers.get("region_number", ["1"])[0]
-                    )
+                    bgc_id = get_antismash_bgc_id(sequence_id, qualifiers, config.bgc_level)
                     bgc = Bgc(
                         bgc_id=bgc_id,
                         sequence_id=sequence_id,

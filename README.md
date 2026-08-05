@@ -106,7 +106,7 @@ usage: bgc-quast [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-t
 ```
 ### Positional Arguments
 
-- `GENOME_MINING_RESULT`: Paths to genome mining outputs (antiSMASH `.json`, GECCO `.tsv`, DeepBGC `.json`/`.tsv`, or PRISM 4.4.5 `.json`)
+- `GENOME_MINING_RESULT`: Paths to genome mining outputs (antiSMASH `.json`, GECCO `.tsv`, DeepBGC `.json`/`.tsv`, or PRISM `.json`)
 
 ---
 
@@ -123,6 +123,7 @@ usage: bgc-quast [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-t
 | `--merge-distance INT`                                             | Merge nearby BGCs if the gap between them <= this distance (bp); 0 disables merging [default: 0] |
 | `--min-bgc-length INT`                                             | Filter out BGCs shorter than this length (bp) [default: 0]                                       |
 | `--edge-distance INT`                                              | Margin (in bp) from contig edges used to classify BGC completeness [default: 100]                |
+| `--bgc-level {region,candidate-cluster,protocluster}`              | Select the antiSMASH annotation level used as BGC entities for analysis [default: 'region']      |
 | `--mode {auto,compare-to-reference,compare-tools,compare-samples}` | [Running mode](#sec_run_modes) that controls how BGC-QUAST interprets the inputs                 |
 
 ### Compare-to-reference options
