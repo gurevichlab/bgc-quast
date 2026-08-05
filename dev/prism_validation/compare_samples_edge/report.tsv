@@ -1,0 +1,36 @@
+file_label	assembly_10	assembly_20
+Genome mining tool	PRISM	PRISM
+# BGCs filtered by length	0	0
+# BGCs	4	4
+# BGCs (NRPS)	1	1
+# BGCs (PKS)	2	2
+# BGCs (RiPP)	1	1
+# BGCs (complete)	3	2
+# BGCs (incomplete)	1	2
+# BGCs (NRPS, complete)	1	1
+# BGCs (PKS, complete)	1	1
+# BGCs (PKS, incomplete)	1	1
+# BGCs (RiPP, complete)	1	0
+# BGCs (RiPP, incomplete)	0	1
+Total BGC length in bp	52304	52304
+Total BGC length in bp (NRPS)	19460	19460
+Total BGC length in bp (PKS)	27070	27070
+Total BGC length in bp (RiPP)	5774	5774
+Total BGC length in bp (complete)	27794	22020
+Total BGC length in bp (incomplete)	24510	30284
+Total BGC length in bp (NRPS, complete)	19460	19460
+Total BGC length in bp (PKS, complete)	2560	2560
+Total BGC length in bp (PKS, incomplete)	24510	24510
+Total BGC length in bp (RiPP, complete)	5774	0
+Total BGC length in bp (RiPP, incomplete)	0	5774
+Mean BGC length in bp	13076.0	13076.0
+Mean BGC length in bp (NRPS)	19460.0	19460.0
+Mean BGC length in bp (PKS)	13535.0	13535.0
+Mean BGC length in bp (RiPP)	5774.0	5774.0
+Mean BGC length in bp (complete)	9264.7	11010.0
+Mean BGC length in bp (incomplete)	24510.0	15142.0
+Mean BGC length in bp (NRPS, complete)	19460.0	19460.0
+Mean BGC length in bp (PKS, complete)	2560.0	2560.0
+Mean BGC length in bp (PKS, incomplete)	24510.0	24510.0
+Mean BGC length in bp (RiPP, complete)	5774.0	0.0
+Mean BGC length in bp (RiPP, incomplete)	0.0	5774.0

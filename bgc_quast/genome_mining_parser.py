@@ -316,10 +316,16 @@ def parse_deepbgc_json(
     try:
         data = input_utils.get_json_from_file(file_path)
 
+        records = data.get("records")
+        if not isinstance(records, list):
+            raise InvalidInputException(
+                "Not DeepBGC JSON - 'records' is missing or not a list"
+            )
+
         bgcs = list()
 
         # Loop over each record (e.g., contig/scaffold)
-        for record in data.get("records", []):
+        for record in records:
             sequence_id = record.get("name")
 
             # Each subregion is a BGC
@@ -359,6 +365,58 @@ def parse_deepbgc_json(
         raise InvalidInputException(f"Failed to parse DeepBGC format: {str(e)}")
 
 
+def parse_prism_json(
+    config: Config, file_path: Path, seq_data_map: Union[Dict[str, ContigData], None]
+) -> List[Bgc]:
+    """Parse PRISM 4.4.5 JSON format."""
+    product_to_class = load_reverse_mapping(
+        config.product_mapping_config.product_yamls["prism_product_mapping"]
+    )
+
+    try:
+        data = input_utils.get_json_from_file(file_path)
+        clusters = data["prism_results"]["clusters"]
+
+        bgcs = list()
+
+        for idx, cluster in enumerate(clusters, start=1):
+            sequence_id = cluster["contig"].split()[0].strip()
+            start = cluster["start"]
+            end = cluster["end"]
+
+            # Get a list of products and classes
+            products_raw = cluster.get("type") or ["Unknown"]
+            mapped_product = map_products(products_raw, product_to_class)
+
+            # Build metadata
+            metadata = {
+                "product_details": products_raw,
+                "product_family": cluster.get("family", []),
+            }
+
+            # Create a Bgc object
+            bgc = Bgc(
+                bgc_id=f"{sequence_id}_{idx}",
+                sequence_id=sequence_id,
+                start=start,
+                end=end,
+                completeness=get_completeness(
+                    config, seq_data_map, sequence_id, start, end
+                ),
+                gene_count=get_gene_count(
+                    seq_data_map, sequence_id, start, end
+                ),
+                product_types=mapped_product,
+                metadata=metadata,
+            )
+            bgcs.append(bgc)
+
+        return bgcs
+    except Exception as e:
+        raise InvalidInputException(f"Failed to parse PRISM format: {str(e)}")
+
+
+
 def parse_input_mining_result_files(
     log: Logger,
     config: Config,
@@ -395,6 +453,7 @@ def parse_input_mining_result_files(
         parse_gecco_tsv: "GECCO",
         parse_deepbgc_tsv: "DeepBGC",
         parse_deepbgc_json: "DeepBGC",
+        parse_prism_json: "PRISM",
     }
 
     results = []
@@ -698,16 +757,19 @@ def parse_genome_data(file_paths: List[Path]) -> Dict[str, Dict[str, ContigData]
             try:
                 with open_file(file_path) as handle:
                     for record in SeqIO.parse(handle, "genbank"):
-                        genes = [
-                            (int(f.location.start), int(f.location.end))
-                            for f in record.features
-                            if f.type in ["gene", "CDS"]
-                        ]
+                        genes = sorted(
+                            {
+                                (int(f.location.start), int(f.location.end))
+                                for f in record.features
+                                if f.type in ["gene", "CDS"]
+                            }
+                        )
                         contigs[normalize_sequence_id(record.id)] = ContigData(
                             seq_len=len(record.seq), genes=genes
                         )
             except Exception as e:
                 raise Exception(f"Error parsing GenBank file {file_path}: {str(e)}")
+
         else:
             raise ValueError(f"Unsupported file extension for genome data: {file_path}")
 

@@ -15,6 +15,7 @@ from bgc_quast.genome_mining_parser import (
     parse_gecco_tsv,
     parse_genome_data,
     parse_input_mining_result_files,
+    parse_prism_json,
     parse_quast_output_dir,
     parse_reference_genome_mining_result,
 )
@@ -170,6 +171,88 @@ def test_parse_deepbgc_json():
     assert bgc.completeness == "Complete"
 
 
+def test_parse_prism_json(tmp_path):
+    """Test parsing PRISM JSON."""
+    prism_file = tmp_path / "prism.json"
+    sequence_header = (
+        "NC_003888.3 Streptomyces coelicolor A3(2) chromosome, complete genome"
+    )
+    prism_file.write_text(
+        json.dumps(
+            {
+                "prism_results": {
+                    "clusters": [
+                        {
+                            "contig": sequence_header,
+                            "start": 100,
+                            "end": 500,
+                            "type": ["PKS"],
+                            "family": ["TYPE_I_POLYKETIDE"],
+                        },
+                        {
+                            "contig": sequence_header,
+                            "start": 600,
+                            "end": 900,
+                            "type": ["PKS", "NRPS"],
+                            "family": [
+                                "TYPE_I_POLYKETIDE",
+                                "NONRIBOSOMAL_PEPTIDE",
+                            ],
+                        },
+                        {
+                            "contig": sequence_header,
+                            "start": 1000,
+                            "end": 1200,
+                            "type": ["NULL"],
+                            "family": ["NULL"],
+                        },
+                    ]
+                }
+            }
+        )
+    )
+
+    seq_data_map = {
+        "nc_003888.3": ContigData(
+            seq_len=2000,
+            genes=[
+                (150, 250),
+                (300, 400),
+            ],
+        )
+    }
+
+    bgcs = parse_prism_json(
+        load_config(),
+        prism_file,
+        seq_data_map,
+    )
+
+    assert len(bgcs) == 3
+
+    assert bgcs[0].sequence_id == "NC_003888.3"
+    assert bgcs[0].start == 100
+    assert bgcs[0].end == 500
+    assert bgcs[0].product_types == ["PKS"]
+    assert bgcs[0].gene_count == 2
+    assert bgcs[0].completeness == "Complete"
+    assert bgcs[0].metadata == {
+        "product_details": ["PKS"],
+        "product_family": ["TYPE_I_POLYKETIDE"],
+    }
+
+    assert set(bgcs[1].product_types) == {"PKS", "NRPS"}
+    assert bgcs[2].product_types == ["Unknown product"]
+
+def test_parse_prism_json_invalid_format(tmp_path):
+    """Test that non-PRISM JSON is rejected."""
+    prism_file = tmp_path / "invalid.json"
+    prism_file.write_text(json.dumps({"records": []}))
+
+    with pytest.raises(InvalidInputException):
+        parse_prism_json(load_config(), prism_file, None)
+
+
 def test_parse_deepbgc_json_invalid_format(tmp_path):
     # Not a valid JSON
     json_file = tmp_path / "invalid_deepbgc.json"
@@ -177,6 +260,24 @@ def test_parse_deepbgc_json_invalid_format(tmp_path):
     with pytest.raises(InvalidInputException) as exc_info:
         parse_deepbgc_json(load_config(), json_file, None)
     assert "Failed to parse DeepBGC format" in str(exc_info.value)
+
+def test_parse_deepbgc_json_rejects_prism_schema(tmp_path):
+    """Test that PRISM JSON is not accepted as DeepBGC JSON."""
+    json_file = tmp_path / "wrong_schema.json"
+    json_file.write_text(
+        json.dumps(
+            {
+                "prism_results": {
+                    "clusters": []
+                }
+            }
+        )
+    )
+
+    with pytest.raises(InvalidInputException) as exc_info:
+        parse_deepbgc_json(load_config(), json_file, None)
+
+    assert "'records' is missing or not a list" in str(exc_info.value)
 
 
 def test_parse_quast_output_dir_valid_file():
@@ -225,6 +326,61 @@ def test_parse_input_files_invalid_file(tmp_path, logger):
         in str(exc_info.value)
     )
 
+def test_parse_input_files_valid_json_wrong_schema(tmp_path, logger):
+    """Test that valid JSON with an unsupported structure is rejected."""
+    json_file = tmp_path / "wrong_schema.json"
+    json_file.write_text(
+        json.dumps(
+            {
+                "unsupported_format": {
+                    "predictions": []
+                }
+            }
+        )
+    )
+
+    with pytest.raises(InvalidInputException) as exc_info:
+        parse_input_mining_result_files(
+            logger,
+            load_config(),
+            [json_file],
+            None,
+        )
+
+    assert (
+        f"Could not parse file {json_file.as_posix()} with any available parser"
+        in str(exc_info.value)
+    )
+
+def test_parse_input_files_prism_json(tmp_path, logger):
+    """Test automatic detection of PRISM JSON."""
+    prism_file = tmp_path / "prism.json"
+    prism_file.write_text(
+        json.dumps(
+            {
+                "prism_results": {
+                    "clusters": [
+                        {
+                            "contig": "contig1",
+                            "start": 100,
+                            "end": 500,
+                            "type": ["PKS"],
+                            "family": ["TYPE_I_POLYKETIDE"],
+                        }
+                    ]
+                }
+            }
+        )
+    )
+
+    results = parse_input_mining_result_files(
+        logger, load_config(), [prism_file], None
+    )
+
+    assert len(results) == 1
+    assert results[0].mining_tool == "PRISM"
+    assert len(results[0].bgcs) == 1
+    assert results[0].bgcs[0].product_types == ["PKS"]
 
 def test_parse_input_files_valid_file(logger):
     """Test parsing a valid input file."""
@@ -366,6 +522,54 @@ ORIGIN
     assert result[label]["contigd"].seq_len == 10
     assert result[label]["contigc"].genes == [(0, 5), (9, 15)]
     assert result[label]["contigd"].genes == []
+
+def test_parse_genome_data_gbff_cds_only(tmp_path):
+    """Test that CDS-only GenBank annotations are used as genes."""
+    gbff_content = """LOCUS       contigE              20 bp    DNA     linear   01-JAN-1980
+DEFINITION  dummy.
+ACCESSION   contigE
+FEATURES             Location/Qualifiers
+     CDS             1..5
+     CDS             10..15
+ORIGIN
+        1 atgcatgcat gcatgcatgc
+//
+"""
+    gbff_file = tmp_path / "cds_only.gbff"
+    gbff_file.write_text(gbff_content)
+
+    result = parse_genome_data([gbff_file])
+    label = gbff_file.stem
+
+    assert result[label]["contige"].genes == [(0, 5), (9, 15)]
+
+
+def test_parse_genome_data_gbff_deduplicates_gene_and_cds(tmp_path):
+    """Test that matching gene and CDS features are counted only once."""
+    gbff_content = """LOCUS       contigF              20 bp    DNA     linear   01-JAN-1980
+DEFINITION  dummy.
+ACCESSION   contigF
+FEATURES             Location/Qualifiers
+     CDS             16..18
+     gene            1..5
+     CDS             1..5
+     gene            10..15
+     CDS             10..15
+ORIGIN
+        1 atgcatgcat gcatgcatgc
+//
+"""
+    gbff_file = tmp_path / "gene_and_cds.gbff"
+    gbff_file.write_text(gbff_content)
+
+    result = parse_genome_data([gbff_file])
+    label = gbff_file.stem
+
+    assert result[label]["contigf"].genes == [
+        (0, 5),
+        (9, 15),
+        (15, 18),
+    ]
 
 
 def test_parse_genome_data_unsupported_extension(tmp_path):

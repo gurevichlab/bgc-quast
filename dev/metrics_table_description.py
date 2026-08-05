@@ -32,6 +32,6 @@ for mode_name, report in report_modes:
 metrics_md = "\n".join(metrics_table)
 
 repo_root = Path(__file__).resolve().parents[1]
-output_path = repo_root / "METRICS.md"
+output_path = repo_root / "docs" / "METRICS.md"
 with open(output_path, "w", encoding="utf-8") as f:
     f.write(metrics_md)

@@ -22184,7 +22184,7 @@ FEATURES             Location/Qualifiers
                      /bgc_id="CONTIG_7.1"
                      /completeness="Incomplete"
      BGC             119..12174
-                     /product="PKS,Terpene"
+                     /product="Terpene,PKS"
                      /tool="DeepBGC"
                      /bgc_id="CONTIG_7_1"
                      /completeness="Complete"
@@ -29305,7 +29305,7 @@ FEATURES             Location/Qualifiers
                      /bgc_id="CONTIG_9_2"
                      /completeness="Complete"
      BGC             46103..47686
-                     /product="PKS,Terpene"
+                     /product="Terpene,PKS"
                      /tool="DeepBGC"
                      /bgc_id="CONTIG_9_3"
                      /completeness="Complete"
