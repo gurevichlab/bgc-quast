@@ -30,9 +30,9 @@ ANTISMASH_FILE = (
 GECCO_FILE = (
     TEST_DATA_DIR / "assembly_10_mining" / "GECCO" / "assembly_10.clusters.tsv"
 )
-DEEPBGC_TSV_FILE = TEST_DATA_DIR / "assembly_10_mining" / "DeepBGC" / "DeepBGC.bgc.tsv"
+DEEPBGC_TSV_FILE = TEST_DATA_DIR / "assembly_10_mining" / "DeepBGC" / "assembly_10" / "assembly_10.bgc.tsv"
 DEEPBGC_JSON_FILE = (
-    TEST_DATA_DIR / "assembly_10_mining" / "DeepBGC" / "DeepBGC.antismash.json"
+    TEST_DATA_DIR / "assembly_10_mining" / "DeepBGC" / "assembly_10" / "assembly_10.antismash.json"
 )
 QUAST_DIR = TEST_DATA_DIR / "quast_out"
 SEQ_DATA_MAP = {
@@ -697,16 +697,20 @@ def test_get_completeness(seq_data_map, sequence_id, start, end, margin, expecte
     assert result == expected
 
 
-def test_parse_input_mining_results_does_not_reuse_genome_alias(logger):
+def test_parse_input_mining_results_does_not_reuse_genome_alias(tmp_path, logger):
     """A genome alias may be assigned only once when multiple genomes exist."""
     assembly_20_deepbgc = (
-        TEST_DATA_DIR / "assembly_20_mining" / "DeepBGC" / "DeepBGC.bgc.tsv"
+        TEST_DATA_DIR / "assembly_20_mining" / "DeepBGC" / "assembly_20" / "assembly_20.bgc.tsv"
     )
+    assembly_10_old_style = tmp_path / "DeepBGC_10.bgc.tsv"
+    assembly_20_old_style = tmp_path / "DeepBGC_20.bgc.tsv"
+    assembly_10_old_style.write_text(DEEPBGC_TSV_FILE.read_text())
+    assembly_20_old_style.write_text(assembly_20_deepbgc.read_text())
 
     results = parse_input_mining_result_files(
         logger,
         load_config(),
-        [DEEPBGC_TSV_FILE, assembly_20_deepbgc],
+        [assembly_10_old_style, assembly_20_old_style],
         [
             TEST_DATA_DIR / "assembly_10.gbff.gz",
             TEST_DATA_DIR / "assembly_20.gbff.gz",
