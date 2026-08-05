@@ -140,14 +140,27 @@ usage: bgc-quast [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-t
 
 ## Input naming and matching
 
-BGC-QUAST uses labels derived from the original genome mining result filenames to associate them with optional genome files and, in compare-to-reference mode, QUAST `.coords` files. We recommend using the same basename for each assembly across all tools.
+Input naming is only relevant when BGC-QUAST needs to associate genome mining results with optional genome 
+(`--genome/-G`) files or, in compare-to-reference mode, QUAST alignment files (`--quast-output-dir/-q`).
 
-* antiSMASH uses the input filename by default; a custom name can be specified using `--output-basename`.
-* GECCO uses the input genome filename as the prefix of its output files.
-* DeepBGC names its output files after the output directory; use `-o/--output` to assign the corresponding assembly name.
-* QUAST uses the input assembly filenames by default; custom assembly names can be specified using `-l/--labels`.
+For the most reliable input matching, we recommend using the same basename across all input files. For example:
 
-If the original filenames do not match, `--names` can provide one positional fallback label per genome mining result. The names must be comma-separated and supplied in the same order as the input genome mining result files. BGC-QUAST first attempts to match the original filename and then the corresponding `--names` value.
+* `assembly_10.gbk` or `assembly_10.fasta` (original genome sequence)
+* `assembly_10.json` (antiSMASH genome mining result)
+* `assembly_10.antismash.json` or `assembly_10.bgc.tsv` (DeepBGC genome mining result)
+* `assembly_10.clusters.tsv` (GECCO genome mining result)
+* `assembly_10.coords` (inside the QUAST output; compare-to-reference mode only)
+
+Most tools already support this naming convention by default:
+* antiSMASH uses the input filename by default. A custom basename can be specified with `--output-basename`.
+* GECCO uses the input genome filename as the prefix for its output files.
+* DeepBGC names its output files after the final component of the output directory. For example, using `-o assembly_10_mining/DeepBGC/assembly_10` produces `assembly_10.antismash.json` and `assembly_10.bgc.tsv`.
+* QUAST uses the input assembly filenames by default. Custom assembly names can be specified with `-l/--labels`.
+
+If matching based on the original filenames is not possible, `--names` can be used to provide BGC-QUAST one fallback 
+label for each genome mining result file. 
+BGC-QUAST first attempts to match using labels derived from the original filenames and then falls back to the 
+corresponding `--names` value.
 
 <a name="sec_run_modes"></a>
 ## Running modes
@@ -213,7 +226,7 @@ See the example output in
 Compare BGCs predicted by different genome mining tools applied to the same genome sequence.
 
 > **Note**
-> All genome mining tools must be run on the **same input genome sequence**. If this is unclear from the input file names (e.g., DeepBGC does not include the input genome name in its output), the running mode should be explicitly specified using `--mode compare-tools`.    
+> All genome mining tools must be run on the **same input genome sequence**. If this is unclear from the input file names, the running mode should be explicitly specified using `--mode compare-tools`.    
  
 **Command (general form)**  
 
@@ -231,9 +244,9 @@ bgc-quast <tool1_genome_mining_results> \
 ```bash
 bgc-quast \
   test_data/assembly_10_mining/antiSMASH/assembly_10.json.gz \
-  test_data/assembly_10_mining/DeepBGC/DeepBGC.bgc.tsv \
+  test_data/assembly_10_mining/DeepBGC/assembly_10/assembly_10.bgc.tsv \
   test_data/assembly_10_mining/GECCO/assembly_10.clusters.tsv \
-  -g test_data/assembly_10.gbff.gz --output-bgcs \
+  --genome test_data/assembly_10.gbff.gz --output-bgcs \
   --mode compare-tools  
 ```
 The BGC-QUAST reports will be saved in `./bgc-quast-results/latest/`.
