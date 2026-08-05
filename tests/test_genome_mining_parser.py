@@ -56,7 +56,7 @@ def test_parse_antismash_json_gzipped():
     # Test the first BGC
     bgc = bgcs[0]
 
-    assert bgc.bgc_id == "CONTIG_2.1"
+    assert bgc.bgc_id == "CONTIG_2.reg.1"
     assert bgc.sequence_id == "CONTIG_2"
     assert bgc.start == 0
     assert bgc.end == 39844
@@ -74,7 +74,7 @@ def test_parse_antismash_json_gzipped_unknown_seq_length():
     # Test the first BGC
     bgc = bgcs[0]
 
-    assert bgc.bgc_id == "CONTIG_2.1"
+    assert bgc.bgc_id == "CONTIG_2.reg.1"
     assert bgc.sequence_id == "CONTIG_2"
     assert bgc.start == 0
     assert bgc.end == 39844
