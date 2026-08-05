@@ -1,4 +1,5 @@
 from statistics import mean
+from collections import defaultdict
 from typing import Any, Callable, Iterable, Optional
 
 from bgc_quast.genome_mining_result import Bgc
@@ -99,16 +100,43 @@ def total_bgc_count(bgcs: Iterable[Bgc]) -> int:
     return len(list(bgcs))
 
 
-@metric("total_bgc_length")
-def total_bgc_count(bgcs: Iterable[Bgc]) -> int:
-    """Calculate total BGC length."""
-    lengths = [bgc.end - bgc.start for bgc in bgcs]
-    return sum(lengths)
+@metric("total_bgc_span")
+def total_bgc_span(bgcs: Iterable[Bgc]) -> int:
+    """Calculate total genomic span covered by BGCs after merging overlapping intervals."""
+    intervals_by_sequence = defaultdict(list)
+
+    for bgc in bgcs:
+        intervals_by_sequence[bgc.sequence_id].append((bgc.start, bgc.end))
+
+    total_span = 0
+
+    for intervals in intervals_by_sequence.values():
+        if not intervals:
+            continue
+
+        # Sort intervals by start coordinate
+        intervals.sort()
+
+        current_start, current_end = intervals[0]
+
+        for start, end in intervals[1:]:
+            if start <= current_end:
+                # Overlap: extend current interval if needed
+                current_end = max(current_end, end)
+            else:
+                # No overlap: finalize current interval
+                total_span += current_end - current_start
+                current_start, current_end = start, end
+
+        # Add final interval
+        total_span += current_end - current_start
+
+    return total_span
 
 
 @metric("mean_bgc_length")
 def mean_bgc_length(bgcs: Iterable[Bgc]) -> float:
-    """Calculate mean BGC length."""
+    """Calculate mean BGC length in bp."""
     bgc_list = list(bgcs)
     if not bgc_list:
         return 0.0

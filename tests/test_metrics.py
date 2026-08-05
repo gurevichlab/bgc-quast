@@ -41,6 +41,44 @@ def sample_bgcs():
     ]
 
 
+@pytest.fixture
+def overlapping_bgcs():
+    return [
+        Bgc(
+            bgc_id="bgc1",
+            sequence_id="seq1",
+            start=0,
+            end=100,
+            completeness="Complete",
+            product_types=["NRP"],
+        ),
+        Bgc(
+            bgc_id="bgc2",
+            sequence_id="seq1",
+            start=50,
+            end=200,
+            completeness="Complete",
+            product_types=["PKS"],
+        ),
+        Bgc(
+            bgc_id="bgc3",
+            sequence_id="seq1",
+            start=200,
+            end=300,
+            completeness="Complete",
+            product_types=["NRP"],
+        ),
+        Bgc(
+            bgc_id="bgc4",
+            sequence_id="seq2",
+            start=0,
+            end=100,
+            completeness="Complete",
+            product_types=["PKS"],
+        ),
+    ]
+
+
 def test_total_bgc_count(sample_bgcs):
     metric_func = METRIC_REGISTRY.get("total_bgc_count")
     assert metric_func(sample_bgcs) == 4
@@ -49,6 +87,11 @@ def test_total_bgc_count(sample_bgcs):
 def test_mean_bgc_length(sample_bgcs):
     metric_func = METRIC_REGISTRY.get("mean_bgc_length")
     assert metric_func(sample_bgcs) == 100.0
+
+
+def test_total_bgc_span(overlapping_bgcs):
+    metric_func = METRIC_REGISTRY.get("total_bgc_span")
+    assert metric_func(overlapping_bgcs) == 400
 
 
 def test_grouping_by_completeness(sample_bgcs):

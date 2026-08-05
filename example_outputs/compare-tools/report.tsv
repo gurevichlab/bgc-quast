@@ -23,28 +23,28 @@ Genome mining tool	DeepBGC	GECCO	PRISM	antiSMASH
 # BGCs (hybrid, complete)	2	0	0	0
 # BGCs (unknown, complete)	19	1	0	0
 # BGCs (unknown, incomplete)	1	0	0	0
-Total BGC length in bp	382449	146483	52304	175878
-Total BGC length in bp (NRPS)	37111	40549	19460	52045
-Total BGC length in bp (PKS)	93339	19843	27070	39844
-Total BGC length in bp (RiPP)	28194	23878	5774	34522
-Total BGC length in bp (terpene)	33103	21182	0	49467
-Total BGC length in bp (saccharide)	27939	0	0	0
-Total BGC length in bp (hybrid)	13640	0	0	0
-Total BGC length in bp (unknown)	149123	41031	0	0
-Total BGC length in bp (complete)	245686	126640	52304	52470
-Total BGC length in bp (incomplete)	136763	19843	0	123408
-Total BGC length in bp (NRPS, complete)	0	40549	19460	0
-Total BGC length in bp (NRPS, incomplete)	37111	0	0	52045
-Total BGC length in bp (PKS, complete)	73496	0	27070	0
-Total BGC length in bp (PKS, incomplete)	19843	19843	0	39844
-Total BGC length in bp (RiPP, complete)	24425	23878	5774	24559
-Total BGC length in bp (RiPP, incomplete)	3769	0	0	9963
-Total BGC length in bp (terpene, complete)	2769	21182	0	27911
-Total BGC length in bp (terpene, incomplete)	30334	0	0	21556
-Total BGC length in bp (saccharide, complete)	27939	0	0	0
-Total BGC length in bp (hybrid, complete)	13640	0	0	0
-Total BGC length in bp (unknown, complete)	103417	41031	0	0
-Total BGC length in bp (unknown, incomplete)	45706	0	0	0
+Total BGC span in bp	382449	146483	52304	175878
+Total BGC span in bp (NRPS)	37111	40549	19460	52045
+Total BGC span in bp (PKS)	93339	19843	27070	39844
+Total BGC span in bp (RiPP)	28194	23878	5774	34522
+Total BGC span in bp (terpene)	33103	21182	0	49467
+Total BGC span in bp (saccharide)	27939	0	0	0
+Total BGC span in bp (hybrid)	13640	0	0	0
+Total BGC span in bp (unknown)	149123	41031	0	0
+Total BGC span in bp (complete)	245686	126640	52304	52470
+Total BGC span in bp (incomplete)	136763	19843	0	123408
+Total BGC span in bp (NRPS, complete)	0	40549	19460	0
+Total BGC span in bp (NRPS, incomplete)	37111	0	0	52045
+Total BGC span in bp (PKS, complete)	73496	0	27070	0
+Total BGC span in bp (PKS, incomplete)	19843	19843	0	39844
+Total BGC span in bp (RiPP, complete)	24425	23878	5774	24559
+Total BGC span in bp (RiPP, incomplete)	3769	0	0	9963
+Total BGC span in bp (terpene, complete)	2769	21182	0	27911
+Total BGC span in bp (terpene, incomplete)	30334	0	0	21556
+Total BGC span in bp (saccharide, complete)	27939	0	0	0
+Total BGC span in bp (hybrid, complete)	13640	0	0	0
+Total BGC span in bp (unknown, complete)	103417	41031	0	0
+Total BGC span in bp (unknown, incomplete)	45706	0	0	0
 Mean BGC length in bp	9561.2	24413.8	13076.0	29313.0
 Mean BGC length in bp (NRPS)	37111.0	40549.0	19460.0	52045.0
 Mean BGC length in bp (PKS)	9333.9	19843.0	13535.0	39844.0
