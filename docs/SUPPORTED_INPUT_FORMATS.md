@@ -3,6 +3,11 @@
 BGC-QUAST officially supports outputs from antiSMASH, GECCO, DeepBGC, and PRISM. Each parser reads only a small subset of the complete tool output.
 The structures below show the fields needed to construct BGC records. Additional product information may be retained as metadata but is omitted here. Unrecognized product labels are reported as `Unknown product`.
 
+Product class mapping is defined in YAML configuration files located in [`bgc_quast/configs/`](../bgc_quast/configs/). 
+These files specify how tool-specific product classes are mapped to BGC-QUAST categories (e.g., `NRPS`, `PKS`, and `RiPP`).
+BGCs assigned to multiple product classes are categorized as `Hybrid` by BGC-QUAST. 
+This mapping allows outputs from different genome mining tools to be normalized into a common set of BGC classes.
+
 ## antiSMASH JSON
 
 ```text
