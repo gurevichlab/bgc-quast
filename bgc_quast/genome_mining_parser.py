@@ -131,6 +131,30 @@ def get_antismash_bgc_id(sequence_id: str, qualifiers: dict, bgc_level: BGCLevel
     return f"{sequence_id}.{entity_info['id_prefix']}.{number}"
 
 
+def parse_antismash_location(location: str) -> tuple[int, int]:
+    """Parse antiSMASH location strings.
+
+    Supports exact and fuzzy boundaries, e.g.:
+    [100:200]
+    [100:200](+)
+    [100:>200](+)
+    [<100:200](-)
+
+    Fuzzy antiSMASH boundaries (< or >) are converted to their numeric coordinates;
+    the uncertainty is ignored for interval-based calculations!
+    """
+    pattern = r"\[([<>]?\d+):([<>]?\d+)\](?:\([+-]\))?"
+
+    match = re.match(pattern, location)
+    if not match:
+        raise ValueError(f"Invalid antiSMASH location format: {location}")
+
+    start = int(match.group(1).lstrip("<>"))
+    end = int(match.group(2).lstrip("<>"))
+
+    return start, end
+
+
 def parse_antismash_json(
     config: Config, file_path: Path, seq_data_map: Union[Dict[str, ContigData], None]
 ) -> List[Bgc]:
@@ -147,16 +171,7 @@ def parse_antismash_json(
         for record in records:
             for feature in record["features"]:
                 if feature["type"] == entity_info["feature_type"]:
-                    location = feature["location"]
-                    # Extract start and end positions from the location string
-                    # Example location: "[0:39844](+)", "[0:39844](-)", "[0:39844]"
-                    pattern = r"\[(\d+):(\d+)\](?:\((\+|-)\))?"
-                    match = re.match(pattern, location)
-                    if match:
-                        start = int(match.group(1))
-                        end = int(match.group(2))
-                    else:
-                        raise ValueError(f"Invalid location format: {location}")
+                    start, end = parse_antismash_location(feature["location"])
                     sequence_id = record["id"]
                     qualifiers = feature.get("qualifiers", {})
 
@@ -441,7 +456,6 @@ def parse_prism_json(
         return bgcs
     except Exception as e:
         raise InvalidInputException(f"Failed to parse PRISM format: {str(e)}")
-
 
 
 def parse_input_mining_result_files(
@@ -830,10 +844,7 @@ def get_genome_data_from_mining_result(
         for record in records:
             if "id" in record and "seq" in record and "data" in record["seq"]:
                 genes = [
-                    (
-                        int(f["location"].split("[")[1].split(":")[0]),
-                        int(f["location"].split(":")[1].split("]")[0]),
-                    )
+                    parse_antismash_location(f["location"])
                     for f in record.get("features", [])
                     if f.get("type") == "gene"
                 ]
