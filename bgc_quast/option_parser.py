@@ -118,14 +118,6 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
     )
 
     basic.add_argument(
-        "--output-bgcs",
-        action="store_true",
-        default=False,
-        help="Output BGCs predicted by all tools in an integrated GenBank file "
-             "(compare-tools mode only; requires --genome/-G to be specified)",
-    )
-
-    basic.add_argument(
         "--names",
         type=str,
         default=None,

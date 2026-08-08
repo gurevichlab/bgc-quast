@@ -139,8 +139,6 @@ usage: bgc-quast [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-t
 | Option                      | Description                                                                                |
 |-----------------------------|--------------------------------------------------------------------------------------------|
 | `--overlap-fraction FLOAT` | BGC overlap threshold as a fraction in (0, 1] [default: 0.9] |
-| `--output-bgcs`             | Output BGCs predicted by all tools in an integrated GenBank file (requires `--genome` to be specified)  |
-
 
 <a name="sec_naming"></a>
 

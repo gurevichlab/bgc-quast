@@ -320,54 +320,53 @@ class PipelineHelper:
         bgc_annotations_gbk_output_path = None
         bgc_list_tsv_output_path = None
         bgc_overlap_tsv_output_path = None
-        if self.args.output_bgcs:
-            if self.running_mode == RunningMode.COMPARE_TOOLS:
-                if not self.args.genome_data:
-                    self.log.warning("Cannot create GenBank file with BGC annotations since no input genome was provided")
-                else:
-                    bgc_annotations_gbk_output_path = Path(str(bgc_info_base_output_path) + ".gbk")
-                    try:
-                        write_genbank(
-                            genome_file=self.args.genome_data[0],
-                            genome_mining_results=self.assembly_genome_mining_results,
-                            output_path=bgc_annotations_gbk_output_path
-                        )
-                    except (ValueError, UnsupportedGenomeFormatError) as e:
-                        bgc_annotations_gbk_output_path = None
-                        self.log.warning(
-                            "Failed to generate integrated GenBank file with all BGC predictions. "
-                            f"Reason: {e}\n"
-                        )
-
-                bgc_list_tsv_output_path = Path(str(bgc_info_base_output_path) + ".tsv")
-                try:
-                    write_bgc_tsv(
-                        genome_mining_results=self.assembly_genome_mining_results,
-                        output_path=bgc_list_tsv_output_path,
-                        genome_file=self.args.genome_data[0] if self.args.genome_data else None
-                    )
-                except ValueError as e:
-                    bgc_list_tsv_output_path = None
-                    self.log.warning(
-                        "Failed to generate TSV file with all BGC predictions. "
-                        f"Reason: {e}\n"
-                    )
-
-                bgc_overlap_tsv_output_path = Path(str(bgc_info_base_output_path) + ".overlaps.tsv")
-                try:
-                    write_overlapping_bgc_tsv(
-                        genome_mining_results=self.assembly_genome_mining_results,
-                        output_path=bgc_overlap_tsv_output_path,
-                        genome_file=self.args.genome_data[0] if self.args.genome_data else None
-                    )
-                except ValueError as e:
-                    bgc_overlap_tsv_output_path = None
-                    self.log.warning(
-                        "Failed to generate TSV file with overlapping BGC intervals. "
-                        f"Reason: {e}\n"
-                    )
+        if self.running_mode == RunningMode.COMPARE_TOOLS:
+            if not self.args.genome_data:
+                self.log.warning("Cannot create integrated GenBank file with BGC annotations since no input genome was provided (--genome/-G)")
             else:
-                self.log.warning(f"--output-bgcs is supported only in {RunningMode.COMPARE_TOOLS}, the running mode is set to: {self.running_mode}")
+                bgc_annotations_gbk_output_path = Path(str(bgc_info_base_output_path) + ".gbk")
+                try:
+                    write_genbank(
+                        genome_file=self.args.genome_data[0],
+                        genome_mining_results=self.assembly_genome_mining_results,
+                        output_path=bgc_annotations_gbk_output_path
+                    )
+                except (ValueError, UnsupportedGenomeFormatError) as e:
+                    bgc_annotations_gbk_output_path = None
+                    self.log.warning(
+                        "Failed to generate integrated GenBank file with all BGC predictions. "
+                        f"Reason: {e}\n"
+                    )
+
+            bgc_list_tsv_output_path = Path(str(bgc_info_base_output_path) + ".tsv")
+            try:
+                write_bgc_tsv(
+                    genome_mining_results=self.assembly_genome_mining_results,
+                    output_path=bgc_list_tsv_output_path,
+                    genome_file=self.args.genome_data[0] if self.args.genome_data else None
+                )
+            except ValueError as e:
+                bgc_list_tsv_output_path = None
+                self.log.warning(
+                    "Failed to generate TSV file with all BGC predictions. "
+                    f"Reason: {e}\n"
+                )
+
+            bgc_overlap_tsv_output_path = Path(str(bgc_info_base_output_path) + ".overlaps.tsv")
+            try:
+                write_overlapping_bgc_tsv(
+                    genome_mining_results=self.assembly_genome_mining_results,
+                    output_path=bgc_overlap_tsv_output_path,
+                    genome_file=self.args.genome_data[0] if self.args.genome_data else None
+                )
+            except ValueError as e:
+                bgc_overlap_tsv_output_path = None
+                self.log.warning(
+                    "Failed to generate TSV file with overlapping BGC intervals. "
+                    f"Reason: {e}\n"
+                )
+        else:
+            self.log.warning(f"--output-bgcs is supported only in {RunningMode.COMPARE_TOOLS}, the running mode is set to: {self.running_mode}")
 
         if not self.analysis_report:
             self.log.error("No analysis report available to write results.")
