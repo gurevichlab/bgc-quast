@@ -48,6 +48,7 @@ def pipeline_helper(logger, tmp_path):
                     output_dir=tmp_path,
                     report=tmp_path / "report.txt",
                     html_report=tmp_path / "report.html",
+                    bgc_annotations_basename="bgcs",
                     bgc_completeness_margin=100,
                     update_latest_symlink=False,
                 ),
