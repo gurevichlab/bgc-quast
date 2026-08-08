@@ -271,6 +271,11 @@ See the example output in
 - Number of tool-specific (**unique**) and **shared** BGCs across genome mining tools, reported overall and stratified by product type and completeness.  
 - **Venn diagrams** illustrating overlaps between BGC predictions produced by different tools.
 
+**Mode-specific output**  
+- **TSV** file listing all predicted BGCs sorted by sequence and coordinates.    
+- **TSV** file grouping overlapping BGCs from different tools into shared genomic intervals.    
+- If the input genome sequence is provided (`--genome/-G`), integrated **GenBank** file with BGC annotations from all tools mapped onto the genome.  
+
 <a name="sec_run_mode_3"></a>
 ### 3. Compare-samples mode
 
