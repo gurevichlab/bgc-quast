@@ -258,7 +258,7 @@ bgc-quast \
   test_data/assembly_10_mining/DeepBGC/assembly_10/assembly_10.bgc.tsv \
   test_data/assembly_10_mining/GECCO/assembly_10.clusters.tsv \
   test_data/assembly_10_mining/PRISM/assembly_10.fasta.json.gz \
-  --genome test_data/assembly_10.gbff.gz --output-bgcs \
+  --genome test_data/assembly_10.gbff.gz \
   --mode compare-tools  
 ```
 The BGC-QUAST reports will be saved in `./bgc-quast-results/latest/`.
