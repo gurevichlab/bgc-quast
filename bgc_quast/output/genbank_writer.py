@@ -22,13 +22,16 @@ def normalize_id(x):
 def make_bgc_feature(bgc, tool: str) -> SeqFeature:
     return SeqFeature(
         FeatureLocation(bgc.start, bgc.end),
-        type="BGC",
-        qualifiers={
+        type="misc_feature",
+        qualifiers = {
             "product": [",".join(bgc.product_types)],
-            "tool": [str(tool)],
-            "bgc_id": [str(bgc.bgc_id)],
-            "completeness": [str(bgc.completeness)],
-        },
+            "note": [
+                "BGC",
+                f"tool:{tool}",
+                f"bgc_id:{bgc.bgc_id}",
+                f"completeness:{bgc.completeness}",
+            ],
+        }
     )
 
 
