@@ -18,6 +18,7 @@ from bgc_quast.reporting.report_builder import ReportBuilder
 from bgc_quast.reporting.report_config import ReportConfigManager
 from bgc_quast.reporting.report_data import ReportData, RunningMode
 from bgc_quast.output.genbank_writer import write_genbank, UnsupportedGenomeFormatError
+from bgc_quast.output.bgc_list_writer import write_bgc_tsv
 
 
 class PipelineHelper:
@@ -311,16 +312,19 @@ class PipelineHelper:
         Logs the locations of the text and HTML reports.
         """
 
+        # the extensions will be added for specific outputs (.gbk, .tsv)
+        bgc_info_base_output_path = (self.config.output_config.output_dir /
+                                     ".".join([
+                                              # input_utils.get_file_label_from_path(self.args.genome_data[0]),
+                                              "all_tools", self.config.output_config.bgc_annotations_basename]))
         bgc_annotations_gbk_output_path = None
+        bgc_list_tsv_output_path = None
         if self.args.output_bgcs:
             if self.running_mode == RunningMode.COMPARE_TOOLS:
                 if not self.args.genome_data:
                     self.log.warning("Cannot create GenBank file with BGC annotations since no input genome was provided")
                 else:
-                    bgc_annotations_gbk_output_path = (self.config.output_config.output_dir /
-                                                       ".".join([
-                                                           # input_utils.get_file_label_from_path(self.args.genome_data[0]),
-                                                           "all_tools", self.config.output_config.bgc_annotations_basename]))
+                    bgc_annotations_gbk_output_path = Path(str(bgc_info_base_output_path) + ".gbk")
                     try:
                         write_genbank(
                             genome_file=self.args.genome_data[0],
@@ -333,6 +337,20 @@ class PipelineHelper:
                             "Failed to generate integrated GenBank file with all BGC predictions. "
                             f"Reason: {e}\n"
                         )
+
+                bgc_list_tsv_output_path = Path(str(bgc_info_base_output_path) + ".tsv")
+                try:
+                    write_bgc_tsv(
+                        genome_mining_results=self.assembly_genome_mining_results,
+                        output_path=bgc_list_tsv_output_path,
+                        genome_file=self.args.genome_data[0] if self.args.genome_data else None
+                    )
+                except ValueError as e:
+                    bgc_list_tsv_output_path = None
+                    self.log.warning(
+                        "Failed to generate TSV file with all BGC predictions. "
+                        f"Reason: {e}\n"
+                    )
             else:
                 self.log.warning(f"--output-bgcs is supported only in {RunningMode.COMPARE_TOOLS}, the running mode is set to: {self.running_mode}")
 
@@ -363,7 +381,12 @@ class PipelineHelper:
         )
         if bgc_annotations_gbk_output_path is not None:
             self.log.info(
-                f"GenBank file with all BGCs is saved to {bgc_annotations_gbk_output_path}",
+                f"GenBank file with all BGCs predicted by all tools is saved to {bgc_annotations_gbk_output_path}",
+                indent=1,
+            )
+        if bgc_list_tsv_output_path is not None:
+            self.log.info(
+                f"TSV file with all BGCs predicted by all tools is saved to {bgc_list_tsv_output_path}",
                 indent=1,
             )
 
