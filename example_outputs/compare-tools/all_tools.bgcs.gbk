@@ -1639,41 +1639,48 @@ FEATURES             Location/Qualifiers
                      /codon_start=1
                      /transl_table=11
                      /inference="ab initio prediction:Prodigal:2.6"
-     BGC             1144..9307
+     misc_feature    1144..9307
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_1_1"
-                     /completeness="Complete"
-     BGC             10407..11363
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_1_1"
+                     /note="completeness:Complete"
+     misc_feature    10407..11363
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_1_2"
-                     /completeness="Complete"
-     BGC             18485..33357
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_1_2"
+                     /note="completeness:Complete"
+     misc_feature    18485..33357
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_1_3"
-                     /completeness="Complete"
-     BGC             37614..39812
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_1_3"
+                     /note="completeness:Complete"
+     misc_feature    37614..39812
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_1_4"
-                     /completeness="Complete"
-     BGC             46064..46201
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_1_4"
+                     /note="completeness:Complete"
+     misc_feature    46064..46201
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_1_5"
-                     /completeness="Complete"
-     BGC             54103..99808
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_1_5"
+                     /note="completeness:Complete"
+     misc_feature    54103..99808
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_1_6"
-                     /completeness="Incomplete"
-     BGC             1144..42174
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_1_6"
+                     /note="completeness:Incomplete"
+     misc_feature    1144..42174
                      /product="Unknown product"
-                     /tool="GECCO"
-                     /bgc_id="CONTIG_1_1"
-                     /completeness="Complete"
+                     /note="BGC"
+                     /note="tool:GECCO"
+                     /note="bgc_id:CONTIG_1_1"
+                     /note="completeness:Complete"
 ORIGIN
         1 cccgcggagc gggtaccaca tcgctgcgcg atgtgcgagc gaacacccgg gctgcgcccg
        61 ggtgttgcgc tcccgctccg cgggagcgct ggcgggacgc tgcgcgtccc gctcaccaag
@@ -4927,41 +4934,48 @@ FEATURES             Location/Qualifiers
                      /transl_table=11
                      /inference="ab initio prediction:Prodigal:2.6"
                      /inference="similar to AA sequence:UniRef:UniRef50_W9G415"
-     BGC             1..39844
+     misc_feature    1..39844
                      /product="PKS"
-                     /tool="antiSMASH"
-                     /bgc_id="CONTIG_2.1"
-                     /completeness="Incomplete"
-     BGC             64321..92231
+                     /note="BGC"
+                     /note="tool:antiSMASH"
+                     /note="bgc_id:CONTIG_2.reg.1"
+                     /note="completeness:Incomplete"
+     misc_feature    64321..92231
                      /product="Terpene"
-                     /tool="antiSMASH"
-                     /bgc_id="CONTIG_2.2"
-                     /completeness="Complete"
-     BGC             2..19844
+                     /note="BGC"
+                     /note="tool:antiSMASH"
+                     /note="bgc_id:CONTIG_2.reg.2"
+                     /note="completeness:Complete"
+     misc_feature    2..19844
                      /product="PKS"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_2_1"
-                     /completeness="Incomplete"
-     BGC             69774..100107
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_2_1"
+                     /note="completeness:Incomplete"
+     misc_feature    69774..100107
                      /product="Terpene"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_2_2"
-                     /completeness="Incomplete"
-     BGC             2..19844
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_2_2"
+                     /note="completeness:Incomplete"
+     misc_feature    2..19844
                      /product="PKS"
-                     /tool="GECCO"
-                     /bgc_id="CONTIG_2_1"
-                     /completeness="Incomplete"
-     BGC             68895..90076
+                     /note="BGC"
+                     /note="tool:GECCO"
+                     /note="bgc_id:CONTIG_2_1"
+                     /note="completeness:Incomplete"
+     misc_feature    68895..90076
                      /product="Terpene"
-                     /tool="GECCO"
-                     /bgc_id="CONTIG_2_2"
-                     /completeness="Complete"
-     BGC             3971..28480
+                     /note="BGC"
+                     /note="tool:GECCO"
+                     /note="bgc_id:CONTIG_2_2"
+                     /note="completeness:Complete"
+     misc_feature    3971..28480
                      /product="PKS"
-                     /tool="PRISM"
-                     /bgc_id="CONTIG_2_1"
-                     /completeness="Complete"
+                     /note="BGC"
+                     /note="tool:PRISM"
+                     /note="bgc_id:CONTIG_2_1"
+                     /note="completeness:Complete"
 ORIGIN
         1 agaggatctt cagcagggtc gtcttgcccg caccgttctc gccgacgatc ccggccaggg
        61 tgccgggctt cagccggagg ccgacgcccc tcaggacggc gtgctgtcgg taggaatggt
@@ -8373,46 +8387,54 @@ FEATURES             Location/Qualifiers
                      /codon_start=1
                      /transl_table=11
                      /inference="ab initio prediction:Prodigal:2.6"
-     BGC             46540..71098
+     misc_feature    46540..71098
                      /product="RiPP"
-                     /tool="antiSMASH"
-                     /bgc_id="CONTIG_3.1"
-                     /completeness="Complete"
-     BGC             11762..22414
+                     /note="BGC"
+                     /note="tool:antiSMASH"
+                     /note="bgc_id:CONTIG_3.reg.1"
+                     /note="completeness:Complete"
+     misc_feature    11762..22414
                      /product="PKS"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_3_1"
-                     /completeness="Complete"
-     BGC             42217..42780
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_3_1"
+                     /note="completeness:Complete"
+     misc_feature    42217..42780
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_3_2"
-                     /completeness="Complete"
-     BGC             46000..47883
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_3_2"
+                     /note="completeness:Complete"
+     misc_feature    46000..47883
                      /product="Terpene"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_3_3"
-                     /completeness="Complete"
-     BGC             48691..49716
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_3_3"
+                     /note="completeness:Complete"
+     misc_feature    48691..49716
                      /product="PKS"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_3_4"
-                     /completeness="Complete"
-     BGC             51778..63234
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_3_4"
+                     /note="completeness:Complete"
+     misc_feature    51778..63234
                      /product="RiPP"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_3_5"
-                     /completeness="Complete"
-     BGC             50819..67527
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_3_5"
+                     /note="completeness:Complete"
+     misc_feature    50819..67527
                      /product="RiPP"
-                     /tool="GECCO"
-                     /bgc_id="CONTIG_3_1"
-                     /completeness="Complete"
-     BGC             55325..61098
+                     /note="BGC"
+                     /note="tool:GECCO"
+                     /note="bgc_id:CONTIG_3_1"
+                     /note="completeness:Complete"
+     misc_feature    55325..61098
                      /product="RiPP"
-                     /tool="PRISM"
-                     /bgc_id="CONTIG_3_2"
-                     /completeness="Complete"
+                     /note="BGC"
+                     /note="tool:PRISM"
+                     /note="bgc_id:CONTIG_3_2"
+                     /note="completeness:Complete"
 ORIGIN
         1 tggagccgtt ccgtagcgat cccgaggagt tgagcacatg gctgccaagg acatcggtgc
        61 acgcggtctc ggtgccaccg tccgggtgcg cgccgagagc gacgtggacg aggggtcgct
@@ -11714,46 +11736,54 @@ FEATURES             Location/Qualifiers
                      /codon_start=1
                      /transl_table=11
                      /inference="ab initio prediction:Prodigal:2.6"
-     BGC             1241..10915
+     misc_feature    1241..10915
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_4_1"
-                     /completeness="Complete"
-     BGC             16163..30553
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_4_1"
+                     /note="completeness:Complete"
+     misc_feature    16163..30553
                      /product="PKS"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_4_2"
-                     /completeness="Complete"
-     BGC             31499..40506
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_4_2"
+                     /note="completeness:Complete"
+     misc_feature    31499..40506
                      /product="PKS"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_4_3"
-                     /completeness="Complete"
-     BGC             45005..46894
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_4_3"
+                     /note="completeness:Complete"
+     misc_feature    45005..46894
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_4_4"
-                     /completeness="Complete"
-     BGC             48607..49389
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_4_4"
+                     /note="completeness:Complete"
+     misc_feature    48607..49389
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_4_5"
-                     /completeness="Complete"
-     BGC             53990..54874
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_4_5"
+                     /note="completeness:Complete"
+     misc_feature    53990..54874
                      /product="Terpene"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_4_6"
-                     /completeness="Complete"
-     BGC             64811..66106
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_4_6"
+                     /note="completeness:Complete"
+     misc_feature    64811..66106
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_4_7"
-                     /completeness="Complete"
-     BGC             69997..71666
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_4_7"
+                     /note="completeness:Complete"
+     misc_feature    69997..71666
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_4_8"
-                     /completeness="Complete"
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_4_8"
+                     /note="completeness:Complete"
 ORIGIN
         1 tcgccgtccg gtccttggga ccgtacgagg acatgacggt cgccgacgac aaggggatct
        61 tcctgctggg cgggcaggac ggcacggtcc ggctctacga cgccgcgctg cggcccggta
@@ -15290,21 +15320,24 @@ FEATURES             Location/Qualifiers
                      /codon_start=1
                      /transl_table=11
                      /inference="ab initio prediction:Prodigal:2.6"
-     BGC             372..28310
+     misc_feature    372..28310
                      /product="Saccharide"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_5_1"
-                     /completeness="Complete"
-     BGC             30869..36131
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_5_1"
+                     /note="completeness:Complete"
+     misc_feature    30869..36131
                      /product="PKS"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_5_2"
-                     /completeness="Complete"
-     BGC             37904..45051
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_5_2"
+                     /note="completeness:Complete"
+     misc_feature    37904..45051
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_5_3"
-                     /completeness="Complete"
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_5_3"
+                     /note="completeness:Complete"
 ORIGIN
         1 cgggtgccca cggcccggcg gctgctggtc gtcgtgccgg acgacgacga ggtggcccgc
        61 cgggcggccg gccggctcgc cgccgacgcc gaggacgatc cgcggctgcg ggtggtggag
@@ -18566,51 +18599,60 @@ FEATURES             Location/Qualifiers
                      /codon_start=1
                      /transl_table=11
                      /inference="ab initio prediction:Prodigal:2.6"
-     BGC             1..52045
+     misc_feature    1..52045
                      /product="NRPS"
-                     /tool="antiSMASH"
-                     /bgc_id="CONTIG_6.1"
-                     /completeness="Incomplete"
-     BGC             2..37112
+                     /note="BGC"
+                     /note="tool:antiSMASH"
+                     /note="bgc_id:CONTIG_6.reg.1"
+                     /note="completeness:Incomplete"
+     misc_feature    2..37112
                      /product="NRPS"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_6_1"
-                     /completeness="Incomplete"
-     BGC             38723..41731
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_6_1"
+                     /note="completeness:Incomplete"
+     misc_feature    38723..41731
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_6_2"
-                     /completeness="Complete"
-     BGC             43145..43687
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_6_2"
+                     /note="completeness:Complete"
+     misc_feature    43145..43687
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_6_3"
-                     /completeness="Complete"
-     BGC             48568..49221
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_6_3"
+                     /note="completeness:Complete"
+     misc_feature    48568..49221
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_6_4"
-                     /completeness="Complete"
-     BGC             86587..90495
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_6_4"
+                     /note="completeness:Complete"
+     misc_feature    86587..90495
                      /product="PKS"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_6_5"
-                     /completeness="Complete"
-     BGC             3139..43687
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_6_5"
+                     /note="completeness:Complete"
+     misc_feature    3139..43687
                      /product="NRPS"
-                     /tool="GECCO"
-                     /bgc_id="CONTIG_6_1"
-                     /completeness="Complete"
-     BGC             13589..33048
+                     /note="BGC"
+                     /note="tool:GECCO"
+                     /note="bgc_id:CONTIG_6_1"
+                     /note="completeness:Complete"
+     misc_feature    13589..33048
                      /product="NRPS"
-                     /tool="PRISM"
-                     /bgc_id="CONTIG_6_3"
-                     /completeness="Complete"
-     BGC             86587..89146
+                     /note="BGC"
+                     /note="tool:PRISM"
+                     /note="bgc_id:CONTIG_6_3"
+                     /note="completeness:Complete"
+     misc_feature    86587..89146
                      /product="PKS"
-                     /tool="PRISM"
-                     /bgc_id="CONTIG_6_4"
-                     /completeness="Complete"
+                     /note="BGC"
+                     /note="tool:PRISM"
+                     /note="bgc_id:CONTIG_6_4"
+                     /note="completeness:Complete"
 ORIGIN
         1 ggtcggccac ggccgccggg ccgccgcgca gcgccacgtt gacggccacc gccatggtgc
        61 ccgcggcgta gttgagcgtg ccgcacaggg gatccaccag ccactggcgt gccgcgtcgg
@@ -22178,31 +22220,36 @@ FEATURES             Location/Qualifiers
                      /codon_start=1
                      /transl_table=11
                      /inference="ab initio prediction:Prodigal:2.6"
-     BGC             1..21556
+     misc_feature    1..21556
                      /product="Terpene"
-                     /tool="antiSMASH"
-                     /bgc_id="CONTIG_7.1"
-                     /completeness="Incomplete"
-     BGC             119..12174
+                     /note="BGC"
+                     /note="tool:antiSMASH"
+                     /note="bgc_id:CONTIG_7.reg.1"
+                     /note="completeness:Incomplete"
+     misc_feature    119..12174
                      /product="PKS,Terpene"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_7_1"
-                     /completeness="Complete"
-     BGC             12494..17154
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_7_1"
+                     /note="completeness:Complete"
+     misc_feature    12494..17154
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_7_2"
-                     /completeness="Complete"
-     BGC             18856..37234
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_7_2"
+                     /note="completeness:Complete"
+     misc_feature    18856..37234
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_7_3"
-                     /completeness="Complete"
-     BGC             80564..99892
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_7_3"
+                     /note="completeness:Complete"
+     misc_feature    80564..99892
                      /product="PKS"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_7_4"
-                     /completeness="Complete"
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_7_4"
+                     /note="completeness:Complete"
 ORIGIN
         1 ggtcggcgcc gtagaccctg ccgcgcatga actccacctc atccatgact cgaagcctcg
        61 catccgccac tgacaacggc acccgagcgg cggggacggc ccttcggacg agccctccct
@@ -25714,26 +25761,30 @@ FEATURES             Location/Qualifiers
                      /codon_start=1
                      /transl_table=11
                      /inference="ab initio prediction:Prodigal:2.6"
-     BGC             90995..100957
+     misc_feature    90995..100957
                      /product="RiPP"
-                     /tool="antiSMASH"
-                     /bgc_id="CONTIG_8.1"
-                     /completeness="Incomplete"
-     BGC             35723..48690
+                     /note="BGC"
+                     /note="tool:antiSMASH"
+                     /note="bgc_id:CONTIG_8.reg.1"
+                     /note="completeness:Incomplete"
+     misc_feature    35723..48690
                      /product="RiPP"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_8_1"
-                     /completeness="Complete"
-     BGC             97188..100956
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_8_1"
+                     /note="completeness:Complete"
+     misc_feature    97188..100956
                      /product="RiPP"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_8_2"
-                     /completeness="Incomplete"
-     BGC             38006..45174
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_8_2"
+                     /note="completeness:Incomplete"
+     misc_feature    38006..45174
                      /product="RiPP"
-                     /tool="GECCO"
-                     /bgc_id="CONTIG_8_1"
-                     /completeness="Complete"
+                     /note="BGC"
+                     /note="tool:GECCO"
+                     /note="bgc_id:CONTIG_8_1"
+                     /note="completeness:Complete"
 ORIGIN
         1 tgggctcgct gctcgccgtg ctgccgctca tcctcgcctt cgtgctgctc cagcgattct
        61 ggcgcagcgg cctgaccgcc ggagccgtca agtgaccgtg cacgcccccg gacccggcca
@@ -29294,26 +29345,30 @@ FEATURES             Location/Qualifiers
                      /codon_start=1
                      /transl_table=11
                      /inference="ab initio prediction:Prodigal:2.6"
-     BGC             2545..8267
+     misc_feature    2545..8267
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_9_1"
-                     /completeness="Complete"
-     BGC             16900..22512
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_9_1"
+                     /note="completeness:Complete"
+     misc_feature    16900..22512
                      /product="PKS"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_9_2"
-                     /completeness="Complete"
-     BGC             46103..47686
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_9_2"
+                     /note="completeness:Complete"
+     misc_feature    46103..47686
                      /product="PKS,Terpene"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_9_3"
-                     /completeness="Complete"
-     BGC             91119..95422
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_9_3"
+                     /note="completeness:Complete"
+     misc_feature    91119..95422
                      /product="PKS"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_9_4"
-                     /completeness="Complete"
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_9_4"
+                     /note="completeness:Complete"
 ORIGIN
         1 cgatcggcat gctggtggtc gtcgccgggg tgttcctcgg gctcgggctg tggcaggtgc
        61 gctggcagcg gcggctggtc aaactcacca acaagctgaa caaccaggcg ttccagacgc
@@ -32832,11 +32887,12 @@ FEATURES             Location/Qualifiers
                      /codon_start=1
                      /transl_table=11
                      /inference="ab initio prediction:Prodigal:2.6"
-     BGC             43020..64110
+     misc_feature    43020..64110
                      /product="Unknown product"
-                     /tool="DeepBGC"
-                     /bgc_id="CONTIG_10_1"
-                     /completeness="Complete"
+                     /note="BGC"
+                     /note="tool:DeepBGC"
+                     /note="bgc_id:CONTIG_10_1"
+                     /note="completeness:Complete"
 ORIGIN
         1 tccccgaact ggcgtcggct cttcggcgcg ggctgccgaa ggtggggccg ggcccgctgc
        61 tgtcggcgct cggggcgctg cgggtgcgca ccgaggaccg cgccggtgag cgccgggtgt
