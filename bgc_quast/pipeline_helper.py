@@ -319,7 +319,7 @@ class PipelineHelper:
                 else:
                     bgc_annotations_gbk_output_path = (self.config.output_config.output_dir /
                                                        ".".join([
-                                                           input_utils.get_file_label_from_path(self.args.genome_data[0]),
+                                                           # input_utils.get_file_label_from_path(self.args.genome_data[0]),
                                                            "all_tools", self.config.output_config.bgc_annotations_basename]))
                     try:
                         write_genbank(
