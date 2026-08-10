@@ -137,6 +137,45 @@
     border-top: 1px solid #d0d0d0;
 }
 
+/*
+ * Column-specific filters. Filtering behaviour is handled separately
+ * by JavaScript; these rules only control the appearance of the inputs.
+ */
+.filter-row th {
+    padding: 5px;
+    background: #ffffff;
+}
+
+.column-filter {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 5px 7px;
+    border: 1px solid #b8b8b8;
+    border-radius: 3px;
+    background: #ffffff;
+    color: #000000;
+    font-size: 13px;
+}
+
+.column-filter:focus {
+    outline: 1px solid #322b7a;
+    border-color: #322b7a;
+}
+
+/*
+ * Hide browser spinner controls for numeric coordinate filters.
+ * Genomic coordinates are typically too large for stepwise adjustment to be useful.
+ */
+.column-filter[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.column-filter[type="number"]::-webkit-inner-spin-button,
+.column-filter[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
 
 /* ----- TABLE BODY ----- */
 

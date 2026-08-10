@@ -53,6 +53,30 @@ def write_overlapping_bgc_html(
             '</th>'
         )
 
+    # Add one filter field for each table column.
+    # Sequence and product columns use text matching, while interval coordinates
+    # use numeric minimum/maximum boundaries.
+    filter_cells = [
+        '<th><input class="column-filter" type="text" '
+        'data-column="0" data-filter-type="text" '
+        'placeholder="Sequence ID"></th>',
+
+        '<th><input class="column-filter" type="number" '
+        'data-column="1" data-filter-type="min" '
+        'min="1" step="1" placeholder="Min"></th>',
+
+        '<th><input class="column-filter" type="number" '
+        'data-column="2" data-filter-type="max" '
+        'min="1" step="1" placeholder="Max"></th>',
+    ]
+
+    for column_index in range(3, len(labels)):
+        filter_cells.append(
+            '<th><input class="column-filter" type="text" '
+            f'data-column="{column_index}" data-filter-type="text" '
+            'placeholder="Product"></th>'
+        )
+
     body_rows = []
 
     # Convert TSV interval rows into HTML table rows.
@@ -72,6 +96,7 @@ def write_overlapping_bgc_html(
         '<table class="bgc-overlap-table">'
         "<thead>"
         f'<tr class="column-header-row">{"".join(header_cells)}</tr>'
+        f'<tr class="filter-row">{"".join(filter_cells)}</tr>'
         "</thead>"
         f'<tbody>{"".join(body_rows)}</tbody>'
         "</table>"
@@ -87,6 +112,7 @@ def write_overlapping_bgc_html(
     template = (asset_dir / "bgc_overlaps_template.html").read_text(encoding="utf-8")
     report_css = (asset_dir / "report.css").read_text(encoding="utf-8")
     overlaps_css = (asset_dir / "bgc_overlaps.css").read_text(encoding="utf-8")
+    overlaps_js = (asset_dir / "build_bgc_overlaps.js").read_text(encoding="utf-8")
 
     html_filled = (
         template
@@ -94,6 +120,7 @@ def write_overlapping_bgc_html(
         .replace("{{ overlaps_style_css }}", overlaps_css)
         .replace("{{ table_html }}", table_html)
         .replace("{{ github_logo }}", logo_data_uri)
+        .replace("{{ overlaps_script_js }}", overlaps_js)
     )
 
     output_path.write_text(html_filled, encoding="utf-8")
