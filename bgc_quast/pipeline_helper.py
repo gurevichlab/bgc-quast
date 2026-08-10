@@ -365,8 +365,6 @@ class PipelineHelper:
                     "Failed to generate TSV file with overlapping BGC intervals. "
                     f"Reason: {e}\n"
                 )
-        else:
-            self.log.warning(f"--output-bgcs is supported only in {RunningMode.COMPARE_TOOLS}, the running mode is set to: {self.running_mode}")
 
         if not self.analysis_report:
             self.log.error("No analysis report available to write results.")
