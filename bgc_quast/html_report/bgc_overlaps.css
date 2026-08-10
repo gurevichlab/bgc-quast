@@ -1,0 +1,150 @@
+/* ----- PAGE LAYOUT ----- */
+
+/*
+ * The main report stylesheet already makes #main a vertical flex container.
+ * Keep this page within the browser viewport so that the BGC table itself,
+ * rather than the whole page, handles scrolling.
+ */
+#main {
+    height: 100vh;
+    min-height: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+
+/* ----- PAGE CONTROLS AND DESCRIPTION ----- */
+
+.overlap-page-controls {
+    margin: 0 0 12px 0;
+}
+
+/* Navigation back to the main BGC-QUAST report. */
+.back-to-report {
+    display: inline-block;
+    padding: 6px 14px;
+    border: 1px solid #322b7a;
+    border-radius: 999px;
+    background: #322b7a;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.back-to-report:hover {
+    background: #4b4395;
+    border-color: #4b4395;
+}
+
+/*
+ * The surrounding .run-summary class comes from report.css and provides
+ * the white framed box used for explanatory text in the main report.
+ */
+.overlap-description {
+    margin: 8px 0 12px 0;
+    color: #555555;
+}
+
+
+/* ----- BGC OVERLAP TABLE LAYOUT ----- */
+
+/*
+ * This container is the scrollable part of the page. Horizontal scrolling
+ * is available when many genome-mining tools are included in the comparison.
+ */
+.bgc-overlap-table-container {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    overflow: auto;
+}
+
+.bgc-overlap-table {
+    width: auto;
+    margin-top: 0;
+}
+
+/* Keep the table header visible while scrolling through BGC intervals. */
+.bgc-overlap-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 1px 0 #d0d0d0;
+}
+
+/* ----- TABLE COLUMN WIDTHS ----- */
+
+/* Sequence identifier. */
+.bgc-overlap-table th:nth-child(1),
+.bgc-overlap-table td:nth-child(1) {
+    width: 150px;
+    min-width: 150px;
+}
+
+/* Interval start and end coordinates. */
+.bgc-overlap-table th:nth-child(2),
+.bgc-overlap-table td:nth-child(2),
+.bgc-overlap-table th:nth-child(3),
+.bgc-overlap-table td:nth-child(3) {
+    width: 110px;
+    min-width: 110px;
+}
+
+/* One column per genome-mining tool. */
+.bgc-overlap-table th:nth-child(n+4),
+.bgc-overlap-table td:nth-child(n+4) {
+    width: 280px;
+    min-width: 280px;
+    max-width: 280px;
+}
+
+
+/* ----- TABLE HEADER ----- */
+
+.bgc-overlap-table th {
+    vertical-align: bottom;
+}
+
+/*
+ * Genome-mining tool headers are visually divided into two sections:
+ * input label/file name on top and tool name underneath.
+ */
+.bgc-overlap-table th.tool-header {
+    padding: 0;
+    background: #ffffff;
+    vertical-align: middle;
+}
+
+.file-label,
+.tool-name {
+    display: block;
+    padding: 7px 8px;
+}
+
+/* Input label/file name: same purple as the main report header cells. */
+.file-label {
+    background: #322b7a;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* Genome-mining tool name: white lower half of the same header cell. */
+.tool-name {
+    background: #ffffff;
+    color: #000000;
+    font-weight: 400;
+    border-top: 1px solid #d0d0d0;
+}
+
+
+/* ----- TABLE BODY ----- */
+
+/*
+ * A genomic interval may contain several predictions from the same tool.
+ * The HTML writer places each prediction on a separate visual line.
+ */
+.bgc-cell {
+    line-height: 1.5;
+    vertical-align: top;
+}

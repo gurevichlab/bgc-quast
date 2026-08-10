@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BGC-QUAST BGC Ranges</title>
+    <style>
+    {{ style_css }}
+    {{ overlaps_style_css }}
+    </style>
+</head>
+
+<body>
+<div id="main">
+
+    <!-- Shared BGC-QUAST page header -->
+    <header class="page-header">
+        <h1>BGC-QUAST Report</h1>
+
+        <div class="github-link">
+            <a href="https://github.com/gurevichlab/bgc-quast" target="_blank">
+                <img src="{{ github_logo }}" alt="GitHub" class="github-icon">
+                Visit the GitHub project page
+            </a>
+        </div>
+    </header>
+
+    <!-- Navigation back to the main report -->
+    <div class="overlap-page-controls">
+        <a href="report.html" class="back-to-report">Back to report</a>
+    </div>
+
+    <!-- Explanation of how intervals in this table are constructed -->
+    <div class="run-summary overlap-description">
+        BGC predictions are grouped into intervals based on coordinate overlap.
+        This grouping is independent of the overlap threshold used for shared/unique BGC metrics in the main report.
+    </div>
+
+    <!-- Generated table from all_tools.bgcs.overlaps.tsv -->
+    <div class="bgc-overlap-table-container">
+        {{ table_html }}
+    </div>
+
+</div>
+</body>
+</html>
