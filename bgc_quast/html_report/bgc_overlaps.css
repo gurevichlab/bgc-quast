@@ -88,6 +88,7 @@
 .bgc-overlap-table th:nth-child(3),
 .bgc-overlap-table td:nth-child(3) {
     width: 110px;
+    text-align: right;
     min-width: 110px;
 }
 

@@ -35,7 +35,7 @@ def test_write_overlapping_bgc_html(tmp_path):
     assert "1000 - 2000 (PKS);<br>3000 - 5000 (RiPP)" in html
 
     # The generated report contains its navigation and interactive table code.
-    assert "Back to report" in html
+    assert "Back to main report" in html
     assert "column-filter" in html
     assert "rows-per-page" in html
     assert "const columnFilters" in html
