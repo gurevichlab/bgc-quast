@@ -101,7 +101,8 @@ Supporting a new tool explicitly may require a dedicated parser function and/or 
 ## Command-line Options
 ```bash
 usage: bgc-quast [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-to-reference,compare-tools,compare-samples}]
-                 [--merge-distance INT] [--min-bgc-length INT] [--names NAME1,NAME2 ...] [--genome FILE] [--debug]
+                 [--merge-distance INT] [--min-bgc-length INT] [--edge-distance INT]
+                 [--bgc-level {region,candidate-cluster,protocluster}] [--names NAME1,NAME2 ...] [--genome FILE] [--debug]
                  [mode-specific options] <GENOME_MINING_RESULT>
 ```
 ### Positional Arguments

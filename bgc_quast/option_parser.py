@@ -217,8 +217,11 @@ def build_cmdline_args_parser(default_cfg: Config) -> argparse.ArgumentParser:
         formatter_class=formatter,
         description="BGC-QUAST: quality assessment tool for genome mining (BGC prediction) software",
         usage=(
-             "bgc-quast.py [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-to-reference,compare-tools,compare-samples}] "
-            "[--min-bgc-length INT] [--names NAME1,NAME2 ...] [--genome FILE] "
+            "bgc-quast [-h] [--output-dir DIR] [--threads INT] "
+            "[--mode {auto,compare-to-reference,compare-tools,compare-samples}] "
+            "[--merge-distance INT] [--min-bgc-length INT] [--edge-distance INT] "
+            "[--bgc-level {region,candidate-cluster,protocluster}] "
+            "[--names NAME1,NAME2 ...] [--genome FILE] [--debug] "
             "[mode-specific options] <GENOME_MINING_RESULT>"
         ),
     )
