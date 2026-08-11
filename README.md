@@ -294,7 +294,7 @@ bgc-quast <sample1_genome_mining_results> \
           ... \
   --mode compare-samples \
   --names <sample1>,<sample2>,... \
-  --genome <sample1_genome>
+  --genome <sample1_genome> \
   --genome <sample2_genome> ... \
   --output-dir <output_dir>
 ```
