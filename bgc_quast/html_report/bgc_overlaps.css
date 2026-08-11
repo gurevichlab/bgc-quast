@@ -94,9 +94,9 @@
 /* One column per genome-mining tool. */
 .bgc-overlap-table th:nth-child(n+4),
 .bgc-overlap-table td:nth-child(n+4) {
-    width: 280px;
-    min-width: 280px;
-    max-width: 280px;
+    width: 240px;
+    min-width: 240px;
+    max-width: 240px;
 }
 
 
@@ -186,4 +186,64 @@
 .bgc-cell {
     line-height: 1.5;
     vertical-align: top;
+}
+
+/* ----- TABLE PAGINATION ----- */
+
+/*
+ * Keep page-size and navigation controls compact and aligned beneath
+ * the scrollable table.
+ */
+.table-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 2px 0 2px;
+    font-size: 18px;
+}
+
+.rows-per-page,
+.pagination-navigation {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#rows-per-page {
+    padding: 4px 6px;
+    border: 1px solid #b8b8b8;
+    border-radius: 3px;
+    background: #ffffff;
+    font-size: 16px;
+}
+
+.pagination-navigation button {
+    padding: 5px 10px;
+    border: 1px solid #322b7a;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #322b7a;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.pagination-navigation button:hover:not(:disabled) {
+    background: #322b7a;
+    color: #ffffff;
+}
+
+.pagination-navigation button:disabled {
+    border-color: #c8c8c8;
+    color: #999999;
+    cursor: default;
+}
+
+#pagination-info {
+    margin-right: 8px;
+}
+
+#page-info {
+    min-width: 38px;
+    text-align: center;
 }

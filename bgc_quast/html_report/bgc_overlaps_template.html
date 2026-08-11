@@ -40,6 +40,26 @@
         {{ table_html }}
     </div>
 
+    <!-- Pagination controls for the BGC interval table -->
+    <div class="table-pagination">
+        <div class="rows-per-page">
+            <label for="rows-per-page">Show</label>
+            <select id="rows-per-page">
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+            </select>
+            <span>rows</span>
+        </div>
+
+        <div class="pagination-navigation">
+            <span id="pagination-info"></span>
+            <button id="previous-page" type="button">Previous</button>
+            <span id="page-info"></span>
+            <button id="next-page" type="button">Next</button>
+        </div>
+    </div>
+
 </div>
 
 <!-- Interactive table filtering -->
