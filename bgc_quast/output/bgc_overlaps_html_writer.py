@@ -92,9 +92,34 @@ def write_overlapping_bgc_html(
 
         body_rows.append(f"<tr>{''.join(cells)}</tr>")
 
+    # Pagination controls are placed inside the table header so that they remain
+    # visible together with the column names and filters while the table scrolls.
+    pagination_controls = (
+        '<div class="table-pagination">'
+        '<div class="rows-per-page">'
+        '<label for="rows-per-page">Show</label>'
+        '<select id="rows-per-page">'
+        '<option value="10" selected>10</option>'
+        '<option value="20">20</option>'
+        '<option value="50">50</option>'
+        '</select>'
+        '<span>rows</span>'
+        '</div>'
+        '<div class="pagination-navigation">'
+        '<span id="pagination-info"></span>'
+        '<button id="previous-page" type="button">Previous</button>'
+        '<span id="page-info"></span>'
+        '<button id="next-page" type="button">Next</button>'
+        '</div>'
+        '</div>'
+    )
+
     table_html = (
         '<table class="bgc-overlap-table">'
         "<thead>"
+        f'<tr class="pagination-row">'
+        f'<th colspan="{len(labels)}">{pagination_controls}</th>'
+        '</tr>'
         f'<tr class="column-header-row">{"".join(header_cells)}</tr>'
         f'<tr class="filter-row">{"".join(filter_cells)}</tr>'
         "</thead>"

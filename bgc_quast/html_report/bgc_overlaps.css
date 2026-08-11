@@ -191,16 +191,24 @@
 /* ----- TABLE PAGINATION ----- */
 
 /*
- * Keep page-size and navigation controls compact and aligned beneath
- * the scrollable table.
+ * Pagination controls occupy the first row of the sticky table header.
+ * Override the regular header-cell styling for this row.
  */
+.bgc-overlap-table .pagination-row th {
+    padding: 0;
+    border: none;
+    background: #f5f5f5;
+    color: #000000;
+    font-weight: 400;
+}
+
 .table-pagination {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 16px;
-    padding: 10px 2px 0 2px;
-    font-size: 18px;
+    padding: 6px 2px 8px 2px;
+    font-size: 14px;
 }
 
 .rows-per-page,
