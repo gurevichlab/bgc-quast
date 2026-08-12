@@ -71,16 +71,19 @@ conda activate bgc-quast
 ### 3. Install BGC-QUAST
 
 Install the package in editable mode (recommended for development):
-```bash
+
+```bash  
 pip install -e .
 ```
 
 ### 4. Verify installation
 
-You can verify the installation by running:
-```bash
+You can verify the installation by running:  
+
+```bash  
 bgc-quast --help
-```
+```  
+
 *(Alternatively, you can run the backward-compatible script: `python bgc-quast.py --help`)*
 
 <a name="sec_tools"></a>
@@ -148,20 +151,20 @@ usage: bgc-quast [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-t
 Input naming is only relevant when BGC-QUAST needs to associate genome mining results with optional genome 
 (`--genome/-G`) files or, in compare-to-reference mode, QUAST alignment files (`--quast-output-dir/-q`).
 
-For the most reliable input matching, we recommend using the same basename across all input files. For example:
-* `assembly_10.gbk` or `assembly_10.fasta` (original genome sequence)
-* `assembly_10.json` (antiSMASH genome mining result)
-* `assembly_10.antismash.json` or `assembly_10.bgc.tsv` (DeepBGC genome mining result)
-* `assembly_10.clusters.tsv` (GECCO genome mining result)
-* `assembly_10.fasta.json` (PRISM genome mining result)
-* `assembly_10.coords` (inside the QUAST output; compare-to-reference mode only)
+For the most reliable input matching, we recommend using the same basename across all input files. For example:  
+* `assembly_10.gbk` or `assembly_10.fasta` (original genome sequence)  
+* `assembly_10.json` (antiSMASH genome mining result)  
+* `assembly_10.antismash.json` or `assembly_10.bgc.tsv` (DeepBGC genome mining result)  
+* `assembly_10.clusters.tsv` (GECCO genome mining result)  
+* `assembly_10.fasta.json` (PRISM genome mining result)  
+* `assembly_10.coords` (inside the QUAST output; compare-to-reference mode only)  
 
-Most tools already support this naming convention by default:
-* antiSMASH uses the input filename by default. A custom basename can be specified with `--output-basename`.
-* GECCO uses the input genome filename as the prefix for its output files.
-* DeepBGC names its output files after the final component of the output directory. For example, using `-o assembly_10_mining/DeepBGC/assembly_10` produces `assembly_10.antismash.json` and `assembly_10.bgc.tsv`.
-* PRISM appends `.json` to the input filename. For example, submitting `assembly_10.fasta` produces `assembly_10.fasta.json`. BGC-QUAST recognizes standard extensions (e.g., `.fasta`) and derives the label `assembly_10`.
-* QUAST uses the input assembly filenames by default. Custom assembly names can be specified with `-l/--labels`.
+Most tools already support this naming convention by default:  
+* antiSMASH uses the input filename by default. A custom basename can be specified with `--output-basename`.  
+* GECCO uses the input genome filename as the prefix for its output files.  
+* DeepBGC names its output files after the final component of the output directory. For example, using `-o assembly_10_mining/DeepBGC/assembly_10` produces `assembly_10.antismash.json` and `assembly_10.bgc.tsv`.  
+* PRISM appends `.json` to the input filename. For example, submitting `assembly_10.fasta` produces `assembly_10.fasta.json`. BGC-QUAST recognizes standard extensions (e.g., `.fasta`) and derives the label `assembly_10`.  
+* QUAST uses the input assembly filenames by default. Custom assembly names can be specified with `-l/--labels`.  
 
 If matching based on the original filenames is not possible, `--names` can be used to provide BGC-QUAST one fallback 
 label for each genome mining result file. 
@@ -272,8 +275,8 @@ See the example output in
 
 **Mode-specific output**  
 - **TSV** file listing all predicted BGCs sorted by sequence and coordinates.    
-- **TSV** file grouping BGC predictions into genomic intervals based on coordinate overlap.
-- Interactive **HTML** table for browsing and filtering the grouped BGC intervals. 
+- **TSV** file grouping BGC predictions into genomic intervals based on coordinate overlap.  
+- Interactive **HTML** table for browsing and filtering the grouped BGC intervals.  
 - If the input genome sequence is provided (`--genome/-G`), integrated **GenBank** file with BGC annotations from all tools mapped onto the genome.  
 
 <a name="sec_run_mode_3"></a>
