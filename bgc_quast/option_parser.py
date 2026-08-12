@@ -4,6 +4,7 @@ from argparse import Namespace as CommandLineArgs
 from bgc_quast.config import Config, BGCLevel
 from io import StringIO
 import textwrap
+from bgc_quast.version import get_version
 
 class WrapPreserveNewlinesHelpFormatter(argparse.HelpFormatter):
     def _split_lines(self, text: str, width: int):
@@ -215,6 +216,12 @@ def add_other_arguments(parser: argparse.ArgumentParser):
         help="show this help message and exit",
     )
 
+    other.add_argument(
+        "-v", "--version",
+        action="version",
+        version=f"BGC-QUAST {get_version()}",
+        help="show BGC-QUAST version and exit",
+    )
 
 def build_cmdline_args_parser(default_cfg: Config) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -222,7 +229,7 @@ def build_cmdline_args_parser(default_cfg: Config) -> argparse.ArgumentParser:
         formatter_class=formatter,
         description="BGC-QUAST: quality assessment tool for genome mining (BGC prediction) software",
         usage=(
-            "bgc-quast [-h] [--output-dir DIR] [--threads INT] "
+            "bgc-quast [-h] [-v] [--output-dir DIR] [--threads INT] "
             "[--mode {auto,compare-to-reference,compare-tools,compare-samples}] "
             "[--merge-distance INT] [--min-bgc-length INT] [--edge-distance INT] "
             "[--bgc-level {region,candidate-cluster,protocluster}] "

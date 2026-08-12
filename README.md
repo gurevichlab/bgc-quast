@@ -81,6 +81,7 @@ pip install -e .
 You can verify the installation by running:  
 
 ```bash  
+bgc-quast --version
 bgc-quast --help
 ```  
 
@@ -103,7 +104,7 @@ Supporting a new tool explicitly may require a dedicated parser function and/or 
 <a name="sec_cmd_options"></a>
 ## Command-line options
 ```bash
-usage: bgc-quast [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-to-reference,compare-tools,compare-samples}]
+usage: bgc-quast [-h] [-v] [--output-dir DIR] [--threads INT] [--mode {auto,compare-to-reference,compare-tools,compare-samples}]
                  [--merge-distance INT] [--min-bgc-length INT] [--edge-distance INT]
                  [--bgc-level {region,candidate-cluster,protocluster}] [--names NAME1,NAME2 ...] [--genome FILE] [--debug]
                  [mode-specific options] <GENOME_MINING_RESULT>
@@ -119,6 +120,7 @@ usage: bgc-quast [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-t
 | Option                                                             | Description                                                                                      |
 |--------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
 | `-h, --help`                                                       | Show help message and exit                                                                       |
+| `-v, --version`                                                    | Show BGC-QUAST version and exit                                                                 |
 | `--output-dir DIR, -o DIR`                                         | Output directory [default: ./bgc-quast-results/<date_time>]                                      |
 | `--threads INT, -t INT`                                            | Number of threads [default: 1]                                                                   |
 | `--debug`                                                          | Keep intermediate files and enable more detailed logging                                         |
