@@ -240,7 +240,11 @@ def build_cmdline_args_parser(default_cfg: Config) -> argparse.ArgumentParser:
 
 def get_command_line_args(default_cfg: Config) -> CommandLineArgs:
     parser = build_cmdline_args_parser(default_cfg)
-    parsed_args = parser.parse_args()
+    if hasattr(parser, "parse_intermixed_args"):
+        parsed_args = parser.parse_intermixed_args()
+    else:
+        parsed_args = parser.parse_args()
+        
     try:
         validate_arguments(parsed_args)
     except ValidationError as e:
