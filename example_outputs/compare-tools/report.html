@@ -21,6 +21,7 @@ html, body {
     flex-direction: column;
     height: 100%;
     padding: 10px;
+    box-sizing: border-box;
     font-size: 14px;
 }
 
@@ -262,6 +263,7 @@ th.mode-specific-metric {
 
 .metric-tabs {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
 }
@@ -274,6 +276,8 @@ th.mode-specific-metric {
     background: #ffffff;
     cursor: pointer;
     font-size: 14px;
+    flex-shrink: 0;
+    white-space: nowrap;
     transition: background 0.15s ease,
                 transform 0.1s ease,
                 box-shadow 0.15s ease,
@@ -705,6 +709,7 @@ label:has(input:disabled) {
                         <button class="metric-tab" data-metric="missed">Missed ref. BGCs</button>
                         <button class="metric-tab" data-metric="unique">Unique BGCs</button>
                         <button class="metric-tab" data-metric="pyplots">BGC overlap plots</button>
+                        <button class="metric-tab" data-metric="bgc_ranges">BGC intervals</button>
                     </div>
 
                     <div class="plot-flex-row">
@@ -1398,7 +1403,7 @@ function detectCompleteness(data) {
 // Which metric labels exist for each running mode
 const METRIC_TABS_BY_MODE = {
     compare_to_reference: ['bgcs', 'fully', 'partial', 'missed'],
-    compare_tools:        ['bgcs', 'unique', 'pyplots'],
+    compare_tools:        ['bgcs', 'unique', 'pyplots', 'bgc_ranges'],
     compare_samples:      ['bgcs']  // Overview only
 };
 
@@ -2101,6 +2106,11 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             const key = btn.dataset.metric;
             if (!allowedKeys.includes(key)) return;
+
+            if (key === 'bgc_ranges') {
+                window.location.href = 'all_tools.bgcs.overlaps.html';
+                return;
+            }
 
             currentMetricKey = key;
 

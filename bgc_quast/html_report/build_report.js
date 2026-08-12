@@ -641,7 +641,7 @@ function detectCompleteness(data) {
 // Which metric labels exist for each running mode
 const METRIC_TABS_BY_MODE = {
     compare_to_reference: ['bgcs', 'fully', 'partial', 'missed'],
-    compare_tools:        ['bgcs', 'unique', 'pyplots'],
+    compare_tools:        ['bgcs', 'unique', 'pyplots', 'bgc_ranges'],
     compare_samples:      ['bgcs']  // Overview only
 };
 
@@ -1344,6 +1344,11 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             const key = btn.dataset.metric;
             if (!allowedKeys.includes(key)) return;
+
+            if (key === 'bgc_ranges') {
+                window.location.href = 'all_tools.bgcs.overlaps.html';
+                return;
+            }
 
             currentMetricKey = key;
 

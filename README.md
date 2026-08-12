@@ -101,7 +101,8 @@ Supporting a new tool explicitly may require a dedicated parser function and/or 
 ## Command-line Options
 ```bash
 usage: bgc-quast [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-to-reference,compare-tools,compare-samples}]
-                 [--merge-distance INT] [--min-bgc-length INT] [--names NAME1,NAME2 ...] [--genome FILE] [--debug]
+                 [--merge-distance INT] [--min-bgc-length INT] [--edge-distance INT]
+                 [--bgc-level {region,candidate-cluster,protocluster}] [--names NAME1,NAME2 ...] [--genome FILE] [--debug]
                  [mode-specific options] <GENOME_MINING_RESULT>
 ```
 ### Positional Arguments
@@ -267,11 +268,12 @@ See the example output in
 
 **Mode-specific quality metrics**  
 - Number of tool-specific (**unique**) and **shared** BGCs across genome mining tools, reported overall and stratified by product type and completeness.  
-- **Venn diagrams** illustrating overlaps between BGC predictions produced by different tools.
+- **Venn diagrams** illustrating overlaps between BGC predictions produced by different tools based on the set overlap threshold.
 
 **Mode-specific output**  
 - **TSV** file listing all predicted BGCs sorted by sequence and coordinates.    
-- **TSV** file grouping overlapping BGCs from different tools into shared genomic intervals.    
+- **TSV** file grouping BGC predictions into genomic intervals based on coordinate overlap.
+- Interactive **HTML** table for browsing and filtering the grouped BGC intervals. 
 - If the input genome sequence is provided (`--genome/-G`), integrated **GenBank** file with BGC annotations from all tools mapped onto the genome.  
 
 <a name="sec_run_mode_3"></a>
@@ -293,7 +295,7 @@ bgc-quast <sample1_genome_mining_results> \
           ... \
   --mode compare-samples \
   --names <sample1>,<sample2>,... \
-  --genome <sample1_genome>
+  --genome <sample1_genome> \
   --genome <sample2_genome> ... \
   --output-dir <output_dir>
 ```

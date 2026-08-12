@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BGC-QUAST BGC Intervals</title>
+    <style>
+    /* ----- PAGE LAYOUT ----- */
+
+/* Entire page layout using Flexbox */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #EDF2F4;
+    font-family: Arial, sans-serif;
+}
+
+/* New wrapper to flexibly contain header, layout, and footer */
+#main {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+/* ----- REPORT LAYOUT ----- */
+/* Content area: table and plot */
+#reportLayout {
+    display: flex;
+    gap: 100px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+#reportLayout.extended-locked {
+    flex-wrap: nowrap;  /* case when the plot always stays on the right */
+}
+
+#reportLayout > div {
+    flex: 1;
+}
+
+#reportLayout > div:first-child {
+    flex: 0 0 700px;   /* left column ~ table */
+}
+
+#reportLayout > div:last-child {
+    flex: 0 0 1000px;   /* right column ~ plot (doesn't grow/shrink with the page change) + controls */
+}
+
+/* Header */
+:root {
+  --bar-text: #ffffff; /* title text color */
+}
+
+.page-header {
+  background: linear-gradient(
+  90deg,
+  #322b7a 0%,
+  #515151 100%
+  );
+  color: var(--bar-text);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin-left: -10px;   /* match #main { padding: 10px } */
+  margin-right: -10px;
+  margin-top: -10px;
+  margin-bottom: 12px;
+
+  display: flex;                  /* lay out children in a row */
+  justify-content: space-between; /* title to the left, rest to the right */
+  align-items: center;
+}
+
+.page-header h1 {
+  margin: 10px;
+  font-weight: 600;
+  font-size: 32px;
+  letter-spacing: 0.2px;
+  color: inherit;
+  text-shadow: 3px 3px 4px rgba(0,0,0,0.6);
+}
+
+/* GitHub link */
+.github-link a {
+  color: var(--bar-text);
+  text-decoration: none;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 10px;
+}
+
+.github-link a:hover {
+  text-decoration: underline;
+}
+
+.github-icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* ----- OPTIONS SUMMARY ----- */
+.run-summary {
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 10px 0 16px 0;
+  color: #333;
+  line-height: 1.35;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.10);
+}
+.run-summary code {
+  background: #f2f2f7;
+  padding: 1px 5px;
+  border-radius: 6px;
+}
+
+/* ----- TABLE STYLING ----- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+th, td {
+    border: 1px solid #cfcfcf;
+    padding: 8px;
+    text-align: left;
+}
+
+td {
+    background-color: #ffffff;
+}
+
+th {
+    background-color: #ffffff;
+    font-weight: 400;  /* not bold */
+}
+
+/* Top header row bold (column names) */
+tr.column-header-row th {
+    font-weight: 600;
+    background-color: #322b7a;
+    color: #ffffff;
+}
+
+/* Reference header */
+tr.column-header-row th.ref-col-header {
+    background-color: #4b679a;
+    color: #ffffff;
+}
+
+/* Row labels: default normal, totals bold */
+th.row-label {
+    font-weight: 400;
+    background-color: #ffffff;
+}
+
+th.row-label-total {
+    font-weight: 600;
+}
+
+
+/* Row labels: default normal, totals bold */
+th.mode-specific-metric {
+    background-color: rgba(209, 217, 236, 0.55);
+}
+
+/* Table style - rows */
+.extended-row {
+    display: none;
+}
+
+.extended-btn-wrapper {
+    margin-top: 10px;
+}
+
+#toggleProductBtn,
+#toggleCompletenessBtn {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: none;
+  background: #322b7a;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  transition: background 0.15s ease, transform 0.1s ease,
+              box-shadow 0.15s ease;
+}
+
+#toggleProductBtn:hover,
+#toggleCompletenessBtn:hover {
+  background: #3d3495;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+}
+
+#toggleProductBtn:active,
+#toggleCompletenessBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+#toggleProductBtn:focus-visible,
+#toggleCompletenessBtn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+}
+
+#toggleProductBtn.is-collapsed,
+#toggleCompletenessBtn.is-collapsed {
+  background: #6c757d;
+}
+
+#toggleProductBtn.is-collapsed:focus-visible,
+#toggleCompletenessBtn.is-collapsed:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+}
+
+.extended-btn-wrapper {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/*Heatmap */
+.heatmap-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.heatmap-legend-labels {
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+}
+
+
+/* ----- BARPLOT STYLING ----- */
+
+.plot-and-controls {
+  flex: 0 0 420px;
+  min-width: 380px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;  /* chart column | controls column */
+  column-gap: 24px;
+  align-items: flex-start;
+  margin-top: 40px;
+  grid-auto-rows: auto;
+}
+
+.metric-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Base tab look */
+.metric-tab {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid #ccc;
+    background: #ffffff;
+    cursor: pointer;
+    font-size: 14px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    transition: background 0.15s ease,
+                transform 0.1s ease,
+                box-shadow 0.15s ease,
+                border-color 0.15s ease;
+}
+
+/* Hover effect */
+.metric-tab:hover {
+    background: #e9e9f3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    border-color: #bbb;
+}
+
+/* Active tab (selected) */
+.metric-tab.active {
+    background: #322b7a;
+    color: white;
+    border-color: #322b7a;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+
+/* Clicked/pressed state */
+.metric-tab:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+/* Focus ring for tabs (keyboard navigation) */
+.metric-tab:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+}
+
+
+/* Legend + canvas row inside the chart-wrap */
+.plot-flex-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0px;
+}
+
+/* Left column: legend */
+.plot-legend-column {
+    flex: 0 0 190px;
+    font-size: 14px;
+    color: #696969;
+    margin-top: 40px;
+}
+
+.plot-legend-swatch {
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    border: 1px solid #696969;
+    display: inline-block;
+}
+
+#bgcLegend {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Right column: chart takes remaining width */
+.plot-flex-row canvas {
+    flex: 1 1 auto;
+    max-width: 100%;
+    height: auto;
+}
+
+/* Venn diagrams */
+#pythonPlotsPanel {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;    /* allow multiple per row */
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.plot-and-controls.pyplots-mode {
+    grid-template-columns: 1fr;  /* no right column reserved */
+}
+
+/* Barplot control buttons */
+.barplot-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.barplot-controls fieldset {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.barplot-controls fieldset label {
+  display: block;
+  margin: 4px 0;
+}
+
+.barplot-controls legend {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.filter-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+/* VENN DIAGRAM */
+.venn-main-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+.venn-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.venn-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+/* Make the checkboxes vertical */
+.venn-checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.venn-wrapper {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 50px;
+}
+
+.venn-controls {
+    font-size: 14px;
+    margin-bottom: 4px;
+
+    /* Copy of .barplot-controls fieldset */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px 10px;
+}
+
+.venn-controls legend {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.venn-checkboxes label {
+    margin-right: 10px;
+    cursor: pointer;
+    font-weight: 400;
+}
+
+.venn-checkboxes input {
+    margin-right: 3px;
+    font-weight: 400;
+}
+
+.venn-title {
+    text-align: center;
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 1px;
+}
+
+.venn-svg {
+    width: 500px;
+    height: 400px;
+}
+
+/* CHECKBOXES AND BUTTONS */
+/* Fancy small controls (checkboxes + radio buttons) */
+/* Base style for custom checkboxes & radios */
+.heatmap-controls input[type="checkbox"],
+.barplot-controls input[type="checkbox"],
+.venn-checkboxes input[type="checkbox"],
+#typeFilterGroup input[type="checkbox"],
+#completenessFilterGroup input[type="checkbox"],
+.barplot-controls input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  border: 2px solid #322b7a;
+  background: #EDF2F4;
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+}
+
+/* Radios are round */
+.barplot-controls input[type="radio"] {
+  border-radius: 50%;
+}
+
+/* Hover feedback */
+.heatmap-controls input[type="checkbox"]:hover,
+.barplot-controls input[type="checkbox"]:hover,
+.venn-checkboxes input[type="checkbox"]:hover,
+#typeFilterGroup input[type="checkbox"]:hover,
+#completenessFilterGroup input[type="checkbox"]:hover,
+.barplot-controls input[type="radio"]:hover {
+  box-shadow: 0 0 0 2px rgba(83, 82, 90, 0.25);
+}
+
+/* Focus ring for keyboard users */
+.heatmap-controls input[type="checkbox"]:focus-visible,
+.barplot-controls input[type="checkbox"]:focus-visible,
+.venn-checkboxes input[type="checkbox"]:focus-visible,
+#typeFilterGroup input[type="checkbox"]:focus-visible,
+#completenessFilterGroup input[type="checkbox"]:focus-visible,
+.barplot-controls input[type="radio"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(50, 43, 122, 0.35);
+}
+
+/* Checked state */
+.heatmap-controls input[type="checkbox"]:checked,
+.barplot-controls input[type="checkbox"]:checked,
+.venn-checkboxes input[type="checkbox"]:checked,
+#typeFilterGroup input[type="checkbox"]:checked,
+#completenessFilterGroup input[type="checkbox"]:checked {
+  background: #322b7a;
+  border-color: #322b7a;
+}
+
+/* State is not available */
+input:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Grey out legend text when its toggle is disabled */
+.filter-legend:has(input:disabled) span {
+    opacity: 0.5;
+}
+
+input:disabled::after {
+    opacity: 0;  /* hide tick/dot */
+}
+
+label:has(input:disabled) {
+    opacity: 0.6;
+}
+
+.heatmap-controls input[type="checkbox"]::after,
+.barplot-controls input[type="checkbox"]::after,
+.venn-checkboxes input[type="checkbox"]::after,
+#typeFilterGroup input[type="checkbox"]::after,
+#completenessFilterGroup input[type="checkbox"]::after {
+  content: "✓";
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: bold;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.4);
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+/* Show the tick when checked */
+.heatmap-controls input[type="checkbox"]:checked::after,
+.barplot-controls input[type="checkbox"]:checked::after,
+.venn-checkboxes input[type="checkbox"]:checked::after,
+#typeFilterGroup input[type="checkbox"]:checked::after,
+#completenessFilterGroup input[type="checkbox"]:checked::after {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Inner dot for radio buttons */
+.barplot-controls input[type="radio"]:checked {
+  background: #ffffff;
+  border-color: #322b7a;
+}
+
+.barplot-controls input[type="radio"]::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background: #322b7a;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0.4);
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.barplot-controls input[type="radio"]:checked::after {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* ----- DOWNLOAD BUTTON ----- */
+#downloadPlotWithLegend {
+    padding: 6px 14px;
+    background: #ffffff;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
+
+#downloadPlotWithLegend:hover {
+    background: #e9e9f3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    border-color: #bbb;
+}
+
+#downloadPlotWithLegend:active {
+    background: #e9e9f3;
+}
+
+/* ----- DOWNLOAD BUTTON FOR VENN ----- */
+#downloadVennPlot {
+    padding: 6px 14px;
+    background: #ffffff;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    align-self: center;
+    margin-top: 4px;
+}
+
+#downloadVennPlot:hover {
+    background: #e9e9f3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    border-color: #bbb;
+}
+
+#downloadVennPlot:active {
+    background: #e9e9f3;
+}
+
+    /* ----- PAGE LAYOUT ----- */
+
+/*
+ * The main report stylesheet already makes #main a vertical flex container.
+ * Keep this page within the browser viewport so that the BGC table itself,
+ * rather than the whole page, handles scrolling.
+ */
+#main {
+    height: 100vh;
+    min-height: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+
+/* ----- PAGE CONTROLS AND DESCRIPTION ----- */
+
+.overlap-page-controls {
+    margin: 0 0 12px 0;
+}
+
+/* Navigation back to the main BGC-QUAST report. */
+.back-to-report {
+    display: inline-block;
+    padding: 6px 14px;
+    border: 1px solid #322b7a;
+    border-radius: 999px;
+    background: #322b7a;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.back-to-report:hover {
+    background: #4b4395;
+    border-color: #4b4395;
+}
+
+/*
+ * The surrounding .run-summary class comes from report.css and provides
+ * the white framed box used for explanatory text in the main report.
+ */
+.overlap-description {
+    margin: 8px 0 12px 0;
+    color: #555555;
+}
+
+
+/* ----- BGC OVERLAP TABLE LAYOUT ----- */
+
+/*
+ * This container is the scrollable part of the page. Horizontal scrolling
+ * is available when many genome-mining tools are included in the comparison.
+ */
+.bgc-overlap-table-container {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    overflow: auto;
+}
+
+.bgc-overlap-table {
+    width: auto;
+    margin-top: 0;
+}
+
+/* Keep the table header visible while scrolling through BGC intervals. */
+.bgc-overlap-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 1px 0 #d0d0d0;
+}
+
+/* ----- TABLE COLUMN WIDTHS ----- */
+
+/* Sequence identifier. */
+.bgc-overlap-table th:nth-child(1),
+.bgc-overlap-table td:nth-child(1) {
+    width: 150px;
+    min-width: 150px;
+}
+
+/* Interval start and end coordinates. */
+.bgc-overlap-table th:nth-child(2),
+.bgc-overlap-table td:nth-child(2),
+.bgc-overlap-table th:nth-child(3),
+.bgc-overlap-table td:nth-child(3) {
+    width: 110px;
+    text-align: right;
+    min-width: 110px;
+}
+
+/* One column per genome-mining tool. */
+.bgc-overlap-table th:nth-child(n+4),
+.bgc-overlap-table td:nth-child(n+4) {
+    width: 240px;
+    min-width: 240px;
+    max-width: 240px;
+}
+
+
+/* ----- TABLE HEADER ----- */
+
+.bgc-overlap-table th {
+    vertical-align: bottom;
+}
+
+/*
+ * Genome-mining tool headers are visually divided into two sections:
+ * input label/file name on top and tool name underneath.
+ */
+.bgc-overlap-table th.tool-header {
+    padding: 0;
+    background: #ffffff;
+    vertical-align: middle;
+}
+
+.file-label,
+.tool-name {
+    display: block;
+    padding: 7px 8px;
+}
+
+/* Input label/file name: same purple as the main report header cells. */
+.file-label {
+    background: #322b7a;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* Genome-mining tool name: white lower half of the same header cell. */
+.tool-name {
+    background: #ffffff;
+    color: #000000;
+    font-weight: 400;
+    border-top: 1px solid #d0d0d0;
+}
+
+/*
+ * Column-specific filters. Filtering behaviour is handled separately
+ * by JavaScript; these rules only control the appearance of the inputs.
+ */
+.filter-row th {
+    padding: 5px;
+    background: #ffffff;
+}
+
+.column-filter {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 5px 7px;
+    border: 1px solid #b8b8b8;
+    border-radius: 3px;
+    background: #ffffff;
+    color: #000000;
+    font-size: 13px;
+}
+
+.column-filter:focus {
+    outline: 1px solid #322b7a;
+    border-color: #322b7a;
+}
+
+/*
+ * Hide browser spinner controls for numeric coordinate filters.
+ * Genomic coordinates are typically too large for stepwise adjustment to be useful.
+ */
+.column-filter[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.column-filter[type="number"]::-webkit-inner-spin-button,
+.column-filter[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* ----- TABLE BODY ----- */
+
+/*
+ * A genomic interval may contain several predictions from the same tool.
+ * The HTML writer places each prediction on a separate visual line.
+ */
+.bgc-cell {
+    line-height: 1.5;
+    vertical-align: top;
+}
+
+/* ----- TABLE PAGINATION ----- */
+
+/*
+ * Pagination controls occupy the first row of the sticky table header.
+ * Override the regular header-cell styling for this row.
+ */
+.bgc-overlap-table .pagination-row th {
+    padding: 0;
+    border: none;
+    background: #f5f5f5;
+    color: #000000;
+    font-weight: 400;
+}
+
+.table-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 6px 2px 8px 2px;
+    font-size: 14px;
+}
+
+.rows-per-page,
+.pagination-navigation {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#rows-per-page {
+    padding: 4px 6px;
+    border: 1px solid #b8b8b8;
+    border-radius: 3px;
+    background: #ffffff;
+    font-size: 16px;
+}
+
+.pagination-navigation button {
+    padding: 5px 10px;
+    border: 1px solid #322b7a;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #322b7a;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.pagination-navigation button:hover:not(:disabled) {
+    background: #322b7a;
+    color: #ffffff;
+}
+
+.pagination-navigation button:disabled {
+    border-color: #c8c8c8;
+    color: #999999;
+    cursor: default;
+}
+
+#pagination-info {
+    margin-right: 8px;
+}
+
+#page-info {
+    min-width: 38px;
+    text-align: center;
+}
+    </style>
+</head>
+
+<body>
+<div id="main">
+
+    <!-- Shared BGC-QUAST page header -->
+    <header class="page-header">
+        <h1>BGC-QUAST Report</h1>
+
+        <div class="github-link">
+            <a href="https://github.com/gurevichlab/bgc-quast" target="_blank">
+                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTgiIGhlaWdodD0iOTYiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik00OC44NTQgMEMyMS44MzkgMCAwIDIyIDAgNDkuMjE3YzAgMjEuNzU2IDEzLjk5MyA0MC4xNzIgMzMuNDA1IDQ2LjY5IDIuNDI3LjQ5IDMuMzE2LTEuMDU5IDMuMzE2LTIuMzYyIDAtMS4xNDEtLjA4LTUuMDUyLS4wOC05LjEyNy0xMy41OSAyLjkzNC0xNi40Mi01Ljg2Ny0xNi40Mi01Ljg2Ny0yLjE4NC01LjcwNC01LjQyLTcuMTctNS40Mi03LjE3LTQuNDQ4LTMuMDE1LjMyNC0zLjAxNS4zMjQtMy4wMTUgNC45MzQuMzI2IDcuNTIzIDUuMDUyIDcuNTIzIDUuMDUyIDQuMzY3IDcuNDk2IDExLjQwNCA1LjM3OCAxNC4yMzUgNC4wNzQuNDA0LTMuMTc4IDEuNjk5LTUuMzc4IDMuMDc0LTYuNi0xMC44MzktMS4xNDEtMjIuMjQzLTUuMzc4LTIyLjI0My0yNC4yODMgMC01LjM3OCAxLjk0LTkuNzc4IDUuMDE0LTEzLjItLjQ4NS0xLjIyMi0yLjE4NC02LjI3NS40ODYtMTMuMDM4IDAgMCA0LjEyNS0xLjMwNCAxMy40MjYgNS4wNTJhNDYuOTcgNDYuOTcgMCAwIDEgMTIuMjE0LTEuNjNjNC4xMjUgMCA4LjMzLjU3MSAxMi4yMTMgMS42MyA5LjMwMi02LjM1NiAxMy40MjctNS4wNTIgMTMuNDI3LTUuMDUyIDIuNjcgNi43NjMuOTcgMTEuODE2LjQ4NSAxMy4wMzggMy4xNTUgMy40MjIgNS4wMTUgNy44MjIgNS4wMTUgMTMuMiAwIDE4LjkwNS0xMS40MDQgMjMuMDYtMjIuMzI0IDI0LjI4MyAxLjc4IDEuNTQ4IDMuMzE2IDQuNDgxIDMuMzE2IDkuMTI2IDAgNi42LS4wOCAxMS44OTctLjA4IDEzLjUyNiAwIDEuMzA0Ljg5IDIuODUzIDMuMzE2IDIuMzY0IDE5LjQxMi02LjUyIDMzLjQwNS0yNC45MzUgMzMuNDA1LTQ2LjY5MUM5Ny43MDcgMjIgNzUuNzg4IDAgNDguODU0IDB6IiBmaWxsPSIjZmZmIi8+PC9zdmc+" alt="GitHub" class="github-icon">
+                Visit the GitHub project page
+            </a>
+        </div>
+    </header>
+
+    <!-- Navigation back to the main report -->
+    <div class="overlap-page-controls">
+        <a href="report.html" class="back-to-report">Back to main report</a>
+    </div>
+
+    <!-- Explanation of how intervals in this table are constructed -->
+    <div class="run-summary overlap-description">
+        BGC predictions are grouped into intervals based on coordinate overlap.
+        This grouping is independent of the overlap threshold used for shared/unique BGC metrics in the main report.
+    </div>
+
+    <!-- Generated table from all_tools.bgcs.overlaps.tsv -->
+    <div class="bgc-overlap-table-container">
+        <table class="bgc-overlap-table"><thead><tr class="pagination-row"><th colspan="7"><div class="table-pagination"><div class="rows-per-page"><label for="rows-per-page">Show</label><select id="rows-per-page"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>rows</span></div><div class="pagination-navigation"><span id="pagination-info"></span><button id="previous-page" type="button">Previous</button><span id="page-info"></span><button id="next-page" type="button">Next</button></div></div></th></tr><tr class="column-header-row"><th>Sequence ID</th><th>Interval start</th><th>Interval end</th><th class="tool-header"><span class="file-label">assembly_10</span><span class="tool-name">antiSMASH</span></th><th class="tool-header"><span class="file-label">assembly_10</span><span class="tool-name">DeepBGC</span></th><th class="tool-header"><span class="file-label">assembly_10</span><span class="tool-name">GECCO</span></th><th class="tool-header"><span class="file-label">assembly_10</span><span class="tool-name">PRISM</span></th></tr><tr class="filter-row"><th><input class="column-filter" type="text" data-column="0" data-filter-type="text" placeholder="Sequence ID"></th><th><input class="column-filter" type="number" data-column="1" data-filter-type="min" min="1" step="1" placeholder="Min"></th><th><input class="column-filter" type="number" data-column="2" data-filter-type="max" min="1" step="1" placeholder="Max"></th><th><input class="column-filter" type="text" data-column="3" data-filter-type="text" placeholder="Product"></th><th><input class="column-filter" type="text" data-column="4" data-filter-type="text" placeholder="Product"></th><th><input class="column-filter" type="text" data-column="5" data-filter-type="text" placeholder="Product"></th><th><input class="column-filter" type="text" data-column="6" data-filter-type="text" placeholder="Product"></th></tr></thead><tbody><tr><td>CONTIG_1</td><td>1144</td><td>42174</td><td class="bgc-cell">-</td><td class="bgc-cell">1144 - 9307 (Unknown product);<br>10407 - 11363 (Unknown product);<br>18485 - 33357 (Unknown product);<br>37614 - 39812 (Unknown product)</td><td class="bgc-cell">1144 - 42174 (Unknown product)</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_1</td><td>46064</td><td>46201</td><td class="bgc-cell">-</td><td class="bgc-cell">46064 - 46201 (Unknown product)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_1</td><td>54103</td><td>99808</td><td class="bgc-cell">-</td><td class="bgc-cell">54103 - 99808 (Unknown product)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_2</td><td>1</td><td>39844</td><td class="bgc-cell">1 - 39844 (PKS)</td><td class="bgc-cell">2 - 19844 (PKS)</td><td class="bgc-cell">2 - 19844 (PKS)</td><td class="bgc-cell">3971 - 28480 (PKS)</td></tr><tr><td>CONTIG_2</td><td>64321</td><td>100107</td><td class="bgc-cell">64321 - 92231 (Terpene)</td><td class="bgc-cell">69774 - 100107 (Terpene)</td><td class="bgc-cell">68895 - 90076 (Terpene)</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_3</td><td>11762</td><td>22414</td><td class="bgc-cell">-</td><td class="bgc-cell">11762 - 22414 (PKS)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_3</td><td>42217</td><td>42780</td><td class="bgc-cell">-</td><td class="bgc-cell">42217 - 42780 (Unknown product)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_3</td><td>46000</td><td>71098</td><td class="bgc-cell">46540 - 71098 (RiPP)</td><td class="bgc-cell">46000 - 47883 (Terpene);<br>48691 - 49716 (PKS);<br>51778 - 63234 (RiPP)</td><td class="bgc-cell">50819 - 67527 (RiPP)</td><td class="bgc-cell">55325 - 61098 (RiPP)</td></tr><tr><td>CONTIG_4</td><td>1241</td><td>10915</td><td class="bgc-cell">-</td><td class="bgc-cell">1241 - 10915 (Unknown product)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_4</td><td>16163</td><td>30553</td><td class="bgc-cell">-</td><td class="bgc-cell">16163 - 30553 (PKS)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_4</td><td>31499</td><td>40506</td><td class="bgc-cell">-</td><td class="bgc-cell">31499 - 40506 (PKS)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_4</td><td>45005</td><td>46894</td><td class="bgc-cell">-</td><td class="bgc-cell">45005 - 46894 (Unknown product)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_4</td><td>48607</td><td>49389</td><td class="bgc-cell">-</td><td class="bgc-cell">48607 - 49389 (Unknown product)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_4</td><td>53990</td><td>54874</td><td class="bgc-cell">-</td><td class="bgc-cell">53990 - 54874 (Terpene)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_4</td><td>64811</td><td>66106</td><td class="bgc-cell">-</td><td class="bgc-cell">64811 - 66106 (Unknown product)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_4</td><td>69997</td><td>71666</td><td class="bgc-cell">-</td><td class="bgc-cell">69997 - 71666 (Unknown product)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_5</td><td>372</td><td>28310</td><td class="bgc-cell">-</td><td class="bgc-cell">372 - 28310 (Saccharide)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_5</td><td>30869</td><td>36131</td><td class="bgc-cell">-</td><td class="bgc-cell">30869 - 36131 (PKS)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_5</td><td>37904</td><td>45051</td><td class="bgc-cell">-</td><td class="bgc-cell">37904 - 45051 (Unknown product)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_6</td><td>1</td><td>52045</td><td class="bgc-cell">1 - 52045 (NRPS)</td><td class="bgc-cell">2 - 37112 (NRPS);<br>38723 - 41731 (Unknown product);<br>43145 - 43687 (Unknown product);<br>48568 - 49221 (Unknown product)</td><td class="bgc-cell">3139 - 43687 (NRPS)</td><td class="bgc-cell">13589 - 33048 (NRPS)</td></tr><tr><td>CONTIG_6</td><td>86587</td><td>90495</td><td class="bgc-cell">-</td><td class="bgc-cell">86587 - 90495 (PKS)</td><td class="bgc-cell">-</td><td class="bgc-cell">86587 - 89146 (PKS)</td></tr><tr><td>CONTIG_7</td><td>1</td><td>37234</td><td class="bgc-cell">1 - 21556 (Terpene)</td><td class="bgc-cell">119 - 12174 (Terpene, PKS);<br>12494 - 17154 (Unknown product);<br>18856 - 37234 (Unknown product)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_7</td><td>80564</td><td>99892</td><td class="bgc-cell">-</td><td class="bgc-cell">80564 - 99892 (PKS)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_8</td><td>35723</td><td>48690</td><td class="bgc-cell">-</td><td class="bgc-cell">35723 - 48690 (RiPP)</td><td class="bgc-cell">38006 - 45174 (RiPP)</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_8</td><td>90995</td><td>100957</td><td class="bgc-cell">90995 - 100957 (RiPP)</td><td class="bgc-cell">97188 - 100956 (RiPP)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_9</td><td>2545</td><td>8267</td><td class="bgc-cell">-</td><td class="bgc-cell">2545 - 8267 (Unknown product)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_9</td><td>16900</td><td>22512</td><td class="bgc-cell">-</td><td class="bgc-cell">16900 - 22512 (PKS)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_9</td><td>46103</td><td>47686</td><td class="bgc-cell">-</td><td class="bgc-cell">46103 - 47686 (Terpene, PKS)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_9</td><td>91119</td><td>95422</td><td class="bgc-cell">-</td><td class="bgc-cell">91119 - 95422 (PKS)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr><tr><td>CONTIG_10</td><td>43020</td><td>64110</td><td class="bgc-cell">-</td><td class="bgc-cell">43020 - 64110 (Unknown product)</td><td class="bgc-cell">-</td><td class="bgc-cell">-</td></tr></tbody></table>
+    </div>
+
+</div>
+
+<!-- Interactive table filtering -->
+<script>
+/*
+ * Interactive column filtering for the overlapping-BGC table.
+ *
+ * Each filter input stores the index of the column it controls in its
+ * data-column attribute. Filters are case-insensitive and are combined:
+ * a row remains visible only if it matches every non-empty filter.
+ */
+
+const columnFilters = Array.from(
+    document.querySelectorAll('.column-filter')
+);
+
+const tableRows = Array.from(
+    document.querySelectorAll('.bgc-overlap-table tbody tr')
+);
+
+const rowsPerPageSelect = document.getElementById('rows-per-page');
+const paginationInfo = document.getElementById('pagination-info');
+const pageInfo = document.getElementById('page-info');
+const previousPageButton = document.getElementById('previous-page');
+const nextPageButton = document.getElementById('next-page');
+
+let currentPage = 1;
+
+/*
+ * Return true when a table row satisfies every active column filter.
+ */
+function rowMatchesFilters(row) {
+    const cells = row.querySelectorAll('td');
+
+    return columnFilters.every(filter => {
+        const query = filter.value.trim();
+
+        // An empty filter does not restrict the table.
+        if (query === '') {
+            return true;
+        }
+
+        const columnIndex = Number(filter.dataset.column);
+        const filterType = filter.dataset.filterType;
+        const cellText = cells[columnIndex].textContent.trim();
+
+        if (filterType === 'min') {
+            return Number(cellText) >= Number(query);
+        }
+
+        if (filterType === 'max') {
+            return Number(cellText) <= Number(query);
+        }
+
+        // Text filters are case-insensitive substring searches.
+        return cellText.toLowerCase().includes(query.toLowerCase());
+    });
+}
+
+
+/*
+ * Apply active filters and display only the rows belonging to the
+ * currently selected page.
+ */
+function updateTable() {
+    const matchingRows = tableRows.filter(rowMatchesFilters);
+    const rowsPerPage = Number(rowsPerPageSelect.value);
+    const totalPages = Math.max(1, Math.ceil(matchingRows.length / rowsPerPage));
+
+    // Keep the current page valid if filtering reduces the number of pages.
+    currentPage = Math.min(currentPage, totalPages);
+
+    const firstRowIndex = (currentPage - 1) * rowsPerPage;
+    const lastRowIndex = firstRowIndex + rowsPerPage;
+    const visibleRows = matchingRows.slice(firstRowIndex, lastRowIndex);
+
+    // Hide all rows first, then reveal only the current page.
+    tableRows.forEach(row => {
+        row.hidden = true;
+    });
+
+    visibleRows.forEach(row => {
+        row.hidden = false;
+    });
+
+    updatePagination(
+        matchingRows.length,
+        firstRowIndex,
+        visibleRows.length,
+        totalPages
+    );
+}
+
+
+/*
+ * Update pagination text and enable/disable navigation buttons.
+ */
+function updatePagination(
+    matchingRowCount,
+    firstRowIndex,
+    visibleRowCount,
+    totalPages
+) {
+    if (matchingRowCount === 0) {
+        paginationInfo.textContent = 'Showing 0 of 0';
+    } else {
+        const firstDisplayedRow = firstRowIndex + 1;
+        const lastDisplayedRow = firstRowIndex + visibleRowCount;
+
+        paginationInfo.textContent =
+            `Showing ${firstDisplayedRow}\u2013${lastDisplayedRow} of ${matchingRowCount}`;
+    }
+
+    pageInfo.textContent = `${currentPage} / ${totalPages}`;
+
+    previousPageButton.disabled = currentPage === 1;
+    nextPageButton.disabled = currentPage === totalPages;
+}
+
+
+// Re-filter immediately whenever the user changes any search field.
+columnFilters.forEach(filter => {
+    filter.addEventListener('input', () => {
+        currentPage = 1;
+        updateTable();
+    });
+});
+
+// Changing the number of rows per page restarts pagination from page 1.
+rowsPerPageSelect.addEventListener('change', () => {
+    currentPage = 1;
+    updateTable();
+});
+
+
+previousPageButton.addEventListener('click', () => {
+    if (currentPage > 1) {
+        currentPage -= 1;
+        updateTable();
+    }
+});
+
+
+nextPageButton.addEventListener('click', () => {
+    currentPage += 1;
+    updateTable();
+});
+
+
+// Initialize the table with the default page size.
+updateTable();
+</script>
+
+</body>
+</html>

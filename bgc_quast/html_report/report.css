@@ -15,6 +15,7 @@ html, body {
     flex-direction: column;
     height: 100%;
     padding: 10px;
+    box-sizing: border-box;
     font-size: 14px;
 }
 
@@ -256,6 +257,7 @@ th.mode-specific-metric {
 
 .metric-tabs {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
 }
@@ -268,6 +270,8 @@ th.mode-specific-metric {
     background: #ffffff;
     cursor: pointer;
     font-size: 14px;
+    flex-shrink: 0;
+    white-space: nowrap;
     transition: background 0.15s ease,
                 transform 0.1s ease,
                 box-shadow 0.15s ease,

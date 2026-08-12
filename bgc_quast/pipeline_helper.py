@@ -19,7 +19,7 @@ from bgc_quast.reporting.report_config import ReportConfigManager
 from bgc_quast.reporting.report_data import ReportData, RunningMode
 from bgc_quast.output.genbank_writer import write_genbank, UnsupportedGenomeFormatError
 from bgc_quast.output.bgc_list_writer import write_bgc_tsv, write_overlapping_bgc_tsv
-
+from bgc_quast.output.bgc_overlaps_html_writer import write_overlapping_bgc_html
 
 class PipelineHelper:
     """
@@ -320,6 +320,7 @@ class PipelineHelper:
         bgc_annotations_gbk_output_path = None
         bgc_list_tsv_output_path = None
         bgc_overlap_tsv_output_path = None
+        bgc_overlap_html_output_path = None
         if self.running_mode == RunningMode.COMPARE_TOOLS:
             if not self.args.genome_data:
                 self.log.warning("Cannot create integrated GenBank file with BGC annotations since no input genome was provided (--genome/-G)")
@@ -365,8 +366,22 @@ class PipelineHelper:
                     "Failed to generate TSV file with overlapping BGC intervals. "
                     f"Reason: {e}\n"
                 )
-        else:
-            self.log.warning(f"--output-bgcs is supported only in {RunningMode.COMPARE_TOOLS}, the running mode is set to: {self.running_mode}")
+
+            if bgc_overlap_tsv_output_path is not None:
+                bgc_overlap_html_output_path = Path(
+                    str(bgc_info_base_output_path) + ".overlaps.html"
+                )
+                try:
+                    write_overlapping_bgc_html(
+                        tsv_path=bgc_overlap_tsv_output_path,
+                        output_path=bgc_overlap_html_output_path,
+                    )
+                except (OSError, ValueError) as e:
+                    bgc_overlap_html_output_path = None
+                    self.log.warning(
+                        "Failed to generate HTML file with overlapping BGC intervals. "
+                        f"Reason: {e}\n"
+                    )
 
         if not self.analysis_report:
             self.log.error("No analysis report available to write results.")
@@ -406,6 +421,12 @@ class PipelineHelper:
         if bgc_overlap_tsv_output_path is not None:
             self.log.info(
                 f"TSV file with overlapping intervals of BGCs predicted by all tools is saved to {bgc_overlap_tsv_output_path}",
+                indent=1,
+            )
+
+        if bgc_overlap_html_output_path is not None:
+            self.log.info(
+                f"HTML file with overlapping intervals of BGCs predicted by all tools is saved to {bgc_overlap_html_output_path}",
                 indent=1,
             )
 

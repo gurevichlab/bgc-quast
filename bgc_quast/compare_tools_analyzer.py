@@ -5,9 +5,7 @@ from bgc_quast.genome_mining_result import GenomeMiningResult, Bgc
 
 # ------------------------ Basic geometry helpers ------------------------- #
 def overlap_len(a_start: int, a_end: int, b_start: int, b_end: int) -> int:
-    """Overlap length for CLOSED intervals [a_start, a_end] and [b_start, b_end].
-    Example: [10,20] ∩ [20,30] -> 1 (the base at 20).
-    """
+    """Overlap length for 0-based, end-exclusive intervals."""
     if a_end < a_start:
         a_start, a_end = a_end, a_start
     if b_end < b_start:
@@ -15,14 +13,12 @@ def overlap_len(a_start: int, a_end: int, b_start: int, b_end: int) -> int:
 
     left = max(a_start, b_start)
     right = min(a_end, b_end)
-    if right < left:
-        return 0
-    return right - left + 1
+    return max(0, right - left)
 
 
 def coverage_of_a_by_b(a: Bgc, b: Bgc) -> float:
-    """Directional coverage of A by B: |A ∩ B| / |A| with CLOSED intervals."""
-    a_len = max(0, a.end - a.start + 1)
+    """Directional coverage of A by B: |A ∩ B| / |A|."""
+    a_len = max(0, a.end - a.start)
     if a_len == 0:
         return 0.0
     ov = overlap_len(a.start, a.end, b.start, b.end)
