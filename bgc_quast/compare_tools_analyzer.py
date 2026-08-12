@@ -113,9 +113,6 @@ def compute_uniqueness(
         for j, other in enumerate(results):
             if j == i:
                 continue
-            # skip exact same file (same path)
-            if other.input_file == res.input_file:
-                continue
             B_label = run_labels[j]
             pairwise_by_run[A_label][B_label] = {"unique": 0, "non_unique": 0}
 
@@ -150,9 +147,6 @@ def compute_uniqueness(
             # -------- Directional pairwise (A run against each B run of other tools) -------- #
             for j, res_B in enumerate(results):
                 if j == i:
-                    continue
-                # skip exact same file (same path)
-                if res_B.input_file == res.input_file:
                     continue
 
                 B_label = run_labels[j]

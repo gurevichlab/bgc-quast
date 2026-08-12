@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from bgc_quast.config import Config, load_config
+from bgc_quast.config import Config, load_config, BGCLevel
 from bgc_quast.genome_mining_parser import (
     InvalidInputException,
     get_completeness,
@@ -48,7 +48,7 @@ def logger():
 
 def test_parse_antismash_json_gzipped():
     """Test parsing a gzipped antiSMASH JSON file."""
-    bgcs = parse_antismash_json(load_config(), ANTISMASH_FILE, SEQ_DATA_MAP)
+    bgcs = parse_antismash_json(load_config(), ANTISMASH_FILE, SEQ_DATA_MAP, BGCLevel.REGION.value)
 
     # Verify we got some BGCs
     assert len(bgcs) == 6
@@ -66,7 +66,7 @@ def test_parse_antismash_json_gzipped():
 
 def test_parse_antismash_json_gzipped_unknown_seq_length():
     """Test parsing a gzipped antiSMASH JSON file."""
-    bgcs = parse_antismash_json(load_config(), ANTISMASH_FILE, None)
+    bgcs = parse_antismash_json(load_config(), ANTISMASH_FILE, None, BGCLevel.REGION.value)
 
     # Verify we got some BGCs
     assert len(bgcs) == 6
@@ -89,7 +89,7 @@ def test_parse_antismash_json_invalid_format():
         f.write("invalid json content")
 
     with pytest.raises(InvalidInputException) as exc_info:
-        parse_antismash_json(load_config(), Path(invalid_file), SEQ_DATA_MAP)
+        parse_antismash_json(load_config(), Path(invalid_file), SEQ_DATA_MAP, BGCLevel.REGION.value)
     assert "Failed to parse antiSMASH format" in str(exc_info.value)
 
     # Clean up
@@ -99,7 +99,7 @@ def test_parse_antismash_json_invalid_format():
 
 def test_parse_gecco_tsv():
     """Test parsing a GECCO TSV file."""
-    bgcs = parse_gecco_tsv(load_config(), GECCO_FILE, SEQ_DATA_MAP)
+    bgcs = parse_gecco_tsv(load_config(), GECCO_FILE, SEQ_DATA_MAP, BGCLevel.REGION.value)
 
     # Verify we got some BGCs
     assert len(bgcs) == 6
@@ -121,13 +121,13 @@ def test_parse_gecco_tsv_invalid_format(tmp_path):
     tsv_file = tmp_path / "invalid_gecco.tsv"
     tsv_file.write_text(tsv_content)
     with pytest.raises(InvalidInputException) as exc_info:
-        parse_gecco_tsv(load_config(), tsv_file, None)
+        parse_gecco_tsv(load_config(), tsv_file, None, BGCLevel.REGION.value)
     assert "Not GECCO TSV" in str(exc_info.value)
 
 
 def test_parse_deepbgc_tsv():
     """Test parsing a DeepBGC TSV file."""
-    bgcs = parse_deepbgc_tsv(load_config(), DEEPBGC_TSV_FILE, SEQ_DATA_MAP)
+    bgcs = parse_deepbgc_tsv(load_config(), DEEPBGC_TSV_FILE, SEQ_DATA_MAP, BGCLevel.REGION.value)
 
     # Verify we got some BGCs
     assert len(bgcs) == 40
@@ -149,13 +149,13 @@ def test_parse_deepbgc_tsv_invalid_format(tmp_path):
     tsv_file = tmp_path / "invalid_deepbgc.tsv"
     tsv_file.write_text(tsv_content)
     with pytest.raises(InvalidInputException) as exc_info:
-        parse_deepbgc_tsv(load_config(), tsv_file, None)
+        parse_deepbgc_tsv(load_config(), tsv_file, None, BGCLevel.REGION.value)
     assert "Not DeepBGC TSV" in str(exc_info.value)
 
 
 def test_parse_deepbgc_json():
     """Test parsing a DeepBGC JSON file."""
-    bgcs = parse_deepbgc_json(load_config(), DEEPBGC_JSON_FILE, SEQ_DATA_MAP)
+    bgcs = parse_deepbgc_json(load_config(), DEEPBGC_JSON_FILE, SEQ_DATA_MAP, BGCLevel.REGION.value)
 
     # Verify we got some BGCs
     assert len(bgcs) == 40
@@ -226,6 +226,7 @@ def test_parse_prism_json(tmp_path):
         load_config(),
         prism_file,
         seq_data_map,
+        BGCLevel.REGION.value
     )
 
     assert len(bgcs) == 3
@@ -250,7 +251,7 @@ def test_parse_prism_json_invalid_format(tmp_path):
     prism_file.write_text(json.dumps({"records": []}))
 
     with pytest.raises(InvalidInputException):
-        parse_prism_json(load_config(), prism_file, None)
+        parse_prism_json(load_config(), prism_file, None, BGCLevel.REGION.value)
 
 
 def test_parse_deepbgc_json_invalid_format(tmp_path):
@@ -258,7 +259,7 @@ def test_parse_deepbgc_json_invalid_format(tmp_path):
     json_file = tmp_path / "invalid_deepbgc.json"
     json_file.write_text("not a json")
     with pytest.raises(InvalidInputException) as exc_info:
-        parse_deepbgc_json(load_config(), json_file, None)
+        parse_deepbgc_json(load_config(), json_file, None, BGCLevel.REGION.value)
     assert "Failed to parse DeepBGC format" in str(exc_info.value)
 
 def test_parse_deepbgc_json_rejects_prism_schema(tmp_path):
@@ -275,7 +276,7 @@ def test_parse_deepbgc_json_rejects_prism_schema(tmp_path):
     )
 
     with pytest.raises(InvalidInputException) as exc_info:
-        parse_deepbgc_json(load_config(), json_file, None)
+        parse_deepbgc_json(load_config(), json_file, None, BGCLevel.REGION.value)
 
     assert "'records' is missing or not a list" in str(exc_info.value)
 

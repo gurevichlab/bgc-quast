@@ -156,13 +156,16 @@ def parse_antismash_location(location: str) -> tuple[int, int]:
 
 
 def parse_antismash_json(
-    config: Config, file_path: Path, seq_data_map: Union[Dict[str, ContigData], None]
+        config: Config,
+        file_path: Path,
+        seq_data_map: Union[Dict[str, ContigData], None],
+        bgc_level: BGCLevel
 ) -> List[Bgc]:
     """Parse antiSMASH JSON format."""
     product_to_class = load_reverse_mapping(
         config.product_mapping_config.product_yamls["antismash_product_mapping"]
     )
-    entity_info = ANTISMASH_BGC_ENTITY_INFO[config.bgc_level]
+    entity_info = ANTISMASH_BGC_ENTITY_INFO[bgc_level]
 
     try:
         json_data = input_utils.get_json_from_file(file_path)
@@ -185,7 +188,7 @@ def parse_antismash_json(
                         "antismash_feature_type": feature["type"],
                     }
 
-                    bgc_id = get_antismash_bgc_id(sequence_id, qualifiers, config.bgc_level)
+                    bgc_id = get_antismash_bgc_id(sequence_id, qualifiers, bgc_level)
                     bgc = Bgc(
                         bgc_id=bgc_id,
                         sequence_id=sequence_id,
@@ -203,7 +206,10 @@ def parse_antismash_json(
 
 
 def parse_gecco_tsv(
-    config: Config, file_path: Path, seq_data_map: Union[Dict[str, ContigData], None]
+        config: Config,
+        file_path: Path,
+        seq_data_map: Union[Dict[str, ContigData], None],
+        bgc_level: BGCLevel
 ) -> List[Bgc]:
     """Parse GECCO TSV format."""
     product_to_class = load_reverse_mapping(
@@ -273,7 +279,10 @@ def parse_gecco_tsv(
 
 
 def parse_deepbgc_tsv(
-    config: Config, file_path: Path, seq_data_map: Union[Dict[str, ContigData], None]
+        config: Config,
+        file_path: Path,
+        seq_data_map: Union[Dict[str, ContigData], None],
+        bgc_level: BGCLevel
 ) -> List[Bgc]:
     """Parse DeepBGC TSV format."""
     product_to_class = load_reverse_mapping(
@@ -348,7 +357,10 @@ def parse_deepbgc_tsv(
 
 
 def parse_deepbgc_json(
-    config: Config, file_path: Path, seq_data_map: Union[Dict[str, ContigData], None]
+        config: Config,
+        file_path: Path,
+        seq_data_map: Union[Dict[str, ContigData], None],
+        bgc_level: BGCLevel
 ) -> List[Bgc]:
     """Parse DeepBGC JSON format."""
     product_to_class = load_reverse_mapping(
@@ -408,7 +420,10 @@ def parse_deepbgc_json(
 
 
 def parse_prism_json(
-    config: Config, file_path: Path, seq_data_map: Union[Dict[str, ContigData], None]
+        config: Config,
+        file_path: Path,
+        seq_data_map: Union[Dict[str, ContigData], None],
+        bgc_level: BGCLevel
 ) -> List[Bgc]:
     """Parse PRISM 4.4.5 JSON format."""
     product_to_class = load_reverse_mapping(
@@ -543,44 +558,54 @@ def parse_input_mining_result_files(
 
         for parser, tool_name in parsers.items():
             try:
-                bgcs = parser(config, file_path, seq_data_map)
-                bgcs = merge_nearby_bgcs(config, bgcs, seq_data_map)
+                for bgc_level in config.bgc_levels:
+                    if tool_name == "antiSMASH" and len(config.bgc_levels) > 1:
+                        tool_name_label = f"{tool_name}_{ANTISMASH_BGC_ENTITY_INFO[bgc_level]['id_prefix']}"
+                    else:
+                        tool_name_label = tool_name
 
-                # Apply length-based filtering
-                min_len = config.min_bgc_length
-                filtered_count = 0
+                    bgcs = parser(config, file_path, seq_data_map, bgc_level)
+                    bgcs = merge_nearby_bgcs(config, bgcs, seq_data_map)
 
-                if min_len is None or min_len == 0:
-                    # No filtering requested
-                    kept_bgcs = bgcs
-                else:
-                    kept_bgcs = []
-                    for bgc in bgcs:
-                        length = bgc.end - bgc.start
-                        # Same convention as mean_bgc_length: use end - start
-                        if length >= min_len:
-                            kept_bgcs.append(bgc)
-                        else:
-                            filtered_count += 1
+                    # Apply length-based filtering
+                    min_len = config.min_bgc_length
+                    filtered_count = 0
 
-                if filtered_count > 0:
-                    log.info(
-                        f"Filtered out {filtered_count} BGC(s) shorter than "
-                        f"{min_len} bp for {file_path}"
+                    if min_len is None or min_len == 0:
+                        # No filtering requested
+                        kept_bgcs = bgcs
+                    else:
+                        kept_bgcs = []
+                        for bgc in bgcs:
+                            length = bgc.end - bgc.start
+                            # Same convention as mean_bgc_length: use end - start
+                            if length >= min_len:
+                                kept_bgcs.append(bgc)
+                            else:
+                                filtered_count += 1
+
+                    if filtered_count > 0:
+                        log.info(
+                            f"Filtered out {filtered_count} BGC(s) shorter than "
+                            f"{min_len} bp for {file_path} ({tool_name_label})"
+                        )
+
+                    file_label = get_file_label_from_path(file_path)
+                    results.append(
+                        GenomeMiningResult(
+                            input_file=file_path.resolve(),
+                            input_file_label=file_label,
+                            display_label=file_label,
+                            mining_tool=tool_name_label,
+                            bgcs=kept_bgcs,
+                            genome_data=seq_data_map,
+                            filtered_bgcs_by_length=filtered_count,
+                        )
                     )
-
-                file_label = get_file_label_from_path(file_path)
-                results.append(
-                    GenomeMiningResult(
-                        input_file=file_path.resolve(),
-                        input_file_label=file_label,
-                        display_label=file_label,
-                        mining_tool=tool_name,
-                        bgcs=kept_bgcs,
-                        genome_data=seq_data_map,
-                        filtered_bgcs_by_length=filtered_count,
-                    )
-                )
+                    # Don't iterate on bgc_levels for tools not supporting different levels
+                    # Currently, only antiSMASH supports them
+                    if tool_name != "antiSMASH":
+                        break
                 break  # If parsing succeeded, move to next file
             except InvalidInputException:
                 continue  # Try next parser

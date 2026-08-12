@@ -151,6 +151,7 @@ def test_build_report_basic_mode(
         MockDataFrame.return_value = pd.DataFrame(
             {
                 "file_path": [Path("sample1.fasta"), Path("sample2.fasta")],
+                "mining_tool": ["tool1", "tool2"],
                 "metric_name": ["total_bgc_count", "total_bgc_count"],
                 "value": ["5", "10"],
             }
@@ -231,6 +232,11 @@ def test_build_report_compare_to_reference_mode(
                     Path("sample1.fasta"),
                     Path("sample2.fasta"),
                     Path("sample1.fasta"),
+                ],
+                "mining_tool": [
+                    "tool1",
+                    "tool2",
+                    "tool1",
                 ],
                 "metric_name": [
                     "total_bgc_count",

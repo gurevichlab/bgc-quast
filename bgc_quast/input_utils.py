@@ -9,6 +9,7 @@ import yaml
 from bgc_quast.genome_mining_result import GenomeMiningResult
 from bgc_quast.reporting.report_data import RunningMode
 from bgc_quast.option_parser import ValidationError
+from bgc_quast.config import BGCLevel
 
 
 def validate_no_duplicate_paths(paths: list[Path]) -> None:
@@ -100,6 +101,7 @@ def determine_running_mode(
     mode: str,
     reference_genome_mining_result: Optional[GenomeMiningResult],
     assembly_genome_mining_results: List[GenomeMiningResult],
+    bgc_levels: List[BGCLevel],
     log: Optional[Logger] = None,
 ) -> RunningMode:
     """
@@ -126,6 +128,7 @@ def determine_running_mode(
         mode (str): Requested mode ("auto", "compare-to-reference", "compare-tools", "compare-samples").
         reference_genome_mining_result (GenomeMiningResult): The reference genome mining result.
         assembly_genome_mining_results (List[GenomeMiningResult]): List of genome mining results.
+        bgc_levels (List[BGCLevel]): List of requested BGC levels (the special case -- forces "compare-tools" if more than one)
 
     Returns:
         RunningMode: The determined running mode.
@@ -143,6 +146,12 @@ def determine_running_mode(
         if log:
             log.info("Mode AUTO selected: choosing the running mode based on file labels "
                      "and mining tools.")
+
+        if len(bgc_levels) > 1:
+            if log:
+                log.info("Multiple BGC levels requested (--bgc-level), choosing COMPARE_TOOLS.")
+            return RunningMode.COMPARE_TOOLS
+
         different_mining_tools = not all(
             tool == assembly_genome_mining_results[0].mining_tool
             for tool in (result.mining_tool for result in assembly_genome_mining_results)

@@ -78,11 +78,16 @@ def add_basic_arguments(parser: argparse.ArgumentParser, default_cfg: Config):
     basic.add_argument(
         "--bgc-level",
         choices=[level.value for level in BGCLevel],
-        default=BGCLevel.REGION.value,
+        action="append",
+        default=None,
         help=(
-            "Select the annotation entity level to be treated as BGCs in BGC-QUAST. "
+            "Select the annotation entity level(s) to be treated as BGCs in BGC-QUAST. "
             "The selected entities are used for all downstream analysis and metrics. "
-            "Currently, multiple BGC entity levels are supported only for antiSMASH annotations "
+            "This option may be specified multiple times, but each level may be used only once. "
+            "If multiple levels are provided, they are treated as separate runs in compare-tools mode, "
+            "and the corresponding tool names in the output receive suffixes according to the selected levels "
+            "(e.g., '_reg', '_cc', '_pc'). "
+            "Currently, BGC entity levels are supported only for antiSMASH annotations "
             f"[default: '{BGCLevel.REGION.value}']"
         ),
     )
@@ -256,8 +261,18 @@ def validate(expr, msg=""):
 
 
 def validate_arguments(args: CommandLineArgs):
-    if None:  # TODO if applicable
-        raise ValidationError("something is wrong!")
+    if getattr(args, "bgc_level", None) is None:
+        args.bgc_level = [BGCLevel.REGION.value]
+
+    if len(args.bgc_level) != len(set(args.bgc_level)):
+        raise ValidationError("--bgc-level must not contain duplicate values")
+
+    if len(args.bgc_level) > 1:
+        validate(
+            getattr(args, "mode", "auto") in {"auto", "compare-tools"},
+            "Multiple --bgc-level values are supported only in compare-tools mode",
+        )
+
     thr = getattr(args, "compare_tools_overlap_threshold", None)
     if thr is not None:
         validate(0.0 <= thr <= 1.0,

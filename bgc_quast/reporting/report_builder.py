@@ -149,23 +149,24 @@ class ReportBuilder:
 
         # Create DataFrame.
         df = create_dataframe_from_metrics(metrics)
-        # Create a mapping from file_path to mining_tool
-        path_to_tool = {str(r.input_file): r.mining_tool for r in results}
-        path_to_label = {str(r.input_file): (r.display_label or r.input_file_label) for r in results}
+        # Create a mapping from (file_path, mining_tool) to label
+        path_tool_to_label = {
+            (str(r.input_file), r.mining_tool): (r.display_label or r.input_file_label) for r in results
+        }
 
         # Add a mapping for reference as well
         if reference_genome_mining_result is not None:
-            path_to_tool[str(reference_genome_mining_result.input_file)] = (
-                reference_genome_mining_result.mining_tool
-            )
-            path_to_label[str(reference_genome_mining_result.input_file)] = (
+            path_tool_to_label[
+                (str(reference_genome_mining_result.input_file), reference_genome_mining_result.mining_tool)
+            ] = (
                     reference_genome_mining_result.display_label or reference_genome_mining_result.input_file_label
             )
 
         file_paths_str = df["file_path"].astype(str)
+        key_series = list(zip(file_paths_str, df["mining_tool"]))
 
-        df["Genome mining tool"] = df["file_path"].astype(str).map(path_to_tool)
-        df["file_label"] = file_paths_str.map(path_to_label)
+        df["Genome mining tool"] = df["mining_tool"]
+        df["file_label"] = [path_tool_to_label[key] for key in key_series]
         df["input_file"] = file_paths_str
 
         df.drop(columns=["file_path"], inplace=True, errors="ignore")

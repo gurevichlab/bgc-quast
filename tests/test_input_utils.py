@@ -9,6 +9,7 @@ from bgc_quast.input_utils import (
 )
 from bgc_quast.reporting.report_data import RunningMode
 from bgc_quast.option_parser import ValidationError
+from bgc_quast.config import BGCLevel
 
 SAMPLE_PATH_1 = Path("sample1.json")
 SAMPLE_PATH_2 = Path("sample2.json")
@@ -43,7 +44,7 @@ def test_determine_running_mode_compare_to_reference():
         ),
     ]
 
-    mode = determine_running_mode("auto", reference_result, genome_results)
+    mode = determine_running_mode("auto", reference_result, genome_results, [BGCLevel.REGION.value])
     assert mode == RunningMode.COMPARE_TO_REFERENCE
 
 
@@ -62,7 +63,7 @@ def test_determine_running_mode_different_labels_with_reference_unknown():
     ]
 
     with pytest.raises(ValidationError):
-        determine_running_mode("auto", reference_result, genome_results)
+        determine_running_mode("auto", reference_result, genome_results, [BGCLevel.REGION.value])
 
 
 def test_determine_running_mode_one_genome_result_compare_samples():
@@ -73,7 +74,7 @@ def test_determine_running_mode_one_genome_result_compare_samples():
         ),
     ]
 
-    mode = determine_running_mode("auto", None, genome_results)
+    mode = determine_running_mode("auto", None, genome_results, [BGCLevel.REGION.value])
     assert mode == RunningMode.COMPARE_SAMPLES
 
 
@@ -88,7 +89,7 @@ def test_determine_running_mode_compare_tools():
         ),
     ]
 
-    mode = determine_running_mode("auto", None, genome_results)
+    mode = determine_running_mode("auto", None, genome_results, [BGCLevel.REGION.value])
     assert mode == RunningMode.COMPARE_TOOLS
 
 
@@ -103,7 +104,7 @@ def test_determine_running_mode_compare_samples():
         ),
     ]
 
-    mode = determine_running_mode("auto", None, genome_results)
+    mode = determine_running_mode("auto", None, genome_results, [BGCLevel.REGION.value])
     assert mode == RunningMode.COMPARE_SAMPLES
 
 
@@ -119,7 +120,7 @@ def test_determine_running_mode_different_labels_and_tools_unknown():
     ]
 
     with pytest.raises(ValidationError):
-        determine_running_mode("auto", None, genome_results)
+        determine_running_mode("auto", None, genome_results, [BGCLevel.REGION.value])
 
 
 @pytest.mark.parametrize(

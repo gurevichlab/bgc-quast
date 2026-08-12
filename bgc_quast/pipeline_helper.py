@@ -205,6 +205,7 @@ class PipelineHelper:
                 self.args.mode,
                 self.reference_genome_mining_result,
                 self.assembly_genome_mining_results,
+                self.config.bgc_levels,
                 log=self.log,
             )
 

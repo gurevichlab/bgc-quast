@@ -4,7 +4,7 @@
 1.1. [Requirements](#sec_req) </br>
 1.2. [Installation](#sec_install) </br>
 1.3. [Supported genome mining tools](#sec_tools) </br>
-1.4. [Command-line Options](#sec_cmd_options) </br>
+1.4. [Command-line options](#sec_cmd_options) </br>
 1.5. [Input naming and file matching](#sec_naming) </br>
 2. [Running modes](#sec_run_modes)</br> 
 2.1. [Compare-to-reference mode](#sec_run_mode_1) </br>
@@ -98,7 +98,7 @@ BGC-QUAST reads a defined subset of fields from each supported format, as descri
 Supporting a new tool explicitly may require a dedicated parser function and/or product mapping configuration file. Requests for additional tools/formats can be submitted through [GitHub Issues](https://github.com/gurevichlab/bgc-quast/issues).
 
 <a name="sec_cmd_options"></a>
-## Command-line Options
+## Command-line options
 ```bash
 usage: bgc-quast [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-to-reference,compare-tools,compare-samples}]
                  [--merge-distance INT] [--min-bgc-length INT] [--edge-distance INT]
@@ -124,7 +124,7 @@ usage: bgc-quast [-h] [--output-dir DIR] [--threads INT] [--mode {auto,compare-t
 | `--merge-distance INT`                                             | Merge nearby BGCs if the gap between them <= this distance (bp); 0 disables merging [default: 0] |
 | `--min-bgc-length INT`                                             | Filter out BGCs shorter than this length (bp) [default: 0]                                       |
 | `--edge-distance INT`                                              | Margin (in bp) from contig edges used to classify BGC completeness [default: 100]                |
-| `--bgc-level {region,candidate-cluster,protocluster}`              | Select the antiSMASH annotation level used as BGC entities for analysis [default: 'region']      |
+| `--bgc-level {region,candidate-cluster,protocluster}`              | Select the antiSMASH annotation level(s) used as BGC entities for analysis; may be specified multiple times [default: 'region']      |
 | `--mode {auto,compare-to-reference,compare-tools,compare-samples}` | [Running mode](#sec_run_modes) that controls how BGC-QUAST interprets the inputs                 |
 
 ### Compare-to-reference options
