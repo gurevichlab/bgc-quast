@@ -2,7 +2,7 @@ import base64
 import csv
 import html
 from pathlib import Path
-
+from bgc_quast.version import get_version
 
 def _file_to_base64(path: Path) -> str:
     """Encode an asset so it can be embedded directly into the standalone HTML."""
@@ -130,10 +130,6 @@ def write_overlapping_bgc_html(
     # Reuse the main report styling and embed assets to keep the HTML standalone.
     asset_dir = Path(__file__).resolve().parent.parent / "html_report"
 
-    logo_path = asset_dir / "github-mark-white.svg"
-    logo_b64 = _file_to_base64(logo_path)
-    logo_data_uri = f"data:image/svg+xml;base64,{logo_b64}"
-
     template = (asset_dir / "bgc_overlaps_template.html").read_text(encoding="utf-8")
     report_css = (asset_dir / "report.css").read_text(encoding="utf-8")
     overlaps_css = (asset_dir / "bgc_overlaps.css").read_text(encoding="utf-8")
@@ -144,8 +140,8 @@ def write_overlapping_bgc_html(
         .replace("{{ style_css }}", report_css)
         .replace("{{ overlaps_style_css }}", overlaps_css)
         .replace("{{ table_html }}", table_html)
-        .replace("{{ github_logo }}", logo_data_uri)
         .replace("{{ overlaps_script_js }}", overlaps_js)
+        .replace("{{ version }}", get_version())
     )
 
     output_path.write_text(html_filled, encoding="utf-8")

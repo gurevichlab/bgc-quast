@@ -8,7 +8,7 @@ import math
 import base64
 from bgc_quast.reporting.report_config import ReportConfig
 from bgc_quast.reporting.report_data import ReportData
-
+from bgc_quast.version import get_version
 
 class DataFrameTableBuilder:
     """Builds pivot tables from ReportData for formatting."""
@@ -295,10 +295,6 @@ class ReportFormatter:
         metadata_json = json.dumps(data.metadata, ensure_ascii=False)
         # Load the assets and inject JSON
         asset_dir = Path(__file__).resolve().parent.parent / "html_report"
-        logo_path = asset_dir / "github-mark-white.svg"
-        logo_b64 = file_to_base64(logo_path)
-        logo_mime = "image/svg+xml"
-        logo_data_uri = f"data:{logo_mime};base64,{logo_b64}"
 
         template = (asset_dir / "report_template.html").read_text(encoding="utf-8")
         style_css = (asset_dir / "report.css").read_text(encoding="utf-8")
@@ -312,7 +308,7 @@ class ReportFormatter:
             .replace("{{ report_json }}", data_json)
             .replace("{{ report_mode }}", mode)
             .replace("{{ metadata_json }}", metadata_json)
-            .replace("{{ github_logo }}", logo_data_uri)
+            .replace("{{ version }}", get_version())
         )
 
         # Write final HTML

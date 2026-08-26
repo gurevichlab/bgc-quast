@@ -78,24 +78,24 @@ html, body {
   text-shadow: 3px 3px 4px rgba(0,0,0,0.6);
 }
 
-/* GitHub link */
-.github-link a {
-  color: var(--bar-text);
-  text-decoration: none;
-  font-size: 16px;
+/* Header links */
+.github-link {
   display: flex;
-  align-items: center;
   gap: 8px;
   margin-right: 10px;
 }
 
-.github-link a:hover {
-  text-decoration: underline;
+.github-link a {
+  color: var(--bar-text);
+  text-decoration: none;
+  font-size: 16px;
+  padding: 5px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 6px;
 }
 
-.github-icon {
-  width: 24px;
-  height: 24px;
+.github-link a:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 /* ----- OPTIONS SUMMARY ----- */
