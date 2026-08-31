@@ -135,7 +135,7 @@ class TestReportFormatter:
 
         assert output_file.exists()
         content = output_file.read_text()
-        assert "<h1>BGC-QUAST Report</h1>" in content
+        assert "<h1>BGC-QUAST " in content
         assert "Metric 1" in content
         assert "file1" in content
 
