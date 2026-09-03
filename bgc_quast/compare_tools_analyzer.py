@@ -136,9 +136,11 @@ def compute_uniqueness(
             ]
             is_unique_global = _is_unique_against_candidates(a, global_candidates, overlap_threshold)
             if is_unique_global:
+                a.uniqueness = "Unique"
                 uniques_for_res.append(a)
                 totals_by_run[A_label]["unique"] += 1
             else:
+                a.uniqueness = "Shared"
                 non_uniques_for_res.append(a)
                 totals_by_run[A_label]["non_unique"] += 1
 

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from Bio import SeqIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation
@@ -30,6 +30,7 @@ def make_bgc_feature(bgc, tool: str) -> SeqFeature:
                 f"tool:{tool}",
                 f"bgc_id:{bgc.bgc_id}",
                 f"completeness:{bgc.completeness}",
+                f"uniqueness:{bgc.uniqueness}",
             ],
         }
     )
@@ -68,12 +69,29 @@ def load_input_genome_records(genome_file: Path):
     raise UnsupportedGenomeFormatError(format_error_msg)
 
 
+def add_uniqueness_comment(record: SeqRecord, overlap_threshold: Optional[float]) -> None:
+    if overlap_threshold is None:
+        return
+
+    percent = overlap_threshold * 100
+    record.annotations["comment"] = (
+        'BGC-QUAST compare-tools uniqueness classification: '
+        f'a BGC is considered "Shared" if any BGC predicted by another tool overlaps '
+        f'with at least {percent:g}% of its length (set by "--overlap-fraction"); '
+        f'otherwise it is considered "Unique".'
+    )
+
+
 def write_genbank(
     genome_file: Path,
     genome_mining_results: List[GenomeMiningResult],
     output_path: Path,
+    overlap_threshold: Optional[float] = None,
 ):
     records = load_input_genome_records(genome_file)
+
+    for record in records:
+        add_uniqueness_comment(record, overlap_threshold)
 
     record_by_id = {}
     for record in records:

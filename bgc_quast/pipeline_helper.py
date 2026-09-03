@@ -331,7 +331,8 @@ class PipelineHelper:
                     write_genbank(
                         genome_file=self.args.genome_data[0],
                         genome_mining_results=self.assembly_genome_mining_results,
-                        output_path=bgc_annotations_gbk_output_path
+                        output_path=bgc_annotations_gbk_output_path,
+                        overlap_threshold=self.config.compare_tools_overlap_threshold
                     )
                 except (ValueError, UnsupportedGenomeFormatError) as e:
                     bgc_annotations_gbk_output_path = None
@@ -345,7 +346,8 @@ class PipelineHelper:
                 write_bgc_tsv(
                     genome_mining_results=self.assembly_genome_mining_results,
                     output_path=bgc_list_tsv_output_path,
-                    genome_file=self.args.genome_data[0] if self.args.genome_data else None
+                    genome_file=self.args.genome_data[0] if self.args.genome_data else None,
+                    overlap_threshold=self.config.compare_tools_overlap_threshold
                 )
             except ValueError as e:
                 bgc_list_tsv_output_path = None

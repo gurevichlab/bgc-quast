@@ -131,10 +131,24 @@ def _sort_grouped_keys(grouped_keys, contig_display_names, all_sequence_ids, gen
     )
 
 
+def _format_uniqueness(bgcs) -> str:
+    if not bgcs:
+        return "N/A"
+
+    uniqueness_values = {bgc.uniqueness for bgc in bgcs}
+    if len(uniqueness_values) != 1:
+        raise ValueError(
+            f"Expected a single uniqueness value for collapsed BGCs, got: {sorted(uniqueness_values)}"
+        )
+
+    return next(iter(uniqueness_values))
+
+
 def write_bgc_tsv(
     genome_mining_results: List[GenomeMiningResult],
     output_path: Path,
     genome_file: Optional[Path] = None,
+    overlap_threshold: Optional[float] = None,
 ) -> None:
     tools, labels, grouped, contig_display_names, all_sequence_ids = _prepare_bgc_groups(
         genome_mining_results
@@ -146,14 +160,25 @@ def write_bgc_tsv(
 
     with open(output_path, "w", newline="") as fh:
         writer = csv.writer(fh, delimiter="\t")
-        writer.writerow(["file_label", *labels])
-        writer.writerow(["Genome mining tool", *tools])
+        uniqueness_col = (
+            f"Uniqueness ({overlap_threshold * 100:g}% overlap)"
+            if overlap_threshold is not None
+            else "Uniqueness"
+        )
+        writer.writerow(["file_label", *labels, uniqueness_col])
+        writer.writerow(["Genome mining tool", *tools, ""])
 
         for normalized_contig_id, start, end in sorted_keys:
             tool_to_bgcs = grouped[(normalized_contig_id, start, end)]
             row = [contig_display_names[normalized_contig_id]]
+
+            all_bgcs_in_row = []
             for tool in tools:
-                row.append(_collapse_same_tool_bgcs(tool_to_bgcs.get(tool, [])))
+                tool_bgcs = tool_to_bgcs.get(tool, [])
+                row.append(_collapse_same_tool_bgcs(tool_bgcs))
+                all_bgcs_in_row.extend(tool_bgcs)
+
+            row.append(_format_uniqueness(all_bgcs_in_row))
             writer.writerow(row)
 
 

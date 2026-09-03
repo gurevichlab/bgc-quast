@@ -18,6 +18,7 @@ class Bgc:
         start (int): The start position of the BGC. 0-based coordinates, start is included
         end (int): The end position of the BGC. 0-based coordinates, end is NOT included
         completeness (Literal["Complete", "Incomplete", "Unknown completeness"]): Whether the BGC is complete (Complete, Incomplete, Unknown completeness).
+        uniqueness (Literal["Unique", "Shared", "N/A"]): Whether the BGC is unique; currently only relevant to the compare-tools mode (overlap-based uniqueness).
         product_types (list): The product types of the BGC.
         metadata (dict): The metadata of the BGC, e.g. tool-specific metadata.
         gene_count (int): The number of genes in the BGC.
@@ -28,6 +29,7 @@ class Bgc:
     start: int = 0
     end: int = 0
     completeness: Literal["Complete", "Incomplete", "Unknown completeness"] = "Unknown completeness"
+    uniqueness: Literal["Unique", "Shared", "N/A"] = "N/A"
     product_types: List[str] = field(default_factory=list)
     metadata: Optional[Dict] = None
     gene_count: int = 0
