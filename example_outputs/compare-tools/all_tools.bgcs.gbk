@@ -6,24 +6,10 @@ KEYWORDS    .
 SOURCE      None
   ORGANISM  .
             .
-COMMENT     Annotated with Bakta
-            Software: v1.12.0
-            Database: v6.0, light
-            DOI: 10.1099/mgen.0.000685
-            URL: github.com/oschwengers/bakta
-            ##Genome Annotation Summary:##
-            Annotation Date                :: 03/23/2026, 16:36:54
-            CDSs                           ::    93
-            tRNAs                          ::     0
-            tmRNAs                         ::     0
-            rRNAs                          ::     0
-            ncRNAs                         ::     0
-            regulatory ncRNAs              ::     0
-            CRISPR Arrays                  ::     0
-            oriCs/oriVs                    ::     0
-            oriTs                          ::     0
-            gaps                           ::     0
-            pseudogenes                    ::     0
+COMMENT     BGC-QUAST compare-tools uniqueness classification: a BGC is
+            considered "Shared" if any BGC predicted by another tool overlaps
+            with at least 90% of its length (set by "--overlap-fraction");
+            otherwise it is considered "Unique".
 FEATURES             Location/Qualifiers
      source          1..99810
                      /mol_type="genomic DNA"
@@ -1645,42 +1631,49 @@ FEATURES             Location/Qualifiers
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_1_1"
                      /note="completeness:Complete"
+                     /note="uniqueness:Shared"
      misc_feature    10407..11363
                      /product="Unknown product"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_1_2"
                      /note="completeness:Complete"
+                     /note="uniqueness:Shared"
      misc_feature    18485..33357
                      /product="Unknown product"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_1_3"
                      /note="completeness:Complete"
+                     /note="uniqueness:Shared"
      misc_feature    37614..39812
                      /product="Unknown product"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_1_4"
                      /note="completeness:Complete"
+                     /note="uniqueness:Shared"
      misc_feature    46064..46201
                      /product="Unknown product"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_1_5"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    54103..99808
                      /product="Unknown product"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_1_6"
                      /note="completeness:Incomplete"
+                     /note="uniqueness:Unique"
      misc_feature    1144..42174
                      /product="Unknown product"
                      /note="BGC"
                      /note="tool:GECCO"
                      /note="bgc_id:CONTIG_1_1"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
 ORIGIN
         1 cccgcggagc gggtaccaca tcgctgcgcg atgtgcgagc gaacacccgg gctgcgcccg
        61 ggtgttgcgc tcccgctccg cgggagcgct ggcgggacgc tgcgcgtccc gctcaccaag
@@ -3355,24 +3348,10 @@ KEYWORDS    .
 SOURCE      None
   ORGANISM  .
             .
-COMMENT     Annotated with Bakta
-            Software: v1.12.0
-            Database: v6.0, light
-            DOI: 10.1099/mgen.0.000685
-            URL: github.com/oschwengers/bakta
-            ##Genome Annotation Summary:##
-            Annotation Date                :: 03/23/2026, 16:36:54
-            CDSs                           ::    81
-            tRNAs                          ::     0
-            tmRNAs                         ::     0
-            rRNAs                          ::     0
-            ncRNAs                         ::     0
-            regulatory ncRNAs              ::     0
-            CRISPR Arrays                  ::     0
-            oriCs/oriVs                    ::     0
-            oriTs                          ::     0
-            gaps                           ::     0
-            pseudogenes                    ::     0
+COMMENT     BGC-QUAST compare-tools uniqueness classification: a BGC is
+            considered "Shared" if any BGC predicted by another tool overlaps
+            with at least 90% of its length (set by "--overlap-fraction");
+            otherwise it is considered "Unique".
 FEATURES             Location/Qualifiers
      source          1..100176
                      /mol_type="genomic DNA"
@@ -4940,42 +4919,49 @@ FEATURES             Location/Qualifiers
                      /note="tool:antiSMASH"
                      /note="bgc_id:CONTIG_2.reg.1"
                      /note="completeness:Incomplete"
+                     /note="uniqueness:Unique"
      misc_feature    64321..92231
                      /product="Terpene"
                      /note="BGC"
                      /note="tool:antiSMASH"
                      /note="bgc_id:CONTIG_2.reg.2"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    2..19844
                      /product="PKS"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_2_1"
                      /note="completeness:Incomplete"
+                     /note="uniqueness:Shared"
      misc_feature    69774..100107
                      /product="Terpene"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_2_2"
                      /note="completeness:Incomplete"
+                     /note="uniqueness:Unique"
      misc_feature    2..19844
                      /product="PKS"
                      /note="BGC"
                      /note="tool:GECCO"
                      /note="bgc_id:CONTIG_2_1"
                      /note="completeness:Incomplete"
+                     /note="uniqueness:Shared"
      misc_feature    68895..90076
                      /product="Terpene"
                      /note="BGC"
                      /note="tool:GECCO"
                      /note="bgc_id:CONTIG_2_2"
                      /note="completeness:Complete"
+                     /note="uniqueness:Shared"
      misc_feature    3971..28480
                      /product="PKS"
                      /note="BGC"
                      /note="tool:PRISM"
                      /note="bgc_id:CONTIG_2_1"
                      /note="completeness:Complete"
+                     /note="uniqueness:Shared"
 ORIGIN
         1 agaggatctt cagcagggtc gtcttgcccg caccgttctc gccgacgatc ccggccaggg
        61 tgccgggctt cagccggagg ccgacgcccc tcaggacggc gtgctgtcgg taggaatggt
@@ -6656,24 +6642,10 @@ KEYWORDS    .
 SOURCE      None
   ORGANISM  .
             .
-COMMENT     Annotated with Bakta
-            Software: v1.12.0
-            Database: v6.0, light
-            DOI: 10.1099/mgen.0.000685
-            URL: github.com/oschwengers/bakta
-            ##Genome Annotation Summary:##
-            Annotation Date                :: 03/23/2026, 16:36:54
-            CDSs                           ::    92
-            tRNAs                          ::     0
-            tmRNAs                         ::     0
-            rRNAs                          ::     0
-            ncRNAs                         ::     0
-            regulatory ncRNAs              ::     0
-            CRISPR Arrays                  ::     0
-            oriCs/oriVs                    ::     0
-            oriTs                          ::     0
-            gaps                           ::     0
-            pseudogenes                    ::     0
+COMMENT     BGC-QUAST compare-tools uniqueness classification: a BGC is
+            considered "Shared" if any BGC predicted by another tool overlaps
+            with at least 90% of its length (set by "--overlap-fraction");
+            otherwise it is considered "Unique".
 FEATURES             Location/Qualifiers
      source          1..100826
                      /mol_type="genomic DNA"
@@ -8393,48 +8365,56 @@ FEATURES             Location/Qualifiers
                      /note="tool:antiSMASH"
                      /note="bgc_id:CONTIG_3.reg.1"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    11762..22414
                      /product="PKS"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_3_1"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    42217..42780
                      /product="Unknown product"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_3_2"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    46000..47883
                      /product="Terpene"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_3_3"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    48691..49716
                      /product="PKS"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_3_4"
                      /note="completeness:Complete"
+                     /note="uniqueness:Shared"
      misc_feature    51778..63234
                      /product="RiPP"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_3_5"
                      /note="completeness:Complete"
+                     /note="uniqueness:Shared"
      misc_feature    50819..67527
                      /product="RiPP"
                      /note="BGC"
                      /note="tool:GECCO"
                      /note="bgc_id:CONTIG_3_1"
                      /note="completeness:Complete"
+                     /note="uniqueness:Shared"
      misc_feature    55325..61098
                      /product="RiPP"
                      /note="BGC"
                      /note="tool:PRISM"
                      /note="bgc_id:CONTIG_3_2"
                      /note="completeness:Complete"
+                     /note="uniqueness:Shared"
 ORIGIN
         1 tggagccgtt ccgtagcgat cccgaggagt tgagcacatg gctgccaagg acatcggtgc
        61 acgcggtctc ggtgccaccg tccgggtgcg cgccgagagc gacgtggacg aggggtcgct
@@ -10126,24 +10106,10 @@ KEYWORDS    .
 SOURCE      None
   ORGANISM  .
             .
-COMMENT     Annotated with Bakta
-            Software: v1.12.0
-            Database: v6.0, light
-            DOI: 10.1099/mgen.0.000685
-            URL: github.com/oschwengers/bakta
-            ##Genome Annotation Summary:##
-            Annotation Date                :: 03/23/2026, 16:36:54
-            CDSs                           ::    79
-            tRNAs                          ::     0
-            tmRNAs                         ::     0
-            rRNAs                          ::     0
-            ncRNAs                         ::     0
-            regulatory ncRNAs              ::     0
-            CRISPR Arrays                  ::     0
-            oriCs/oriVs                    ::     0
-            oriTs                          ::     0
-            gaps                           ::     0
-            pseudogenes                    ::     0
+COMMENT     BGC-QUAST compare-tools uniqueness classification: a BGC is
+            considered "Shared" if any BGC predicted by another tool overlaps
+            with at least 90% of its length (set by "--overlap-fraction");
+            otherwise it is considered "Unique".
 FEATURES             Location/Qualifiers
      source          1..100281
                      /mol_type="genomic DNA"
@@ -11742,48 +11708,56 @@ FEATURES             Location/Qualifiers
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_4_1"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    16163..30553
                      /product="PKS"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_4_2"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    31499..40506
                      /product="PKS"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_4_3"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    45005..46894
                      /product="Unknown product"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_4_4"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    48607..49389
                      /product="Unknown product"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_4_5"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    53990..54874
                      /product="Terpene"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_4_6"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    64811..66106
                      /product="Unknown product"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_4_7"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    69997..71666
                      /product="Unknown product"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_4_8"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
 ORIGIN
         1 tcgccgtccg gtccttggga ccgtacgagg acatgacggt cgccgacgac aaggggatct
        61 tcctgctggg cgggcaggac ggcacggtcc ggctctacga cgccgcgctg cggcccggta
@@ -13466,24 +13440,10 @@ KEYWORDS    .
 SOURCE      None
   ORGANISM  .
             .
-COMMENT     Annotated with Bakta
-            Software: v1.12.0
-            Database: v6.0, light
-            DOI: 10.1099/mgen.0.000685
-            URL: github.com/oschwengers/bakta
-            ##Genome Annotation Summary:##
-            Annotation Date                :: 03/23/2026, 16:36:54
-            CDSs                           ::    97
-            tRNAs                          ::     0
-            tmRNAs                         ::     0
-            rRNAs                          ::     0
-            ncRNAs                         ::     0
-            regulatory ncRNAs              ::     0
-            CRISPR Arrays                  ::     0
-            oriCs/oriVs                    ::     0
-            oriTs                          ::     0
-            gaps                           ::     0
-            pseudogenes                    ::     0
+COMMENT     BGC-QUAST compare-tools uniqueness classification: a BGC is
+            considered "Shared" if any BGC predicted by another tool overlaps
+            with at least 90% of its length (set by "--overlap-fraction");
+            otherwise it is considered "Unique".
 FEATURES             Location/Qualifiers
      source          1..99307
                      /mol_type="genomic DNA"
@@ -15326,18 +15286,21 @@ FEATURES             Location/Qualifiers
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_5_1"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    30869..36131
                      /product="PKS"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_5_2"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    37904..45051
                      /product="Unknown product"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_5_3"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
 ORIGIN
         1 cgggtgccca cggcccggcg gctgctggtc gtcgtgccgg acgacgacga ggtggcccgc
        61 cgggcggccg gccggctcgc cgccgacgcc gaggacgatc cgcggctgcg ggtggtggag
@@ -17004,24 +16967,10 @@ KEYWORDS    .
 SOURCE      None
   ORGANISM  .
             .
-COMMENT     Annotated with Bakta
-            Software: v1.12.0
-            Database: v6.0, light
-            DOI: 10.1099/mgen.0.000685
-            URL: github.com/oschwengers/bakta
-            ##Genome Annotation Summary:##
-            Annotation Date                :: 03/23/2026, 16:36:54
-            CDSs                           ::    79
-            tRNAs                          ::     0
-            tmRNAs                         ::     0
-            rRNAs                          ::     0
-            ncRNAs                         ::     0
-            regulatory ncRNAs              ::     0
-            CRISPR Arrays                  ::     0
-            oriCs/oriVs                    ::     0
-            oriTs                          ::     0
-            gaps                           ::     0
-            pseudogenes                    ::     0
+COMMENT     BGC-QUAST compare-tools uniqueness classification: a BGC is
+            considered "Shared" if any BGC predicted by another tool overlaps
+            with at least 90% of its length (set by "--overlap-fraction");
+            otherwise it is considered "Unique".
 FEATURES             Location/Qualifiers
      source          1..99532
                      /mol_type="genomic DNA"
@@ -18605,54 +18554,63 @@ FEATURES             Location/Qualifiers
                      /note="tool:antiSMASH"
                      /note="bgc_id:CONTIG_6.reg.1"
                      /note="completeness:Incomplete"
+                     /note="uniqueness:Unique"
      misc_feature    2..37112
                      /product="NRPS"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_6_1"
                      /note="completeness:Incomplete"
+                     /note="uniqueness:Shared"
      misc_feature    38723..41731
                      /product="Unknown product"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_6_2"
                      /note="completeness:Complete"
+                     /note="uniqueness:Shared"
      misc_feature    43145..43687
                      /product="Unknown product"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_6_3"
                      /note="completeness:Complete"
+                     /note="uniqueness:Shared"
      misc_feature    48568..49221
                      /product="Unknown product"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_6_4"
                      /note="completeness:Complete"
+                     /note="uniqueness:Shared"
      misc_feature    86587..90495
                      /product="PKS"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_6_5"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    3139..43687
                      /product="NRPS"
                      /note="BGC"
                      /note="tool:GECCO"
                      /note="bgc_id:CONTIG_6_1"
                      /note="completeness:Complete"
+                     /note="uniqueness:Shared"
      misc_feature    13589..33048
                      /product="NRPS"
                      /note="BGC"
                      /note="tool:PRISM"
                      /note="bgc_id:CONTIG_6_3"
                      /note="completeness:Complete"
+                     /note="uniqueness:Shared"
      misc_feature    86587..89146
                      /product="PKS"
                      /note="BGC"
                      /note="tool:PRISM"
                      /note="bgc_id:CONTIG_6_4"
                      /note="completeness:Complete"
+                     /note="uniqueness:Shared"
 ORIGIN
         1 ggtcggccac ggccgccggg ccgccgcgca gcgccacgtt gacggccacc gccatggtgc
        61 ccgcggcgta gttgagcgtg ccgcacaggg gatccaccag ccactggcgt gccgcgtcgg
@@ -20322,24 +20280,10 @@ KEYWORDS    .
 SOURCE      None
   ORGANISM  .
             .
-COMMENT     Annotated with Bakta
-            Software: v1.12.0
-            Database: v6.0, light
-            DOI: 10.1099/mgen.0.000685
-            URL: github.com/oschwengers/bakta
-            ##Genome Annotation Summary:##
-            Annotation Date                :: 03/23/2026, 16:36:54
-            CDSs                           ::   103
-            tRNAs                          ::     0
-            tmRNAs                         ::     0
-            rRNAs                          ::     0
-            ncRNAs                         ::     0
-            regulatory ncRNAs              ::     0
-            CRISPR Arrays                  ::     0
-            oriCs/oriVs                    ::     0
-            oriTs                          ::     0
-            gaps                           ::     0
-            pseudogenes                    ::     0
+COMMENT     BGC-QUAST compare-tools uniqueness classification: a BGC is
+            considered "Shared" if any BGC predicted by another tool overlaps
+            with at least 90% of its length (set by "--overlap-fraction");
+            otherwise it is considered "Unique".
 FEATURES             Location/Qualifiers
      source          1..100657
                      /mol_type="genomic DNA"
@@ -22226,30 +22170,35 @@ FEATURES             Location/Qualifiers
                      /note="tool:antiSMASH"
                      /note="bgc_id:CONTIG_7.reg.1"
                      /note="completeness:Incomplete"
+                     /note="uniqueness:Unique"
      misc_feature    119..12174
-                     /product="Terpene,PKS"
+                     /product="PKS,Terpene"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_7_1"
                      /note="completeness:Complete"
+                     /note="uniqueness:Shared"
      misc_feature    12494..17154
                      /product="Unknown product"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_7_2"
                      /note="completeness:Complete"
+                     /note="uniqueness:Shared"
      misc_feature    18856..37234
                      /product="Unknown product"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_7_3"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    80564..99892
                      /product="PKS"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_7_4"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
 ORIGIN
         1 ggtcggcgcc gtagaccctg ccgcgcatga actccacctc atccatgact cgaagcctcg
        61 catccgccac tgacaacggc acccgagcgg cggggacggc ccttcggacg agccctccct
@@ -23938,24 +23887,10 @@ KEYWORDS    .
 SOURCE      None
   ORGANISM  .
             .
-COMMENT     Annotated with Bakta
-            Software: v1.12.0
-            Database: v6.0, light
-            DOI: 10.1099/mgen.0.000685
-            URL: github.com/oschwengers/bakta
-            ##Genome Annotation Summary:##
-            Annotation Date                :: 03/23/2026, 16:36:54
-            CDSs                           ::    97
-            tRNAs                          ::     0
-            tmRNAs                         ::     0
-            rRNAs                          ::     0
-            ncRNAs                         ::     0
-            regulatory ncRNAs              ::     0
-            CRISPR Arrays                  ::     0
-            oriCs/oriVs                    ::     0
-            oriTs                          ::     0
-            gaps                           ::     0
-            pseudogenes                    ::     0
+COMMENT     BGC-QUAST compare-tools uniqueness classification: a BGC is
+            considered "Shared" if any BGC predicted by another tool overlaps
+            with at least 90% of its length (set by "--overlap-fraction");
+            otherwise it is considered "Unique".
 FEATURES             Location/Qualifiers
      source          1..100957
                      /mol_type="genomic DNA"
@@ -25767,24 +25702,28 @@ FEATURES             Location/Qualifiers
                      /note="tool:antiSMASH"
                      /note="bgc_id:CONTIG_8.reg.1"
                      /note="completeness:Incomplete"
+                     /note="uniqueness:Unique"
      misc_feature    35723..48690
                      /product="RiPP"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_8_1"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    97188..100956
                      /product="RiPP"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_8_2"
                      /note="completeness:Incomplete"
+                     /note="uniqueness:Shared"
      misc_feature    38006..45174
                      /product="RiPP"
                      /note="BGC"
                      /note="tool:GECCO"
                      /note="bgc_id:CONTIG_8_1"
                      /note="completeness:Complete"
+                     /note="uniqueness:Shared"
 ORIGIN
         1 tgggctcgct gctcgccgtg ctgccgctca tcctcgcctt cgtgctgctc cagcgattct
        61 ggcgcagcgg cctgaccgcc ggagccgtca agtgaccgtg cacgcccccg gacccggcca
@@ -27478,24 +27417,10 @@ KEYWORDS    .
 SOURCE      None
   ORGANISM  .
             .
-COMMENT     Annotated with Bakta
-            Software: v1.12.0
-            Database: v6.0, light
-            DOI: 10.1099/mgen.0.000685
-            URL: github.com/oschwengers/bakta
-            ##Genome Annotation Summary:##
-            Annotation Date                :: 03/23/2026, 16:36:54
-            CDSs                           ::    99
-            tRNAs                          ::     0
-            tmRNAs                         ::     0
-            rRNAs                          ::     0
-            ncRNAs                         ::     0
-            regulatory ncRNAs              ::     0
-            CRISPR Arrays                  ::     0
-            oriCs/oriVs                    ::     0
-            oriTs                          ::     0
-            gaps                           ::     0
-            pseudogenes                    ::     0
+COMMENT     BGC-QUAST compare-tools uniqueness classification: a BGC is
+            considered "Shared" if any BGC predicted by another tool overlaps
+            with at least 90% of its length (set by "--overlap-fraction");
+            otherwise it is considered "Unique".
 FEATURES             Location/Qualifiers
      source          1..99285
                      /mol_type="genomic DNA"
@@ -29351,24 +29276,28 @@ FEATURES             Location/Qualifiers
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_9_1"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    16900..22512
                      /product="PKS"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_9_2"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    46103..47686
-                     /product="Terpene,PKS"
+                     /product="PKS,Terpene"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_9_3"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
      misc_feature    91119..95422
                      /product="PKS"
                      /note="BGC"
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_9_4"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
 ORIGIN
         1 cgatcggcat gctggtggtc gtcgccgggg tgttcctcgg gctcgggctg tggcaggtgc
        61 gctggcagcg gcggctggtc aaactcacca acaagctgaa caaccaggcg ttccagacgc
@@ -31034,24 +30963,10 @@ KEYWORDS    .
 SOURCE      None
   ORGANISM  .
             .
-COMMENT     Annotated with Bakta
-            Software: v1.12.0
-            Database: v6.0, light
-            DOI: 10.1099/mgen.0.000685
-            URL: github.com/oschwengers/bakta
-            ##Genome Annotation Summary:##
-            Annotation Date                :: 03/23/2026, 16:36:54
-            CDSs                           ::   100
-            tRNAs                          ::     0
-            tmRNAs                         ::     0
-            rRNAs                          ::     0
-            ncRNAs                         ::     0
-            regulatory ncRNAs              ::     0
-            CRISPR Arrays                  ::     0
-            oriCs/oriVs                    ::     0
-            oriTs                          ::     0
-            gaps                           ::     0
-            pseudogenes                    ::     0
+COMMENT     BGC-QUAST compare-tools uniqueness classification: a BGC is
+            considered "Shared" if any BGC predicted by another tool overlaps
+            with at least 90% of its length (set by "--overlap-fraction");
+            otherwise it is considered "Unique".
 FEATURES             Location/Qualifiers
      source          1..99169
                      /mol_type="genomic DNA"
@@ -32893,6 +32808,7 @@ FEATURES             Location/Qualifiers
                      /note="tool:DeepBGC"
                      /note="bgc_id:CONTIG_10_1"
                      /note="completeness:Complete"
+                     /note="uniqueness:Unique"
 ORIGIN
         1 tccccgaact ggcgtcggct cttcggcgcg ggctgccgaa ggtggggccg ggcccgctgc
        61 tgtcggcgct cggggcgctg cgggtgcgca ccgaggaccg cgccggtgag cgccgggtgt
