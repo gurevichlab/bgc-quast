@@ -4,9 +4,9 @@
   <img alt="BGC-QUAST logo" src="docs/img/BGC-QUAST_logo.png">
 </picture>
 
-# BGC-QUAST Manual
+# Manual
 
-1. [About BGC-QUAST](#sec_about) </br>
+1. [About](#sec_about) </br>
 1.1. [Requirements](#sec_req) </br>
 1.2. [Installation](#sec_install) </br>
 1.3. [Supported genome mining tools](#sec_tools) </br>
@@ -21,7 +21,7 @@
 
 
 <a name="sec_about"></a>
-# About BGC-QUAST
+# About
 
 **BGC-QUAST** is a quality assessment tool for genome mining software — 
 tools used for predicting biosynthetic gene clusters (BGCs). 
