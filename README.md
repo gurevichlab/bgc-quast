@@ -31,6 +31,14 @@ of BGC prediction results from multiple tools and datasets.
 BGC-QUAST is distributed under the MIT License.
 See the [LICENSE.txt](LICENSE.txt) file for details.
 
+
+<p align="center">
+  <img src="docs/img/BGC-QUAST_workflow.png"
+       alt="BGC-QUAST workflow overview">
+</p>
+
+
+
 <a name="sec_req"></a>
 ## Requirements
 
@@ -191,11 +199,6 @@ For PRISM analyses in compare-to-reference mode, we recommend submitting the sam
 BGC-QUAST supports **three running modes**, each designed for a different analysis scenario.
 All modes compute a set of basic BGC quality metrics and may also include extra ones depending on the selected analysis.
 The `example_outputs/` directory contains precomputed BGC-QUAST reports generated on the provided test data in all three modes.
-
-<p align="center">
-  <img src="docs/img/BGC-QUAST_workflow.png"
-       alt="BGC-QUAST workflow overview">
-</p>
 
 See [Metrics](docs/METRICS.md) for the detailed description of all reported metrics.
 
