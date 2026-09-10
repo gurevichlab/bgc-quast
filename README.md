@@ -1,3 +1,6 @@
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/gurevichlab/bgc-quast)](https://github.com/gurevichlab/bgc-quast/releases/)
+[![License](https://img.shields.io/badge/licence-MIT-blue)](LICENSE.txt)
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/img/BGC-QUAST_logo_dark.png">
   <source media="(prefers-color-scheme: light)" srcset="docs/img/BGC-QUAST_logo.png">
@@ -12,10 +15,12 @@
 1.3. [Supported genome mining tools](#sec_tools) </br>
 1.4. [Command-line options](#sec_cmd_options) </br>
 1.5. [Input naming and file matching](#sec_naming) </br>
-2. [Running modes](#sec_run_modes)</br> 
-2.1. [Compare-to-reference mode](#sec_run_mode_1) </br>
-2.2. [Compare-tools mode](#sec_run_mode_2) </br>
-2.3. [Compare-samples mode](#sec_run_mode_3) </br>
+2. [Running modes and output](#sec_run_modes) </br>
+2.1. [Modes overview](#sec_modes_overview) </br>
+2.2. [Basic metrics](#sec_basic_metrics) </br>
+2.3. [Compare-samples mode](#sec_run_mode_1) </br>
+2.4. [Compare-tools mode](#sec_run_mode_2) </br>
+2.5. [Compare-to-reference mode](#sec_run_mode_3) </br>
 3. [Citation](#sec_cite)</br>
 4. [Feedback and bug reports](#sec_feedback)</br>
 
@@ -24,20 +29,16 @@
 # About
 
 **BGC-QUAST** is a quality assessment tool for genome mining software — 
-tools used for predicting biosynthetic gene clusters (BGCs). 
-It provides summary statistics, comparative analyses, and interactive visualization 
-of BGC prediction results from multiple tools and datasets.
-
-BGC-QUAST is distributed under the MIT License.
-See the [LICENSE.txt](LICENSE.txt) file for details.
-
+tools used for predicting biosynthetic gene clusters (BGCs), [such as](#sec_tools) antiSMASH, GECCO, and DeepBGC. BGC-QUAST compares their predictions by computing standardized [metrics](docs/METRICS.md) and generating interactive visualizations. The pipeline overview is depicted below.
 
 <p align="center">
   <img src="docs/img/BGC-QUAST_workflow.png"
        alt="BGC-QUAST workflow overview">
 </p>
 
+BGC-QUAST supports three main workflows: (i) comparing BGC predictions across samples, (ii) across genome mining tools, or (iii) evaluating BGC recovery in a draft assembly/MAG against a reference genome.  
 
+**Quick start**: [install BGC-QUAST](#sec_install) and pick the [running mode](#sec_run_modes) that matches your use case!
 
 <a name="sec_req"></a>
 ## Requirements
@@ -82,9 +83,15 @@ conda env create -f environment.yml
 conda activate bgc-quast
 ```
 
-### 3. Install BGC-QUAST
+### 3. Install the package
 
-Install the package in editable mode (recommended for development):
+#### Standard installation (recommended)
+
+```bash  
+pip install .
+```
+
+#### Editable installation (for development)
 
 ```bash  
 pip install -e .
@@ -194,64 +201,72 @@ Some annotation tools may rename contigs when producing GenBank/GBFF files. For 
 For PRISM analyses in compare-to-reference mode, we recommend submitting the same FASTA files used for QUAST. BGC-QUAST also uses the first whitespace-separated part of PRISM sequence headers for matching and ignores any following descriptive text.
 
 <a name="sec_run_modes"></a>
-## Running modes
+# Running modes and output
 
 BGC-QUAST supports **three running modes**, each designed for a different analysis scenario.
-All modes compute a set of basic BGC quality metrics and may also include extra ones depending on the selected analysis.
-The `example_outputs/` directory contains precomputed BGC-QUAST reports generated on the provided test data in all three modes.
+All modes compute a set of basic BGC quality metrics and may also compute mode-specific metrics or generate extra output files. See [Metrics](docs/METRICS.md) for the detailed description of all reported metrics.
+The [example_outputs](example_outputs/) directory contains precomputed BGC-QUAST reports generated on the provided test data in all three modes.
 
-See [Metrics](docs/METRICS.md) for the detailed description of all reported metrics.
+<a name="sec_modes_overview"></a>
+## Modes overview
 
-### Basic metrics
+| Mode | Use it when... | Example command | Example output |
+|------|------|------------------|-----------------|
+| [Compare-samples](#sec_run_mode_1) | You want to compare BGC predictions across multiple genomes or metagenomic samples, produced by the **same genome mining tool** | [command](#sec_run_mode_1_test_example) | [`compare-samples/`](example_outputs/compare-samples/) |
+| [Compare-tools](#sec_run_mode_2) | You want to compare BGC predictions produced by **different genome mining tools** on the **same genome** | [command](#sec_run_mode_2_test_example) | [`compare-tools/`](example_outputs/compare-tools/) |
+| [Compare-to-reference](#sec_run_mode_3) | You want to assess how well BGCs are recovered in a **draft assembly/MAG** relative to a **high-quality reference genome** | [command](#sec_run_mode_3_test_example) | [`compare-to-reference/`](example_outputs/compare-to-reference/) |
+
+<a name="sec_basic_metrics"></a>
+## Basic metrics
 The basic BGC quality metrics include:  
 - **Counts**  
   Number of detected BGCs, reported overall and stratified by product type and completeness (complete vs fragmented BGCs based on proximity to contig edges).  
 - **Length statistics**  
-  Mean BGC length, reported overall and stratified by product type and completeness.  
-- **Gene count statistics**  
-  Mean number of genes per BGC, reported overall and stratified by product type and completeness.  
+  Mean BGC length and total BGC span, reported overall and stratified by product type and completeness.  
+- **Gene count statistics**   
+  Mean number of genes per BGC, reported overall and stratified by product type and completeness. Computed only if an annotated genome (GenBank) is provided via `--genome/-G`. 
 
 <a name="sec_run_mode_1"></a>
-### 1. Compare-to-reference mode
+## Compare-samples mode
 
 **Use case**  
-Assess how well BGCs predicted on draft assemblies match the predictions obtained from a high-quality reference genome. 
+Summarize and compare BGC predictions produced by a single genome mining tool across multiple genomes or metagenomic samples. This mode is intended for cohort-level analysis rather than direct BGC-to-BGC comparison.
 
 > **Note**  
-> The same genome mining tool (e.g., antiSMASH) must be used for both the assemblies and the reference genome.  
-> Draft assemblies must be aligned against the reference using
-[QUAST](https://quast.sourceforge.net/), and the corresponding QUAST output directory must be provided to BGC-QUAST.
+> All input genome mining results must be produced by the **same genome mining tool**.  
+> When sample names are not explicitly provided (`--names`), they are inferred from input file names.
 
-**Command (general form)**  
+**Command (general form)**
+
 
 ```bash
-bgc-quast <assembly1_genome_mining_results> \
-          <assembly2_genome_mining_results> \
+bgc-quast <sample1_genome_mining_results> \
+          <sample2_genome_mining_results> \
           ... \
-  --mode compare-to-reference \
-  --reference-mining-result <reference_genome_mining_results> \
-  --quast-output-dir <quast_output_dir> \
+  --mode compare-samples \
+  --names <sample1>,<sample2>,... \
+  --genome <sample1_genome> \
+  --genome <sample2_genome> ... \
   --output-dir <output_dir>
-```  
+```
 
-**Example (test data)**  
+<a name="sec_run_mode_1_test_example"></a>
+**Example command (test data)**  
 
 ```bash
 bgc-quast \
   test_data/assembly_10_mining/antiSMASH/assembly_10.json.gz \
-  test_data/assembly_20_mining/antiSMASH/assembly_20.json.gz \
-  -r test_data/reference_mining/antiSMASH/reference.json.gz \
-  -q test_data/quast_out/
+  test_data/assembly_20_mining/antiSMASH/assembly_20.json.gz 
 ```
 The BGC-QUAST reports will be saved in `./bgc-quast-results/latest/`.
 See the example output in 
-[`example_outputs/compare-to-reference/`](example_outputs/compare-to-reference/).
+[`example_outputs/compare-samples/`](example_outputs/compare-samples/).
 
 **Mode-specific quality metrics**  
-- Number of **fully recovered**, **partially recovered**, and **missed** BGCs in the assemblies, with respect to BGCs predicted in the reference genome (considered as ground truth). Reported overall and stratified by product type and completeness.
+- This mode currently reports only the **basic BGC quality metrics described above**, aggregated and summarized across samples.
 
 <a name="sec_run_mode_2"></a>
-### 2. Compare-tools mode
+### Compare-tools mode
 
 **Use case**  
 Compare BGCs predicted by different genome mining tools applied to the same genome sequence.
@@ -270,7 +285,8 @@ bgc-quast <tool1_genome_mining_results> \
   --output-dir <output_dir>
 ```
 
-**Example (test data)**  
+<a name="sec_run_mode_2_test_example"></a>
+**Example command (test data)**  
 
 ```bash
 bgc-quast \
@@ -296,51 +312,53 @@ See the example output in
 - If the input genome sequence is provided (`--genome/-G`), integrated **GenBank** file with BGC annotations from all tools mapped onto the genome.  
 
 <a name="sec_run_mode_3"></a>
-### 3. Compare-samples mode
+### Compare-to-reference mode
 
 **Use case**  
-Summarize and compare BGC predictions produced by a single genome mining tool across multiple genomes or metagenomic samples. This mode is intended for cohort-level analysis rather than direct BGC-to-BGC comparison.
+Assess how well BGCs predicted on draft assemblies match the predictions obtained from a high-quality reference genome. 
 
 > **Note**  
-> All input genome mining results must be produced by the **same genome mining tool**.  
-> When sample names are not explicitly provided (`--names`), they are inferred from input file names.
+> The same genome mining tool (e.g., antiSMASH) must be used for both the assemblies and the reference genome.  
+> Draft assemblies must be aligned against the reference using
+[QUAST](https://quast.sourceforge.net/), and the corresponding QUAST output directory must be provided to BGC-QUAST.
 
-**Command (general form)**
-
+**Command (general form)**  
 
 ```bash
-bgc-quast <sample1_genome_mining_results> \
-          <sample2_genome_mining_results> \
+bgc-quast <assembly1_genome_mining_results> \
+          <assembly2_genome_mining_results> \
           ... \
-  --mode compare-samples \
-  --names <sample1>,<sample2>,... \
-  --genome <sample1_genome> \
-  --genome <sample2_genome> ... \
+  --mode compare-to-reference \
+  --reference-mining-result <reference_genome_mining_results> \
+  --quast-output-dir <quast_output_dir> \
   --output-dir <output_dir>
-```
+```  
 
-**Example (test data)**  
+<a name="sec_run_mode_3_test_example"></a>
+**Example command (test data)**  
 
 ```bash
 bgc-quast \
   test_data/assembly_10_mining/antiSMASH/assembly_10.json.gz \
-  test_data/assembly_20_mining/antiSMASH/assembly_20.json.gz 
+  test_data/assembly_20_mining/antiSMASH/assembly_20.json.gz \
+  -r test_data/reference_mining/antiSMASH/reference.json.gz \
+  -q test_data/quast_out/
 ```
 The BGC-QUAST reports will be saved in `./bgc-quast-results/latest/`.
 See the example output in 
-[`example_outputs/compare-samples/`](example_outputs/compare-samples/).
+[`example_outputs/compare-to-reference/`](example_outputs/compare-to-reference/).
 
 **Mode-specific quality metrics**  
-- This mode currently reports only the **basic BGC quality metrics described above**, aggregated and summarized across samples.
+- Number of **fully recovered**, **partially recovered**, and **missed** BGCs in the assemblies, with respect to BGCs predicted in the reference genome (considered as ground truth). Reported overall and stratified by product type and completeness.
 
 <a name="sec_cite"></a>
-## Citation
+# Citation
 If you use BGC-QUAST in your research, please cite [Kushnareva, Tupikina et al. bioRxiv 2026](https://www.biorxiv.org/content/10.64898/2026.05.04.722653).
 
 <a name="sec_feedback"></a>
-## Feedback and bug reports
+# Feedback and bug reports
 You can leave your comments and bug reports at [https://github.com/gurevichlab/bgc-quast/issues](https://github.com/gurevichlab/bgc-quast/issues) (*recommended way*) 
-or send it via e-mail to [alexey.gurevich@helmholtz-hips.de](alexey.gurevich@helmholtz-hips.de).
+or send it via e-mail to [alexey.gurevich@helmholtz-hips.de](mailto:alexey.gurevich@helmholtz-hips.de).
 
 Your comments, bug reports, and suggestions are **very welcome**.
 They will help us to improve BGC-QUAST further.
